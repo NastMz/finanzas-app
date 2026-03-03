@@ -1,12 +1,12 @@
 import { describe } from "vitest";
 
-import { runSharedInMemoryBootstrapTests } from "../../shared/test/in-memory-bootstrap-shared.spec-helper.js";
+import { runPlatformWrapperBootstrapSmokeTests } from "../../shared/test/platform-wrapper-bootstrap-smoke.spec-helper.js";
 import { createDesktopBootstrap } from "./bootstrap.js";
 
 describe("createDesktopBootstrap", () => {
-  runSharedInMemoryBootstrapTests({
+  runPlatformWrapperBootstrapSmokeTests({
     createBootstrap: (options) => createDesktopBootstrap(options),
-    ulidDeviceId: "Desktop QA 01",
-    deterministicDeviceId: "desktop-test-device",
+    defaultDeviceId: "desktop-local-device",
+    customDeviceId: "Desktop QA Device 01",
   });
 });
