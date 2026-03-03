@@ -13,7 +13,11 @@ import type {
   OutboxRepository,
   TransactionRepository,
 } from "../ports.js";
+import { toTransactionOutboxPayload } from "./shared/transaction-outbox-payload.js";
 
+/**
+ * Input required to create a transaction and enqueue its sync operation.
+ */
 export interface AddTransactionInput {
   accountId: string;
   amountMinor: number | bigint;
@@ -24,6 +28,9 @@ export interface AddTransactionInput {
   tags?: string[];
 }
 
+/**
+ * Runtime dependencies required by `addTransaction`.
+ */
 export interface AddTransactionDependencies {
   accounts: AccountRepository;
   transactions: TransactionRepository;
@@ -33,11 +40,18 @@ export interface AddTransactionDependencies {
   deviceId: string;
 }
 
+/**
+ * Result returned after a successful `addTransaction` execution.
+ */
 export interface AddTransactionResult {
   transaction: Transaction;
   outboxOpId: string;
 }
 
+/**
+ * Creates a new local transaction and appends a pending outbox operation
+ * to be pushed during the next sync cycle.
+ */
 export const addTransaction = async (
   dependencies: AddTransactionDependencies,
   input: AddTransactionInput,
@@ -75,7 +89,7 @@ export const addTransaction = async (
     entityType: "transaction",
     entityId: transaction.id,
     opType: "create",
-    payload: toOutboxPayload(transaction),
+    payload: toTransactionOutboxPayload(transaction),
     createdAt: now,
     status: "pending",
     attemptCount: 0,
@@ -88,17 +102,3 @@ export const addTransaction = async (
     outboxOpId,
   };
 };
-
-const toOutboxPayload = (transaction: Transaction): Record<string, unknown> => ({
-  id: transaction.id,
-  accountId: transaction.accountId,
-  amountMinor: transaction.amount.amountMinor.toString(),
-  currency: transaction.amount.currency,
-  date: transaction.date.toISOString(),
-  categoryId: transaction.categoryId,
-  note: transaction.note,
-  tags: transaction.tags,
-  createdAt: transaction.createdAt.toISOString(),
-  updatedAt: transaction.updatedAt.toISOString(),
-  deletedAt: transaction.deletedAt ? transaction.deletedAt.toISOString() : null,
-});

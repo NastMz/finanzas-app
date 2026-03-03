@@ -1,7 +1,13 @@
 import { DomainError } from "./errors.js";
 
+/**
+ * Supported category directions.
+ */
 export type CategoryType = "income" | "expense";
 
+/**
+ * Category aggregate root.
+ */
 export interface Category {
   id: string;
   name: string;
@@ -12,6 +18,9 @@ export interface Category {
   version: number | null;
 }
 
+/**
+ * Input required to create a valid `Category`.
+ */
 export interface CreateCategoryInput {
   id: string;
   name: string;
@@ -20,6 +29,9 @@ export interface CreateCategoryInput {
   updatedAt?: Date;
 }
 
+/**
+ * Creates a validated `Category` aggregate.
+ */
 export const createCategory = (input: CreateCategoryInput): Category => {
   if (input.id.trim().length === 0) {
     throw new DomainError("Category id is required.");

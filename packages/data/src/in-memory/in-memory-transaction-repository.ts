@@ -1,6 +1,9 @@
 import type { Transaction } from "@finanzas/domain";
 import type { TransactionRepository } from "@finanzas/application";
 
+/**
+ * In-memory implementation of `TransactionRepository` for tests and local wiring.
+ */
 export class InMemoryTransactionRepository implements TransactionRepository {
   private readonly transactions = new Map<string, Transaction>();
 

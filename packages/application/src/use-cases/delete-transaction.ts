@@ -8,11 +8,18 @@ import type {
   OutboxRepository,
   TransactionRepository,
 } from "../ports.js";
+import { toTransactionOutboxPayload } from "./shared/transaction-outbox-payload.js";
 
+/**
+ * Input required to tombstone a transaction.
+ */
 export interface DeleteTransactionInput {
   transactionId: string;
 }
 
+/**
+ * Runtime dependencies required by `deleteTransaction`.
+ */
 export interface DeleteTransactionDependencies {
   transactions: TransactionRepository;
   outbox: OutboxRepository;
@@ -21,11 +28,18 @@ export interface DeleteTransactionDependencies {
   deviceId: string;
 }
 
+/**
+ * Result returned after a successful `deleteTransaction` execution.
+ */
 export interface DeleteTransactionResult {
   transaction: Transaction;
   outboxOpId: string;
 }
 
+/**
+ * Applies a local tombstone to a transaction and appends a pending delete
+ * operation to the outbox for remote propagation.
+ */
 export const deleteTransaction = async (
   dependencies: DeleteTransactionDependencies,
   input: DeleteTransactionInput,
@@ -61,7 +75,7 @@ export const deleteTransaction = async (
     ...(deletedTransaction.version !== null
       ? { baseVersion: deletedTransaction.version }
       : {}),
-    payload: toOutboxPayload(deletedTransaction),
+    payload: toTransactionOutboxPayload(deletedTransaction),
     createdAt: deletedAt,
     status: "pending",
     attemptCount: 0,
@@ -74,17 +88,3 @@ export const deleteTransaction = async (
     outboxOpId,
   };
 };
-
-const toOutboxPayload = (transaction: Transaction): Record<string, unknown> => ({
-  id: transaction.id,
-  accountId: transaction.accountId,
-  amountMinor: transaction.amount.amountMinor.toString(),
-  currency: transaction.amount.currency,
-  date: transaction.date.toISOString(),
-  categoryId: transaction.categoryId,
-  note: transaction.note,
-  tags: transaction.tags,
-  createdAt: transaction.createdAt.toISOString(),
-  updatedAt: transaction.updatedAt.toISOString(),
-  deletedAt: transaction.deletedAt ? transaction.deletedAt.toISOString() : null,
-});

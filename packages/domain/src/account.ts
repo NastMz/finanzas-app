@@ -1,8 +1,14 @@
 import { DomainError } from "./errors.js";
 import { normalizeCurrency, type CurrencyCode } from "./money.js";
 
+/**
+ * Supported account kinds.
+ */
 export type AccountType = "cash" | "bank" | "credit";
 
+/**
+ * Account aggregate root.
+ */
 export interface Account {
   id: string;
   name: string;
@@ -14,6 +20,9 @@ export interface Account {
   version: number | null;
 }
 
+/**
+ * Input required to create a valid `Account`.
+ */
 export interface CreateAccountInput {
   id: string;
   name: string;
@@ -23,6 +32,9 @@ export interface CreateAccountInput {
   updatedAt?: Date;
 }
 
+/**
+ * Creates a validated `Account` aggregate.
+ */
 export const createAccount = (input: CreateAccountInput): Account => {
   if (input.id.trim().length === 0) {
     throw new DomainError("Account id is required.");

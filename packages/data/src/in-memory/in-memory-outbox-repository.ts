@@ -1,5 +1,8 @@
 import type { OutboxOp, OutboxRepository } from "@finanzas/application";
 
+/**
+ * In-memory implementation of `OutboxRepository` with full state transitions.
+ */
 export class InMemoryOutboxRepository implements OutboxRepository {
   private readonly operations: OutboxOp[] = [];
 

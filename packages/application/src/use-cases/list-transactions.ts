@@ -3,21 +3,34 @@ import type { Transaction } from "@finanzas/domain";
 import { ApplicationError } from "../errors.js";
 import type { AccountRepository, TransactionRepository } from "../ports.js";
 
+/**
+ * Query parameters for listing transactions of an account.
+ */
 export interface ListTransactionsInput {
   accountId: string;
   includeDeleted?: boolean;
   limit?: number;
 }
 
+/**
+ * Runtime dependencies required by `listTransactions`.
+ */
 export interface ListTransactionsDependencies {
   accounts: AccountRepository;
   transactions: TransactionRepository;
 }
 
+/**
+ * Result payload returned by `listTransactions`.
+ */
 export interface ListTransactionsResult {
   transactions: Transaction[];
 }
 
+/**
+ * Lists local transactions for an account with optional tombstone inclusion,
+ * ordered by transaction date descending (then creation time descending).
+ */
 export const listTransactions = async (
   dependencies: ListTransactionsDependencies,
   input: ListTransactionsInput,

@@ -2,6 +2,9 @@ import { type Account } from "./account.js";
 import { DomainError } from "./errors.js";
 import { type Money } from "./money.js";
 
+/**
+ * Transaction aggregate root.
+ */
 export interface Transaction {
   id: string;
   accountId: string;
@@ -16,6 +19,9 @@ export interface Transaction {
   version: number | null;
 }
 
+/**
+ * Input required to create a valid `Transaction`.
+ */
 export interface CreateTransactionInput {
   id: string;
   accountId: string;
@@ -28,6 +34,9 @@ export interface CreateTransactionInput {
   updatedAt?: Date;
 }
 
+/**
+ * Creates a validated `Transaction` aggregate.
+ */
 export const createTransaction = (
   input: CreateTransactionInput,
   account: Account,

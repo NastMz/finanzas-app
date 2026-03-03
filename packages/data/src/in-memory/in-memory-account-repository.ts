@@ -1,6 +1,9 @@
 import type { Account } from "@finanzas/domain";
 import type { AccountRepository } from "@finanzas/application";
 
+/**
+ * In-memory implementation of `AccountRepository` for tests and local wiring.
+ */
 export class InMemoryAccountRepository implements AccountRepository {
   private readonly accounts = new Map<string, Account>();
 

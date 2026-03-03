@@ -2,13 +2,22 @@ import { DomainError } from "./errors.js";
 
 const CURRENCY_REGEX = /^[A-Z]{3}$/;
 
+/**
+ * ISO-4217 currency code (for example `COP`, `USD`).
+ */
 export type CurrencyCode = string;
 
+/**
+ * Monetary value represented in minor units to avoid floating-point issues.
+ */
 export interface Money {
   amountMinor: bigint;
   currency: CurrencyCode;
 }
 
+/**
+ * Creates a validated `Money` value object.
+ */
 export const createMoney = (amountMinor: number | bigint, currency: string): Money => {
   const normalizedAmount = normalizeAmount(amountMinor);
 
@@ -22,6 +31,9 @@ export const createMoney = (amountMinor: number | bigint, currency: string): Mon
   };
 };
 
+/**
+ * Normalizes and validates an ISO-4217 currency code.
+ */
 export const normalizeCurrency = (currency: string): CurrencyCode => {
   const normalizedCurrency = currency.trim().toUpperCase();
 

@@ -1,3 +1,6 @@
+/**
+ * In-memory cursor storage used by the sync engine in tests and local wiring.
+ */
 export class InMemorySyncStateRepository {
   private cursor: string | null;
 

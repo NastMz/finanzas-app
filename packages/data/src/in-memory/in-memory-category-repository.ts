@@ -1,6 +1,9 @@
 import type { Category } from "@finanzas/domain";
 import type { CategoryRepository } from "@finanzas/application";
 
+/**
+ * In-memory implementation of `CategoryRepository` for tests and local wiring.
+ */
 export class InMemoryCategoryRepository implements CategoryRepository {
   private readonly categories = new Map<string, Category>();
 
