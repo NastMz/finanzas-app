@@ -47,4 +47,3 @@ const readCategoryType = (value: unknown, changeId: string): CategoryType => {
 
   throw new SyncError(`Invalid category type in change ${changeId}.`);
 };
-

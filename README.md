@@ -22,5 +22,6 @@ Bootstrap inicial del proyecto basado en `ARCHITECTURE.md` y los ADR aprobados.
 ```bash
 npm install
 npm run typecheck
+npm run lint
 npm run test
 ```

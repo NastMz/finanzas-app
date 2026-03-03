@@ -49,4 +49,3 @@ const readAccountType = (value: unknown, changeId: string): AccountType => {
 
   throw new SyncError(`Invalid account type in change ${changeId}.`);
 };
-

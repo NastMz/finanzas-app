@@ -130,4 +130,3 @@ describe("deleteTransaction", () => {
     ).rejects.toBeInstanceOf(ApplicationError);
   });
 });
-

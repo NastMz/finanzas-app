@@ -103,4 +103,3 @@ const readTags = (value: unknown, changeId: string): string[] => {
 
   return tags;
 };
-

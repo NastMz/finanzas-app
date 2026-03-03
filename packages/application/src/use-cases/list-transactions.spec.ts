@@ -182,4 +182,3 @@ describe("listTransactions", () => {
     ).rejects.toBeInstanceOf(ApplicationError);
   });
 });
-

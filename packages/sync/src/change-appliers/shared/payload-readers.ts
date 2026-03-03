@@ -62,4 +62,3 @@ export const readOptionalDate = (
 export const readVersion = (value: string | number | undefined): number | null => {
   return typeof value === "number" ? value : null;
 };
-
