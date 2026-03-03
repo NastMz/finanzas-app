@@ -1,0 +1,10 @@
+{
+  "name": "@finanzas/application",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "exports": "./src/index.ts",
+  "dependencies": {
+    "@finanzas/domain": "0.1.0"
+  }
+}
