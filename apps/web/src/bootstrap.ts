@@ -7,7 +7,13 @@ import {
   type ListTransactionsInput,
 } from "@finanzas/application";
 import { createAccount } from "@finanzas/domain";
-import { syncNow as runSyncNow, type SyncApiClient, type SyncChange } from "@finanzas/sync";
+import {
+  createCompositeSyncChangeApplier,
+  createTransactionSyncChangeApplier,
+  syncNow as runSyncNow,
+  type SyncApiClient,
+  type SyncChange,
+} from "@finanzas/sync";
 import {
   FixedClock,
   InMemoryAccountRepository,
@@ -42,6 +48,13 @@ export const createWebBootstrap = (): WebBootstrap => {
   const syncState = new InMemorySyncStateRepository("0");
   const clock = new FixedClock(now);
   const remoteChanges: SyncChange[] = [];
+  const changeApplier = createCompositeSyncChangeApplier({
+    appliersByEntityType: {
+      transaction: createTransactionSyncChangeApplier({
+        transactions,
+      }),
+    },
+  });
 
   const syncApi: SyncApiClient = {
     async push(request) {
@@ -132,9 +145,7 @@ export const createWebBootstrap = (): WebBootstrap => {
         outbox,
         api: syncApi,
         syncState,
-        changeApplier: {
-          async apply(_changes) {},
-        },
+        changeApplier,
         deviceId: "web-local-device",
       }),
   };

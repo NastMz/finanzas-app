@@ -1,5 +1,9 @@
 import type { OutboxOp, OutboxRepository } from "@finanzas/application";
 
+export type SyncEntityType = string;
+
+export type SyncOpType = "create" | "update" | "delete";
+
 export interface SyncPushRequest {
   deviceId: string;
   ops: OutboxOp[];
@@ -23,9 +27,9 @@ export interface SyncPullRequest {
 
 export interface SyncChange {
   changeId: string;
-  entityType: OutboxOp["entityType"];
+  entityType: SyncEntityType;
   entityId: string;
-  opType: OutboxOp["opType"];
+  opType: SyncOpType;
   payload: Record<string, unknown>;
   serverVersion?: string | number;
   serverTimestamp: Date;
