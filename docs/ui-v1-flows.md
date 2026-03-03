@@ -125,8 +125,8 @@ Estos contratos son de capa UI; se mapean a `commands`/`queries` existentes.
 - `querySyncStatus()` -> estado visual de sincronizacion.
 - `commandSyncNow()` -> disparo manual.
 
-Nota: `queryHomeSummary` y `querySyncStatus` aun no existen como use case dedicado;
-se implementan cuando se construya la primera pantalla que los necesite.
+Nota: `queryHomeSummary` ya puede mapearse con `GetAccountSummary` (por cuenta/rango).
+`querySyncStatus` aun no existe como use case dedicado.
 
 ## 7. Anti-patrones a evitar
 

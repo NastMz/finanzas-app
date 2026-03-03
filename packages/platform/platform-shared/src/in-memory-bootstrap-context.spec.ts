@@ -31,4 +31,32 @@ describe("createInMemoryBootstrapContext", () => {
       categoryResult.category.id,
     ]);
   });
+
+  it("exposes account summary via query facade", async () => {
+    const bootstrap = createInMemoryBootstrap({
+      defaultDeviceId: "platform-context-device",
+    });
+    const context = createInMemoryBootstrapContext(bootstrap);
+
+    await context.commands.addTransaction({
+      accountId: "acc-main",
+      amountMinor: -45000,
+      currency: "COP",
+      date: new Date("2026-03-03T10:00:00.000Z"),
+      categoryId: "food",
+    });
+
+    const summary = await context.queries.getAccountSummary({
+      accountId: "acc-main",
+      from: new Date("2026-03-01T00:00:00.000Z"),
+      to: new Date("2026-03-31T23:59:59.999Z"),
+    });
+
+    expect(summary.transactionCount).toBe(1);
+    expect(summary.totals).toEqual({
+      incomeMinor: 0n,
+      expenseMinor: 45000n,
+      netMinor: -45000n,
+    });
+  });
 });

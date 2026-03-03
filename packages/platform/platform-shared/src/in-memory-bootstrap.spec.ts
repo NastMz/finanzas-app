@@ -240,6 +240,63 @@ describe("createInMemoryBootstrap", () => {
     ).toEqual([categoryResult.category.id]);
   });
 
+  it("exposes account summary query for the home slice", async () => {
+    const app = createBootstrap();
+
+    await app.addTransaction(
+      createTransactionInputFixture({
+        amountMinor: -120000,
+        categoryId: "food",
+        date: new Date("2026-03-03T10:00:00.000Z"),
+      }),
+    );
+
+    await app.addTransaction(
+      createTransactionInputFixture({
+        amountMinor: 300000,
+        categoryId: "income",
+        date: new Date("2026-03-02T10:00:00.000Z"),
+      }),
+    );
+
+    await app.addTransaction(
+      createTransactionInputFixture({
+        amountMinor: -50000,
+        categoryId: "transport",
+        date: new Date("2026-03-03T12:00:00.000Z"),
+      }),
+    );
+
+    const summary = await app.getAccountSummary({
+      accountId: "acc-main",
+      from: new Date("2026-03-01T00:00:00.000Z"),
+      to: new Date("2026-03-31T23:59:59.999Z"),
+      recentLimit: 2,
+      topCategoriesLimit: 2,
+    });
+
+    expect(summary.transactionCount).toBe(3);
+    expect(summary.totals).toEqual({
+      incomeMinor: 300000n,
+      expenseMinor: 170000n,
+      netMinor: 130000n,
+    });
+    expect(summary.topExpenseCategories).toEqual([
+      {
+        categoryId: "food",
+        expenseMinor: 120000n,
+      },
+      {
+        categoryId: "transport",
+        expenseMinor: 50000n,
+      },
+    ]);
+    expect(summary.recentTransactions.map((transaction) => transaction.categoryId)).toEqual([
+      "transport",
+      "food",
+    ]);
+  });
+
   it("fails when deleting a missing transaction", async () => {
     const app = createBootstrap();
 

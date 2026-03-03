@@ -6,6 +6,7 @@ export * from "./use-cases/add-transaction.js";
 export * from "./use-cases/delete-account.js";
 export * from "./use-cases/delete-category.js";
 export * from "./use-cases/delete-transaction.js";
+export * from "./use-cases/get-account-summary.js";
 export * from "./use-cases/list-accounts.js";
 export * from "./use-cases/list-categories.js";
 export * from "./use-cases/list-transactions.js";

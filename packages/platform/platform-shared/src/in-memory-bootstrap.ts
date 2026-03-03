@@ -5,6 +5,7 @@ import {
   deleteAccount,
   deleteCategory,
   deleteTransaction,
+  getAccountSummary,
   listAccounts,
   listCategories,
   listTransactions,
@@ -18,6 +19,7 @@ import {
   type DeleteAccountInput,
   type DeleteCategoryInput,
   type DeleteTransactionInput,
+  type GetAccountSummaryInput,
   type ListAccountsInput,
   type ListCategoriesInput,
   type ListTransactionsInput,
@@ -54,6 +56,9 @@ export interface InMemoryBootstrap {
   listAccounts(input?: ListAccountsInput): ReturnType<typeof listAccounts>;
   listCategories(input?: ListCategoriesInput): ReturnType<typeof listCategories>;
   listTransactions(input: ListTransactionsInput): ReturnType<typeof listTransactions>;
+  getAccountSummary(
+    input: GetAccountSummaryInput,
+  ): ReturnType<typeof getAccountSummary>;
   syncNow(): ReturnType<typeof runSyncNow>;
 }
 
@@ -210,6 +215,14 @@ export const createInMemoryBootstrap = (
       ),
     listTransactions: (input: ListTransactionsInput) =>
       listTransactions(
+        {
+          accounts,
+          transactions,
+        },
+        input,
+      ),
+    getAccountSummary: (input: GetAccountSummaryInput) =>
+      getAccountSummary(
         {
           accounts,
           transactions,
