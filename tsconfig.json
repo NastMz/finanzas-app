@@ -17,6 +17,9 @@
       ],
       "@finanzas/data": [
         "packages/data/src/index.ts"
+      ],
+      "@finanzas/sync": [
+        "packages/sync/src/index.ts"
       ]
     }
   },

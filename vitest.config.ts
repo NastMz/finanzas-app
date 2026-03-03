@@ -13,6 +13,7 @@ export default defineConfig({
       "@finanzas/domain": resolve(currentDirectory, "packages/domain/src/index.ts"),
       "@finanzas/application": resolve(currentDirectory, "packages/application/src/index.ts"),
       "@finanzas/data": resolve(currentDirectory, "packages/data/src/index.ts"),
+      "@finanzas/sync": resolve(currentDirectory, "packages/sync/src/index.ts"),
     },
   },
 });

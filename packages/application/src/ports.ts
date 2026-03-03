@@ -33,6 +33,9 @@ export interface OutboxOp {
 export interface OutboxRepository {
   append(op: OutboxOp): Promise<void>;
   listPending(): Promise<OutboxOp[]>;
+  markAsSent(opIds: string[]): Promise<void>;
+  markAsAcked(opIds: string[]): Promise<void>;
+  markAsFailed(opIds: string[], errorMessage: string): Promise<void>;
 }
 
 export interface Clock {
