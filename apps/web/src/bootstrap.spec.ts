@@ -1,13 +1,19 @@
 import { describe, expect, it } from "vitest";
 
 import { ApplicationError } from "@finanzas/application";
-import { SequenceIdGenerator } from "@finanzas/data";
 import { DomainError } from "@finanzas/domain";
-import { SyncError, type SyncApiClient } from "@finanzas/sync";
+import type { SyncApiClient } from "@finanzas/sync";
 
+import { runSharedInMemoryBootstrapTests } from "../../shared/test/in-memory-bootstrap-shared.spec-helper.js";
 import { createWebBootstrap } from "./bootstrap.js";
 
 describe("createWebBootstrap", () => {
+  runSharedInMemoryBootstrapTests({
+    createBootstrap: (options) => createWebBootstrap(options),
+    ulidDeviceId: "Device Web 01",
+    deterministicDeviceId: "Device Web 01",
+  });
+
   it("runs full transaction lifecycle and syncs changes", async () => {
     const app = createWebBootstrap();
     const transactionDate = new Date("2026-03-02T10:00:00.000Z");
@@ -69,40 +75,6 @@ describe("createWebBootstrap", () => {
     expect(secondSync.nextCursor).toBe("3");
   });
 
-  it("marks operations as failed when sync push throws", async () => {
-    const api: SyncApiClient = {
-      async push() {
-        throw new Error("Network unavailable");
-      },
-      async pull() {
-        return {
-          nextCursor: "0",
-          changes: [],
-        };
-      },
-    };
-
-    const app = createWebBootstrap({
-      syncApi: api,
-    });
-
-    await app.addTransaction({
-      accountId: "acc-main",
-      amountMinor: -120000,
-      currency: "COP",
-      date: new Date("2026-03-02T10:00:00.000Z"),
-      categoryId: "food",
-    });
-
-    await expect(app.syncNow()).rejects.toBeInstanceOf(SyncError);
-
-    const retrySync = await app.syncNow();
-    expect(retrySync.pushedOpIds).toEqual([]);
-    expect(retrySync.ackedOpIds).toEqual([]);
-    expect(retrySync.failedOpIds).toEqual([]);
-    expect(retrySync.nextCursor).toBe("0");
-  });
-
   it("reports failed operations when server ack is partial", async () => {
     const api: SyncApiClient = {
       async push(request) {
@@ -147,50 +119,6 @@ describe("createWebBootstrap", () => {
     expect(nextSync.ackedOpIds).toEqual([]);
     expect(nextSync.failedOpIds).toEqual([]);
     expect(nextSync.nextCursor).toBe("0");
-  });
-
-  it("generates purpose-scoped ids for entities and outbox ops", async () => {
-    const app = createWebBootstrap({
-      deviceId: "Device Web 01",
-      ids: new SequenceIdGenerator([
-        {
-          id: "acc-device-web-01-1",
-          purpose: "account",
-        },
-        {
-          id: "op-device-web-01-1",
-          purpose: "outbox-op",
-        },
-        {
-          id: "tx-device-web-01-1",
-          purpose: "transaction",
-        },
-        {
-          id: "op-device-web-01-2",
-          purpose: "outbox-op",
-        },
-      ]),
-    });
-
-    const accountResult = await app.addAccount({
-      name: "Cuenta secundaria",
-      type: "cash",
-      currency: "COP",
-    });
-
-    expect(accountResult.account.id).toBe("acc-device-web-01-1");
-    expect(accountResult.outboxOpId).toBe("op-device-web-01-1");
-
-    const transactionResult = await app.addTransaction({
-      accountId: accountResult.account.id,
-      amountMinor: -50000,
-      currency: "COP",
-      date: new Date("2026-03-02T11:00:00.000Z"),
-      categoryId: "misc",
-    });
-
-    expect(transactionResult.transaction.id).toBe("tx-device-web-01-1");
-    expect(transactionResult.outboxOpId).toBe("op-device-web-01-2");
   });
 
   it("fails when deleting a missing transaction", async () => {
