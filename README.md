@@ -25,3 +25,8 @@ npm run typecheck
 npm run lint
 npm run test
 ```
+
+## Git hooks
+
+- El hook `pre-commit` ejecuta `npm run lint:staged`.
+- `lint-staged` corre ESLint sobre archivos `*.ts` staged antes del commit.
