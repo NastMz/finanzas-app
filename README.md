@@ -32,3 +32,7 @@ npm run test
 - El hook `pre-commit` ejecuta `npm run lint:staged`.
 - El hook `pre-push` ejecuta `npm run typecheck && npm run test`.
 - `lint-staged` corre ESLint sobre archivos `*.ts` staged antes del commit.
+
+## UX v1
+
+- Flujos y lineamientos UI mobile-first: `docs/ui-v1-flows.md`.
