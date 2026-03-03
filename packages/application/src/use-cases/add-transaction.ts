@@ -63,7 +63,7 @@ export const addTransaction = async (
   }
 
   const now = dependencies.clock.now();
-  const transactionId = dependencies.ids.nextId();
+  const transactionId = dependencies.ids.nextId("transaction");
 
   const transaction = createTransaction(
     {
@@ -82,7 +82,7 @@ export const addTransaction = async (
 
   await dependencies.transactions.save(transaction);
 
-  const outboxOpId = dependencies.ids.nextId();
+  const outboxOpId = dependencies.ids.nextId("outbox-op");
   const outboxOperation: OutboxOp = {
     opId: outboxOpId,
     deviceId: dependencies.deviceId,

@@ -20,7 +20,7 @@ import {
   type UpdateCategoryInput,
   type UpdateTransactionInput,
 } from "@finanzas/application";
-import { syncNow as runSyncNow } from "@finanzas/sync";
+import { syncNow as runSyncNow, type SyncApiClient } from "@finanzas/sync";
 
 import { createInMemorySyncApi } from "./create-in-memory-sync-api.js";
 import { createSequenceIdGenerator } from "./create-sequence-id-generator.js";
@@ -44,11 +44,24 @@ export interface WebBootstrap {
   syncNow(): ReturnType<typeof runSyncNow>;
 }
 
-export const createWebBootstrap = (): WebBootstrap => {
+/**
+ * Optional dependency overrides for `createWebBootstrap`.
+ */
+export interface CreateWebBootstrapOptions {
+  syncApi?: SyncApiClient;
+  deviceId?: string;
+}
+
+export const createWebBootstrap = (
+  options: CreateWebBootstrapOptions = {},
+): WebBootstrap => {
   const { accounts, categories, transactions, outbox, syncState, clock, changeApplier } =
     createWebContext();
-  const syncApi = createInMemorySyncApi(clock);
-  const ids = createSequenceIdGenerator("web-");
+  const syncApi = options.syncApi ?? createInMemorySyncApi(clock);
+  const deviceId = options.deviceId ?? "web-local-device";
+  const ids = createSequenceIdGenerator({
+    namespace: deviceId,
+  });
 
   return {
     addAccount: (input: AddAccountInput) =>
@@ -58,7 +71,7 @@ export const createWebBootstrap = (): WebBootstrap => {
           outbox,
           clock,
           ids,
-          deviceId: "web-local-device",
+          deviceId,
         },
         input,
       ),
@@ -69,7 +82,7 @@ export const createWebBootstrap = (): WebBootstrap => {
           outbox,
           clock,
           ids,
-          deviceId: "web-local-device",
+          deviceId,
         },
         input,
       ),
@@ -80,7 +93,7 @@ export const createWebBootstrap = (): WebBootstrap => {
           outbox,
           clock,
           ids,
-          deviceId: "web-local-device",
+          deviceId,
         },
         input,
       ),
@@ -91,7 +104,7 @@ export const createWebBootstrap = (): WebBootstrap => {
           outbox,
           clock,
           ids,
-          deviceId: "web-local-device",
+          deviceId,
         },
         input,
       ),
@@ -102,7 +115,7 @@ export const createWebBootstrap = (): WebBootstrap => {
           outbox,
           clock,
           ids,
-          deviceId: "web-local-device",
+          deviceId,
         },
         input,
       ),
@@ -113,7 +126,7 @@ export const createWebBootstrap = (): WebBootstrap => {
           outbox,
           clock,
           ids,
-          deviceId: "web-local-device",
+          deviceId,
         },
         input,
       ),
@@ -125,7 +138,7 @@ export const createWebBootstrap = (): WebBootstrap => {
           outbox,
           clock,
           ids,
-          deviceId: "web-local-device",
+          deviceId,
         },
         input,
       ),
@@ -137,7 +150,7 @@ export const createWebBootstrap = (): WebBootstrap => {
           outbox,
           clock,
           ids,
-          deviceId: "web-local-device",
+          deviceId,
         },
         input,
       ),
@@ -148,7 +161,7 @@ export const createWebBootstrap = (): WebBootstrap => {
           outbox,
           clock,
           ids,
-          deviceId: "web-local-device",
+          deviceId,
         },
         input,
       ),
@@ -166,7 +179,7 @@ export const createWebBootstrap = (): WebBootstrap => {
         api: syncApi,
         syncState,
         changeApplier,
-        deviceId: "web-local-device",
+        deviceId,
       }),
   };
 };

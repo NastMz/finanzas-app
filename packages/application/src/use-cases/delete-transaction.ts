@@ -65,7 +65,7 @@ export const deleteTransaction = async (
 
   await dependencies.transactions.save(deletedTransaction);
 
-  const outboxOpId = dependencies.ids.nextId();
+  const outboxOpId = dependencies.ids.nextId("outbox-op");
   const outboxOperation: OutboxOp = {
     opId: outboxOpId,
     deviceId: dependencies.deviceId,

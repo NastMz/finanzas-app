@@ -84,7 +84,7 @@ export const updateAccount = async (
 
   await dependencies.accounts.save(updatedAccount);
 
-  const outboxOpId = dependencies.ids.nextId();
+  const outboxOpId = dependencies.ids.nextId("outbox-op");
   const outboxOperation: OutboxOp = {
     opId: outboxOpId,
     deviceId: dependencies.deviceId,

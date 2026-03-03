@@ -47,7 +47,7 @@ export const addAccount = async (
   input: AddAccountInput,
 ): Promise<AddAccountResult> => {
   const now = dependencies.clock.now();
-  const accountId = dependencies.ids.nextId();
+  const accountId = dependencies.ids.nextId("account");
   const existingAccount = await dependencies.accounts.findById(accountId);
 
   if (existingAccount) {
@@ -65,7 +65,7 @@ export const addAccount = async (
 
   await dependencies.accounts.save(account);
 
-  const outboxOpId = dependencies.ids.nextId();
+  const outboxOpId = dependencies.ids.nextId("outbox-op");
   const outboxOperation: OutboxOp = {
     opId: outboxOpId,
     deviceId: dependencies.deviceId,

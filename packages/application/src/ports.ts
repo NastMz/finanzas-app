@@ -70,8 +70,13 @@ export interface Clock {
 }
 
 /**
+ * Purpose discriminator for generated identifiers.
+ */
+export type IdPurpose = "account" | "category" | "transaction" | "outbox-op";
+
+/**
  * Identifier generator abstraction for deterministic and platform-specific ids.
  */
 export interface IdGenerator {
-  nextId(): string;
+  nextId(purpose?: IdPurpose): string;
 }

@@ -46,7 +46,7 @@ export const addCategory = async (
   input: AddCategoryInput,
 ): Promise<AddCategoryResult> => {
   const now = dependencies.clock.now();
-  const categoryId = dependencies.ids.nextId();
+  const categoryId = dependencies.ids.nextId("category");
   const existingCategory = await dependencies.categories.findById(categoryId);
 
   if (existingCategory) {
@@ -63,7 +63,7 @@ export const addCategory = async (
 
   await dependencies.categories.save(category);
 
-  const outboxOpId = dependencies.ids.nextId();
+  const outboxOpId = dependencies.ids.nextId("outbox-op");
   const outboxOperation: OutboxOp = {
     opId: outboxOpId,
     deviceId: dependencies.deviceId,

@@ -122,7 +122,7 @@ export const updateTransaction = async (
 
   await dependencies.transactions.save(updatedTransaction);
 
-  const outboxOpId = dependencies.ids.nextId();
+  const outboxOpId = dependencies.ids.nextId("outbox-op");
   const outboxOperation: OutboxOp = {
     opId: outboxOpId,
     deviceId: dependencies.deviceId,

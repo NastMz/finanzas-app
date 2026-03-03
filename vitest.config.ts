@@ -6,7 +6,7 @@ const currentDirectory = dirname(fileURLToPath(import.meta.url));
 
 export default defineConfig({
   test: {
-    include: ["packages/**/*.spec.ts"],
+    include: ["packages/**/*.spec.ts", "apps/**/*.spec.ts"],
   },
   resolve: {
     alias: {

@@ -65,7 +65,7 @@ export const deleteCategory = async (
 
   await dependencies.categories.save(deletedCategory);
 
-  const outboxOpId = dependencies.ids.nextId();
+  const outboxOpId = dependencies.ids.nextId("outbox-op");
   const outboxOperation: OutboxOp = {
     opId: outboxOpId,
     deviceId: dependencies.deviceId,

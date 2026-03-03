@@ -65,7 +65,7 @@ export const deleteAccount = async (
 
   await dependencies.accounts.save(deletedAccount);
 
-  const outboxOpId = dependencies.ids.nextId();
+  const outboxOpId = dependencies.ids.nextId("outbox-op");
   const outboxOperation: OutboxOp = {
     opId: outboxOpId,
     deviceId: dependencies.deviceId,
