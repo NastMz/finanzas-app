@@ -5,6 +5,8 @@ import {
   deleteAccount,
   deleteCategory,
   deleteTransaction,
+  listAccounts,
+  listCategories,
   listTransactions,
   updateAccount,
   updateCategory,
@@ -16,6 +18,8 @@ import {
   type DeleteAccountInput,
   type DeleteCategoryInput,
   type DeleteTransactionInput,
+  type ListAccountsInput,
+  type ListCategoriesInput,
   type ListTransactionsInput,
   type UpdateAccountInput,
   type UpdateCategoryInput,
@@ -47,6 +51,8 @@ export interface InMemoryBootstrap {
   deleteTransaction(
     input: DeleteTransactionInput,
   ): ReturnType<typeof deleteTransaction>;
+  listAccounts(input?: ListAccountsInput): ReturnType<typeof listAccounts>;
+  listCategories(input?: ListCategoriesInput): ReturnType<typeof listCategories>;
   listTransactions(input: ListTransactionsInput): ReturnType<typeof listTransactions>;
   syncNow(): ReturnType<typeof runSyncNow>;
 }
@@ -185,6 +191,20 @@ export const createInMemoryBootstrap = (
           clock,
           ids,
           deviceId,
+        },
+        input,
+      ),
+    listAccounts: (input: ListAccountsInput = {}) =>
+      listAccounts(
+        {
+          accounts,
+        },
+        input,
+      ),
+    listCategories: (input: ListCategoriesInput = {}) =>
+      listCategories(
+        {
+          categories,
         },
         input,
       ),

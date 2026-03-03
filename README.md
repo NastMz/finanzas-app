@@ -7,8 +7,8 @@ Bootstrap inicial del proyecto basado en `ARCHITECTURE.md` y los ADR aprobados.
 - Monorepo con workspaces para apps y paquetes compartidos.
 - Paquetes implementados: `domain`, `application`, `data`, `sync`.
 - Casos de uso actuales:
-  - Cuentas: `AddAccount`, `UpdateAccount`, `DeleteAccount` (tombstones).
-  - Categorias: `AddCategory`, `UpdateCategory`, `DeleteCategory` (tombstones).
+  - Cuentas: `AddAccount`, `UpdateAccount`, `DeleteAccount` (tombstones), `ListAccounts`.
+  - Categorias: `AddCategory`, `UpdateCategory`, `DeleteCategory` (tombstones), `ListCategories`.
   - Transacciones: `AddTransaction`, `UpdateTransaction`, `DeleteTransaction` (tombstones), `ListTransactions`.
 - Motor inicial `SyncNow` con flujo `push/pull`, estados de outbox, cursor incremental y aplicacion de cambios remotos en cuentas/categorias/transacciones.
 - Adaptadores in-memory para validar flujo offline-first en desarrollo y pruebas.

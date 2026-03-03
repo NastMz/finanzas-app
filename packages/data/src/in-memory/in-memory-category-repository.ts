@@ -18,6 +18,10 @@ export class InMemoryCategoryRepository implements CategoryRepository {
     return category ? cloneCategory(category) : null;
   }
 
+  async listAll(): Promise<Category[]> {
+    return [...this.categories.values()].map(cloneCategory);
+  }
+
   async save(category: Category): Promise<void> {
     this.categories.set(category.id, cloneCategory(category));
   }

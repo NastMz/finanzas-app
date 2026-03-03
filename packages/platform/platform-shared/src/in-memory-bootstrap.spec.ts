@@ -210,6 +210,36 @@ describe("createInMemoryBootstrap", () => {
     expect(nextSync.nextCursor).toBe("0");
   });
 
+  it("lists accounts and categories using shared bootstrap wiring", async () => {
+    const app = createBootstrap();
+
+    const initialAccounts = await app.listAccounts();
+    expect(initialAccounts.accounts.map((account) => account.id)).toEqual([
+      "acc-main",
+    ]);
+
+    const categoryResult = await app.addCategory({
+      name: "Comida",
+      type: "expense",
+    });
+
+    const activeCategories = await app.listCategories();
+    expect(activeCategories.categories.map((category) => category.id)).toEqual([
+      categoryResult.category.id,
+    ]);
+
+    await app.deleteCategory({
+      categoryId: categoryResult.category.id,
+    });
+
+    const categoriesWithTombstones = await app.listCategories({
+      includeDeleted: true,
+    });
+    expect(
+      categoriesWithTombstones.categories.map((category) => category.id),
+    ).toEqual([categoryResult.category.id]);
+  });
+
   it("fails when deleting a missing transaction", async () => {
     const app = createBootstrap();
 

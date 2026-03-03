@@ -5,6 +5,7 @@ import type { Account, Category, Transaction } from "@finanzas/domain";
  */
 export interface AccountRepository {
   findById(id: string): Promise<Account | null>;
+  listAll(): Promise<Account[]>;
   save(account: Account): Promise<void>;
 }
 
@@ -13,6 +14,7 @@ export interface AccountRepository {
  */
 export interface CategoryRepository {
   findById(id: string): Promise<Category | null>;
+  listAll(): Promise<Category[]>;
   save(category: Category): Promise<void>;
 }
 

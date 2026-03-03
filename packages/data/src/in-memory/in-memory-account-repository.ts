@@ -18,6 +18,10 @@ export class InMemoryAccountRepository implements AccountRepository {
     return account ? cloneAccount(account) : null;
   }
 
+  async listAll(): Promise<Account[]> {
+    return [...this.accounts.values()].map(cloneAccount);
+  }
+
   async save(account: Account): Promise<void> {
     this.accounts.set(account.id, cloneAccount(account));
   }
