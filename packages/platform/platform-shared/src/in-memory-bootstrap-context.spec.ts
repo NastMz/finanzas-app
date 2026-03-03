@@ -58,5 +58,9 @@ describe("createInMemoryBootstrapContext", () => {
       expenseMinor: 45000n,
       netMinor: -45000n,
     });
+
+    const syncStatus = await context.queries.getSyncStatus();
+    expect(syncStatus.status).toBe("pending");
+    expect(syncStatus.counts.pending).toBe(1);
   });
 });

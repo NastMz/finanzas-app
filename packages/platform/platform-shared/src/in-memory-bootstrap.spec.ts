@@ -297,6 +297,34 @@ describe("createInMemoryBootstrap", () => {
     ]);
   });
 
+  it("reports sync status for account settings UI", async () => {
+    const app = createBootstrap({
+      syncApi: createFailingPushSyncApiClient("Offline"),
+    });
+
+    const initialStatus = await app.getSyncStatus();
+    expect(initialStatus.status).toBe("synced");
+    expect(initialStatus.counts).toEqual({
+      pending: 0,
+      sent: 0,
+      failed: 0,
+      acked: 0,
+    });
+
+    await app.addTransaction(createTransactionInputFixture());
+
+    const pendingStatus = await app.getSyncStatus();
+    expect(pendingStatus.status).toBe("pending");
+    expect(pendingStatus.counts.pending).toBe(1);
+
+    await expect(app.syncNow()).rejects.toBeInstanceOf(SyncError);
+
+    const errorStatus = await app.getSyncStatus();
+    expect(errorStatus.status).toBe("error");
+    expect(errorStatus.counts.failed).toBe(1);
+    expect(errorStatus.lastError).toContain("Offline");
+  });
+
   it("fails when deleting a missing transaction", async () => {
     const app = createBootstrap();
 

@@ -126,7 +126,7 @@ Estos contratos son de capa UI; se mapean a `commands`/`queries` existentes.
 - `commandSyncNow()` -> disparo manual.
 
 Nota: `queryHomeSummary` ya puede mapearse con `GetAccountSummary` (por cuenta/rango).
-`querySyncStatus` aun no existe como use case dedicado.
+`querySyncStatus` ya puede mapearse con `GetSyncStatus`.
 
 ## 7. Anti-patrones a evitar
 

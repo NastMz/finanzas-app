@@ -5,4 +5,5 @@ export * from "./change-appliers/category-sync-change-applier.js";
 export * from "./change-appliers/composite-sync-change-applier.js";
 export * from "./change-appliers/transaction-sync-change-applier.js";
 export * from "./adapters/in-memory-sync-api-client.js";
+export * from "./use-cases/get-sync-status.js";
 export * from "./use-cases/sync-now.js";

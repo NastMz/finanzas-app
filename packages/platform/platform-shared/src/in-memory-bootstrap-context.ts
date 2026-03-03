@@ -24,6 +24,7 @@ export interface InMemoryBootstrapQueries {
   listCategories: InMemoryBootstrap["listCategories"];
   listTransactions: InMemoryBootstrap["listTransactions"];
   getAccountSummary: InMemoryBootstrap["getAccountSummary"];
+  getSyncStatus: InMemoryBootstrap["getSyncStatus"];
 }
 
 /**
@@ -59,5 +60,6 @@ export const createInMemoryBootstrapContext = (
     listCategories: (input) => bootstrap.listCategories(input),
     listTransactions: (input) => bootstrap.listTransactions(input),
     getAccountSummary: (input) => bootstrap.getAccountSummary(input),
+    getSyncStatus: () => bootstrap.getSyncStatus(),
   },
 });

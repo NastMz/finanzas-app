@@ -30,6 +30,7 @@ import {
 import { createUlidIdGenerator } from "@finanzas/data";
 import {
   createInMemorySyncApiClient,
+  getSyncStatus as runGetSyncStatus,
   syncNow as runSyncNow,
   type SyncApiClient,
 } from "@finanzas/sync";
@@ -59,6 +60,7 @@ export interface InMemoryBootstrap {
   getAccountSummary(
     input: GetAccountSummaryInput,
   ): ReturnType<typeof getAccountSummary>;
+  getSyncStatus(): ReturnType<typeof runGetSyncStatus>;
   syncNow(): ReturnType<typeof runSyncNow>;
 }
 
@@ -229,6 +231,11 @@ export const createInMemoryBootstrap = (
         },
         input,
       ),
+    getSyncStatus: () =>
+      runGetSyncStatus({
+        outbox,
+        syncState,
+      }),
     syncNow: () =>
       runSyncNow({
         outbox,

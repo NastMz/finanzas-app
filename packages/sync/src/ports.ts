@@ -97,3 +97,18 @@ export interface SyncNowDependencies {
   changeApplier: SyncChangeApplier;
   deviceId: string;
 }
+
+/**
+ * Read-only outbox contract required by sync status queries.
+ */
+export interface SyncStatusOutboxRepository {
+  listAll(): Promise<OutboxOp[]>;
+}
+
+/**
+ * Runtime dependencies required to execute `getSyncStatus`.
+ */
+export interface GetSyncStatusDependencies {
+  outbox: SyncStatusOutboxRepository;
+  syncState: SyncStateRepository;
+}

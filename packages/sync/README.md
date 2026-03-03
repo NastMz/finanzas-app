@@ -23,4 +23,7 @@ Estructura recomendada:
 - `change-appliers/shared/*`: utilidades compartidas de payload
 - `use-cases/*`: orquestacion de sincronizacion
 
-El caso de uso principal es `syncNow`.
+Casos de uso:
+
+- `syncNow`: ejecuta el ciclo push/pull y aplica cambios remotos.
+- `getSyncStatus`: resume estado visual de sync (`synced`, `pending`, `error`) para UI.

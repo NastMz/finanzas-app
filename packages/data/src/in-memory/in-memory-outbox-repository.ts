@@ -71,6 +71,9 @@ export class InMemoryOutboxRepository implements OutboxRepository {
     }
   }
 
+  /**
+   * Lists all operations regardless of status.
+   */
   async listAll(): Promise<OutboxOp[]> {
     return this.operations.map(cloneOutboxOp);
   }
