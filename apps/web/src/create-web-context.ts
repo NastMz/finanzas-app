@@ -17,6 +17,7 @@ import {
 
 export interface WebContext {
   accounts: InMemoryAccountRepository;
+  categories: InMemoryCategoryRepository;
   transactions: InMemoryTransactionRepository;
   outbox: InMemoryOutboxRepository;
   syncState: InMemorySyncStateRepository;
@@ -60,6 +61,7 @@ export const createWebContext = (now = new Date()): WebContext => {
 
   return {
     accounts,
+    categories,
     transactions,
     outbox,
     syncState,

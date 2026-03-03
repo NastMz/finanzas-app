@@ -1,7 +1,11 @@
 import {
+  addAccount,
+  addCategory,
   addTransaction,
   deleteTransaction,
   listTransactions,
+  type AddAccountInput,
+  type AddCategoryInput,
   type AddTransactionInput,
   type DeleteTransactionInput,
   type ListTransactionsInput,
@@ -13,6 +17,8 @@ import { createSequenceIdGenerator } from "./create-sequence-id-generator.js";
 import { createWebContext } from "./create-web-context.js";
 
 export interface WebBootstrap {
+  addAccount(input: AddAccountInput): ReturnType<typeof addAccount>;
+  addCategory(input: AddCategoryInput): ReturnType<typeof addCategory>;
   addTransaction(input: AddTransactionInput): ReturnType<typeof addTransaction>;
   deleteTransaction(
     input: DeleteTransactionInput,
@@ -22,12 +28,34 @@ export interface WebBootstrap {
 }
 
 export const createWebBootstrap = (): WebBootstrap => {
-  const { accounts, transactions, outbox, syncState, clock, changeApplier } =
+  const { accounts, categories, transactions, outbox, syncState, clock, changeApplier } =
     createWebContext();
   const syncApi = createInMemorySyncApi(clock);
   const ids = createSequenceIdGenerator("web-");
 
   return {
+    addAccount: (input: AddAccountInput) =>
+      addAccount(
+        {
+          accounts,
+          outbox,
+          clock,
+          ids,
+          deviceId: "web-local-device",
+        },
+        input,
+      ),
+    addCategory: (input: AddCategoryInput) =>
+      addCategory(
+        {
+          categories,
+          outbox,
+          clock,
+          ids,
+          deviceId: "web-local-device",
+        },
+        input,
+      ),
     addTransaction: (input: AddTransactionInput) =>
       addTransaction(
         {

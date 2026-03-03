@@ -28,7 +28,7 @@ export interface TransactionRepository {
 /**
  * Entity types currently supported in the local outbox.
  */
-export type OutboxEntityType = "transaction";
+export type OutboxEntityType = "account" | "category" | "transaction";
 
 export type OutboxOpType = "create" | "update" | "delete";
 
