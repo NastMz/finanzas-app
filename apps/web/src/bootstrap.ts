@@ -2,13 +2,21 @@ import {
   addAccount,
   addCategory,
   addTransaction,
+  deleteAccount,
+  deleteCategory,
   deleteTransaction,
   listTransactions,
+  updateAccount,
+  updateCategory,
   type AddAccountInput,
   type AddCategoryInput,
   type AddTransactionInput,
+  type DeleteAccountInput,
+  type DeleteCategoryInput,
   type DeleteTransactionInput,
   type ListTransactionsInput,
+  type UpdateAccountInput,
+  type UpdateCategoryInput,
 } from "@finanzas/application";
 import { syncNow as runSyncNow } from "@finanzas/sync";
 
@@ -18,7 +26,11 @@ import { createWebContext } from "./create-web-context.js";
 
 export interface WebBootstrap {
   addAccount(input: AddAccountInput): ReturnType<typeof addAccount>;
+  updateAccount(input: UpdateAccountInput): ReturnType<typeof updateAccount>;
+  deleteAccount(input: DeleteAccountInput): ReturnType<typeof deleteAccount>;
   addCategory(input: AddCategoryInput): ReturnType<typeof addCategory>;
+  updateCategory(input: UpdateCategoryInput): ReturnType<typeof updateCategory>;
+  deleteCategory(input: DeleteCategoryInput): ReturnType<typeof deleteCategory>;
   addTransaction(input: AddTransactionInput): ReturnType<typeof addTransaction>;
   deleteTransaction(
     input: DeleteTransactionInput,
@@ -45,8 +57,52 @@ export const createWebBootstrap = (): WebBootstrap => {
         },
         input,
       ),
+    updateAccount: (input: UpdateAccountInput) =>
+      updateAccount(
+        {
+          accounts,
+          outbox,
+          clock,
+          ids,
+          deviceId: "web-local-device",
+        },
+        input,
+      ),
+    deleteAccount: (input: DeleteAccountInput) =>
+      deleteAccount(
+        {
+          accounts,
+          outbox,
+          clock,
+          ids,
+          deviceId: "web-local-device",
+        },
+        input,
+      ),
     addCategory: (input: AddCategoryInput) =>
       addCategory(
+        {
+          categories,
+          outbox,
+          clock,
+          ids,
+          deviceId: "web-local-device",
+        },
+        input,
+      ),
+    updateCategory: (input: UpdateCategoryInput) =>
+      updateCategory(
+        {
+          categories,
+          outbox,
+          clock,
+          ids,
+          deviceId: "web-local-device",
+        },
+        input,
+      ),
+    deleteCategory: (input: DeleteCategoryInput) =>
+      deleteCategory(
         {
           categories,
           outbox,
