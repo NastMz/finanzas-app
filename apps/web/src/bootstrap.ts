@@ -9,6 +9,7 @@ import {
 import { createAccount } from "@finanzas/domain";
 import {
   createAccountSyncChangeApplier,
+  createCategorySyncChangeApplier,
   createCompositeSyncChangeApplier,
   createTransactionSyncChangeApplier,
   syncNow as runSyncNow,
@@ -18,6 +19,7 @@ import {
 import {
   FixedClock,
   InMemoryAccountRepository,
+  InMemoryCategoryRepository,
   InMemoryOutboxRepository,
   InMemorySyncStateRepository,
   InMemoryTransactionRepository,
@@ -45,6 +47,7 @@ export const createWebBootstrap = (): WebBootstrap => {
   ]);
 
   const transactions = new InMemoryTransactionRepository();
+  const categories = new InMemoryCategoryRepository();
   const outbox = new InMemoryOutboxRepository();
   const syncState = new InMemorySyncStateRepository("0");
   const clock = new FixedClock(now);
@@ -53,6 +56,9 @@ export const createWebBootstrap = (): WebBootstrap => {
     appliersByEntityType: {
       account: createAccountSyncChangeApplier({
         accounts,
+      }),
+      category: createCategorySyncChangeApplier({
+        categories,
       }),
       transaction: createTransactionSyncChangeApplier({
         transactions,

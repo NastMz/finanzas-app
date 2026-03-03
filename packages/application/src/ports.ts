@@ -1,8 +1,13 @@
-import type { Account, Transaction } from "@finanzas/domain";
+import type { Account, Category, Transaction } from "@finanzas/domain";
 
 export interface AccountRepository {
   findById(id: string): Promise<Account | null>;
   save(account: Account): Promise<void>;
+}
+
+export interface CategoryRepository {
+  findById(id: string): Promise<Category | null>;
+  save(category: Category): Promise<void>;
 }
 
 export interface TransactionRepository {

@@ -14,5 +14,6 @@ Appliers iniciales:
 
 - `createTransactionSyncChangeApplier`
 - `createAccountSyncChangeApplier`
+- `createCategorySyncChangeApplier`
 
 El caso de uso principal es `syncNow`.
