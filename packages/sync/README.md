@@ -16,4 +16,11 @@ Appliers iniciales:
 - `createAccountSyncChangeApplier`
 - `createCategorySyncChangeApplier`
 
+Estructura recomendada:
+
+- `change-appliers/*`: factories por entidad
+- `change-appliers/parsers/*`: parseo de snapshots por entidad
+- `change-appliers/shared/*`: utilidades compartidas de payload
+- `use-cases/*`: orquestacion de sincronizacion
+
 El caso de uso principal es `syncNow`.

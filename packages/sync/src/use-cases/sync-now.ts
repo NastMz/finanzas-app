@@ -1,6 +1,9 @@
 import { SyncError } from "../errors.js";
 import type { SyncNowDependencies } from "../ports.js";
 
+/**
+ * Result summary returned after a full sync cycle.
+ */
 export interface SyncNowResult {
   pushedOpIds: string[];
   ackedOpIds: string[];
@@ -9,6 +12,13 @@ export interface SyncNowResult {
   nextCursor: string;
 }
 
+/**
+ * Executes one sync cycle:
+ * 1) push pending outbox operations
+ * 2) update local outbox states
+ * 3) pull remote changes incrementally
+ * 4) apply pulled changes and persist next cursor
+ */
 export const syncNow = async (
   dependencies: SyncNowDependencies,
 ): Promise<SyncNowResult> => {
