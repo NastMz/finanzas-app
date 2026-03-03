@@ -23,6 +23,9 @@
       ],
       "@finanzas/platform-shared": [
         "packages/platform/platform-shared/src/index.ts"
+      ],
+      "@finanzas/platform-shared/testing": [
+        "packages/platform/platform-shared/src/platform-wrapper-bootstrap-smoke.test-helper.ts"
       ]
     }
   },

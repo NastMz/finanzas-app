@@ -1,6 +1,6 @@
 import { describe } from "vitest";
 
-import { runPlatformWrapperBootstrapSmokeTests } from "../../../packages/platform/platform-shared/src/platform-wrapper-bootstrap-smoke.test-helper.js";
+import { runPlatformWrapperBootstrapSmokeTests } from "@finanzas/platform-shared/testing";
 import { createWebBootstrap } from "./bootstrap.js";
 
 describe("createWebBootstrap", () => {
