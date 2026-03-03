@@ -1,10 +1,11 @@
 import type { Clock } from "@finanzas/application";
-import type { SyncApiClient, SyncChange } from "@finanzas/sync";
+
+import type { SyncApiClient, SyncChange } from "../ports.js";
 
 /**
- * Creates an in-memory sync backend used by local web bootstrap.
+ * Creates an in-memory sync backend adapter for local/dev environments.
  */
-export const createInMemorySyncApi = (clock: Clock): SyncApiClient => {
+export const createInMemorySyncApiClient = (clock: Clock): SyncApiClient => {
   const remoteChanges: SyncChange[] = [];
 
   return {

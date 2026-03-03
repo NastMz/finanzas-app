@@ -4,4 +4,5 @@ export * from "./change-appliers/account-sync-change-applier.js";
 export * from "./change-appliers/category-sync-change-applier.js";
 export * from "./change-appliers/composite-sync-change-applier.js";
 export * from "./change-appliers/transaction-sync-change-applier.js";
+export * from "./adapters/in-memory-sync-api-client.js";
 export * from "./use-cases/sync-now.js";

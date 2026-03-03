@@ -1,0 +1,12 @@
+{
+  "name": "@finanzas/desktop",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "dependencies": {
+    "@finanzas/application": "0.1.0",
+    "@finanzas/data": "0.1.0",
+    "@finanzas/domain": "0.1.0",
+    "@finanzas/sync": "0.1.0"
+  }
+}

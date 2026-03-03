@@ -28,9 +28,9 @@ import {
   type SyncApiClient,
 } from "@finanzas/sync";
 
-import { createWebContext } from "./create-web-context.js";
+import { createDesktopContext } from "./create-desktop-context.js";
 
-export interface WebBootstrap {
+export interface DesktopBootstrap {
   addAccount(input: AddAccountInput): ReturnType<typeof addAccount>;
   updateAccount(input: UpdateAccountInput): ReturnType<typeof updateAccount>;
   deleteAccount(input: DeleteAccountInput): ReturnType<typeof deleteAccount>;
@@ -49,21 +49,28 @@ export interface WebBootstrap {
 }
 
 /**
- * Optional dependency overrides for `createWebBootstrap`.
+ * Optional dependency overrides for `createDesktopBootstrap`.
  */
-export interface CreateWebBootstrapOptions {
+export interface CreateDesktopBootstrapOptions {
   syncApi?: SyncApiClient;
   deviceId?: string;
   ids?: IdGenerator;
 }
 
-export const createWebBootstrap = (
-  options: CreateWebBootstrapOptions = {},
-): WebBootstrap => {
-  const { accounts, categories, transactions, outbox, syncState, clock, changeApplier } =
-    createWebContext();
+export const createDesktopBootstrap = (
+  options: CreateDesktopBootstrapOptions = {},
+): DesktopBootstrap => {
+  const {
+    accounts,
+    categories,
+    transactions,
+    outbox,
+    syncState,
+    clock,
+    changeApplier,
+  } = createDesktopContext();
   const syncApi = options.syncApi ?? createInMemorySyncApiClient(clock);
-  const deviceId = options.deviceId ?? "web-local-device";
+  const deviceId = options.deviceId ?? "desktop-local-device";
   const ids =
     options.ids ??
     createUlidIdGenerator({

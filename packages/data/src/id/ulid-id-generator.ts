@@ -9,6 +9,9 @@ const DEFAULT_PREFIX_BY_PURPOSE: Record<IdPurpose, string> = {
 
 const CROCKFORD_BASE32 = "0123456789ABCDEFGHJKMNPQRSTVWXYZ";
 
+/**
+ * Optional overrides for ULID id generation.
+ */
 export interface CreateUlidIdGeneratorOptions {
   namespace?: string;
   prefixByPurpose?: Partial<Record<IdPurpose, string>>;
@@ -22,7 +25,7 @@ export interface CreateUlidIdGeneratorOptions {
 export const createUlidIdGenerator = (
   options: CreateUlidIdGeneratorOptions = {},
 ): IdGenerator => {
-  const namespace = normalizeSegment(options.namespace ?? "web");
+  const namespace = normalizeSegment(options.namespace ?? "id");
   const prefixByPurpose = {
     ...DEFAULT_PREFIX_BY_PURPOSE,
     ...(options.prefixByPurpose ?? {}),
