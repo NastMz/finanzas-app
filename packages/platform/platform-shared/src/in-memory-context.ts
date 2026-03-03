@@ -15,7 +15,10 @@ import {
   InMemoryTransactionRepository,
 } from "@finanzas/data";
 
-export interface DesktopContext {
+/**
+ * Shared in-memory context used by host bootstraps.
+ */
+export interface InMemoryAppContext {
   accounts: InMemoryAccountRepository;
   categories: InMemoryCategoryRepository;
   transactions: InMemoryTransactionRepository;
@@ -26,9 +29,9 @@ export interface DesktopContext {
 }
 
 /**
- * Creates the in-memory repositories and sync appliers used by desktop bootstrap.
+ * Creates in-memory repositories and sync appliers for local-first host wiring.
  */
-export const createDesktopContext = (now = new Date()): DesktopContext => {
+export const createInMemoryAppContext = (now = new Date()): InMemoryAppContext => {
   const accounts = new InMemoryAccountRepository([
     createAccount({
       id: "acc-main",

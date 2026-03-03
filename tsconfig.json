@@ -20,6 +20,9 @@
       ],
       "@finanzas/sync": [
         "packages/sync/src/index.ts"
+      ],
+      "@finanzas/platform-shared": [
+        "packages/platform/platform-shared/src/index.ts"
       ]
     }
   },

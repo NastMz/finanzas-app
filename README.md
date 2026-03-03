@@ -14,6 +14,7 @@ Bootstrap inicial del proyecto basado en `ARCHITECTURE.md` y los ADR aprobados.
 - Adaptadores in-memory para validar flujo offline-first en desarrollo y pruebas.
 - Estrategia de IDs por proposito para evitar strings genericos (`account`, `category`, `transaction`, `outbox-op`), con generacion ULID para ejecucion normal y secuencial deterministica para pruebas.
 - Utilidades compartidas para evitar duplicacion entre hosts: `createUlidIdGenerator` en `@finanzas/data` y `createInMemorySyncApiClient` en `@finanzas/sync`.
+- Bootstrap/context in-memory compartidos en `@finanzas/platform-shared` para `web` y `desktop`.
 - Pruebas unitarias iniciales con Vitest.
 
 ## Comandos
