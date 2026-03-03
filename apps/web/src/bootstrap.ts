@@ -8,6 +8,7 @@ import {
 } from "@finanzas/application";
 import { createAccount } from "@finanzas/domain";
 import {
+  createAccountSyncChangeApplier,
   createCompositeSyncChangeApplier,
   createTransactionSyncChangeApplier,
   syncNow as runSyncNow,
@@ -50,6 +51,9 @@ export const createWebBootstrap = (): WebBootstrap => {
   const remoteChanges: SyncChange[] = [];
   const changeApplier = createCompositeSyncChangeApplier({
     appliersByEntityType: {
+      account: createAccountSyncChangeApplier({
+        accounts,
+      }),
       transaction: createTransactionSyncChangeApplier({
         transactions,
       }),

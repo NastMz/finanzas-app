@@ -2,6 +2,7 @@ import type { Account, Transaction } from "@finanzas/domain";
 
 export interface AccountRepository {
   findById(id: string): Promise<Account | null>;
+  save(account: Account): Promise<void>;
 }
 
 export interface TransactionRepository {

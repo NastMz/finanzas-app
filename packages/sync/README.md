@@ -10,4 +10,9 @@ Motor de sincronizacion push/pull con estrategia local-first:
 - Aplica cambios remotos sobre repositorios locales mediante `SyncChangeApplier`.
 - Permite componer appliers por entidad con `createCompositeSyncChangeApplier`.
 
+Appliers iniciales:
+
+- `createTransactionSyncChangeApplier`
+- `createAccountSyncChangeApplier`
+
 El caso de uso principal es `syncNow`.
