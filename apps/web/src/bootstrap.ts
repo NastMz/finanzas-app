@@ -9,6 +9,7 @@ import {
   updateAccount,
   updateCategory,
   updateTransaction,
+  type IdGenerator,
   type AddAccountInput,
   type AddCategoryInput,
   type AddTransactionInput,
@@ -23,7 +24,7 @@ import {
 import { syncNow as runSyncNow, type SyncApiClient } from "@finanzas/sync";
 
 import { createInMemorySyncApi } from "./create-in-memory-sync-api.js";
-import { createSequenceIdGenerator } from "./create-sequence-id-generator.js";
+import { createUlidIdGenerator } from "./create-ulid-id-generator.js";
 import { createWebContext } from "./create-web-context.js";
 
 export interface WebBootstrap {
@@ -50,6 +51,7 @@ export interface WebBootstrap {
 export interface CreateWebBootstrapOptions {
   syncApi?: SyncApiClient;
   deviceId?: string;
+  ids?: IdGenerator;
 }
 
 export const createWebBootstrap = (
@@ -59,9 +61,11 @@ export const createWebBootstrap = (
     createWebContext();
   const syncApi = options.syncApi ?? createInMemorySyncApi(clock);
   const deviceId = options.deviceId ?? "web-local-device";
-  const ids = createSequenceIdGenerator({
-    namespace: deviceId,
-  });
+  const ids =
+    options.ids ??
+    createUlidIdGenerator({
+      namespace: deviceId,
+    });
 
   return {
     addAccount: (input: AddAccountInput) =>

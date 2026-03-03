@@ -5,6 +5,7 @@ import { DomainError } from "@finanzas/domain";
 import { SyncError, type SyncApiClient } from "@finanzas/sync";
 
 import { createWebBootstrap } from "./bootstrap.js";
+import { createSequenceIdGenerator } from "./create-sequence-id-generator.js";
 
 describe("createWebBootstrap", () => {
   it("runs full transaction lifecycle and syncs changes", async () => {
@@ -151,6 +152,9 @@ describe("createWebBootstrap", () => {
   it("generates purpose-scoped ids for entities and outbox ops", async () => {
     const app = createWebBootstrap({
       deviceId: "Device Web 01",
+      ids: createSequenceIdGenerator({
+        namespace: "Device Web 01",
+      }),
     });
 
     const accountResult = await app.addAccount({

@@ -13,7 +13,8 @@ export interface CreateSequenceIdGeneratorOptions {
 }
 
 /**
- * Creates a simple incremental id generator with independent sequences per purpose.
+ * Creates a deterministic incremental id generator with independent sequences per
+ * purpose, useful for tests and reproducible fixtures.
  */
 export const createSequenceIdGenerator = (
   options: CreateSequenceIdGeneratorOptions = {},

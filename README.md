@@ -12,7 +12,7 @@ Bootstrap inicial del proyecto basado en `ARCHITECTURE.md` y los ADR aprobados.
   - Transacciones: `AddTransaction`, `UpdateTransaction`, `DeleteTransaction` (tombstones), `ListTransactions`.
 - Motor inicial `SyncNow` con flujo `push/pull`, estados de outbox, cursor incremental y aplicacion de cambios remotos en cuentas/categorias/transacciones.
 - Adaptadores in-memory para validar flujo offline-first en desarrollo y pruebas.
-- Estrategia de IDs por proposito para evitar strings genericos (`account`, `category`, `transaction`, `outbox-op`).
+- Estrategia de IDs por proposito para evitar strings genericos (`account`, `category`, `transaction`, `outbox-op`), con generacion ULID para ejecucion normal y secuencial deterministica para pruebas.
 - Pruebas unitarias iniciales con Vitest.
 
 ## Comandos
