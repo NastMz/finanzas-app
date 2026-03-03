@@ -9,3 +9,4 @@ export * from "./use-cases/delete-transaction.js";
 export * from "./use-cases/list-transactions.js";
 export * from "./use-cases/update-account.js";
 export * from "./use-cases/update-category.js";
+export * from "./use-cases/update-transaction.js";

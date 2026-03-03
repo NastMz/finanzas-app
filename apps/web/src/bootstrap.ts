@@ -8,6 +8,7 @@ import {
   listTransactions,
   updateAccount,
   updateCategory,
+  updateTransaction,
   type AddAccountInput,
   type AddCategoryInput,
   type AddTransactionInput,
@@ -17,6 +18,7 @@ import {
   type ListTransactionsInput,
   type UpdateAccountInput,
   type UpdateCategoryInput,
+  type UpdateTransactionInput,
 } from "@finanzas/application";
 import { syncNow as runSyncNow } from "@finanzas/sync";
 
@@ -32,6 +34,9 @@ export interface WebBootstrap {
   updateCategory(input: UpdateCategoryInput): ReturnType<typeof updateCategory>;
   deleteCategory(input: DeleteCategoryInput): ReturnType<typeof deleteCategory>;
   addTransaction(input: AddTransactionInput): ReturnType<typeof addTransaction>;
+  updateTransaction(
+    input: UpdateTransactionInput,
+  ): ReturnType<typeof updateTransaction>;
   deleteTransaction(
     input: DeleteTransactionInput,
   ): ReturnType<typeof deleteTransaction>;
@@ -114,6 +119,18 @@ export const createWebBootstrap = (): WebBootstrap => {
       ),
     addTransaction: (input: AddTransactionInput) =>
       addTransaction(
+        {
+          accounts,
+          transactions,
+          outbox,
+          clock,
+          ids,
+          deviceId: "web-local-device",
+        },
+        input,
+      ),
+    updateTransaction: (input: UpdateTransactionInput) =>
+      updateTransaction(
         {
           accounts,
           transactions,

@@ -9,7 +9,7 @@ Bootstrap inicial del proyecto basado en `ARCHITECTURE.md` y los ADR aprobados.
 - Casos de uso actuales:
   - Cuentas: `AddAccount`, `UpdateAccount`, `DeleteAccount` (tombstones).
   - Categorias: `AddCategory`, `UpdateCategory`, `DeleteCategory` (tombstones).
-  - Transacciones: `AddTransaction`, `DeleteTransaction` (tombstones), `ListTransactions`.
+  - Transacciones: `AddTransaction`, `UpdateTransaction`, `DeleteTransaction` (tombstones), `ListTransactions`.
 - Motor inicial `SyncNow` con flujo `push/pull`, estados de outbox, cursor incremental y aplicacion de cambios remotos en cuentas/categorias/transacciones.
 - Adaptadores in-memory para validar flujo offline-first en desarrollo y pruebas.
 - Pruebas unitarias iniciales con Vitest.
