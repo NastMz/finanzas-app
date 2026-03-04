@@ -11,18 +11,21 @@
   "scripts": {
     "prepare": "husky",
     "typecheck": "tsc --noEmit",
-    "lint": "eslint . --ext .ts",
+    "lint": "eslint . --ext .ts,.tsx",
     "lint:fix": "npm run lint -- --fix",
     "lint:staged": "lint-staged",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "web:dev": "vite apps/web --config vite.config.ts"
   },
   "lint-staged": {
-    "!(*.config).ts": [
+    "!(*.config).{ts,tsx}": [
       "eslint --max-warnings=0 --fix"
     ]
   },
   "devDependencies": {
+    "@types/react": "^18.3.18",
+    "@types/react-dom": "^18.3.5",
     "@typescript-eslint/eslint-plugin": "^6.21.0",
     "@typescript-eslint/parser": "^6.21.0",
     "eslint": "^8.57.1",

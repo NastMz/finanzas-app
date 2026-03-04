@@ -1,0 +1,57 @@
+@import "@finanzas/ui/design-system/tokens.css";
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+* {
+  margin: 0;
+}
+
+html,
+body,
+#app {
+  min-height: 100%;
+}
+
+body {
+  background: var(--fz-color-bg-canvas);
+  color: var(--fz-color-text-primary);
+  font-family: var(--fz-font-family-sans);
+  font-size: var(--fz-font-size-md);
+  line-height: 1.45;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+img,
+picture,
+video,
+canvas,
+svg {
+  display: block;
+  max-width: 100%;
+}
+
+input,
+button,
+textarea,
+select {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+ul[role="list"],
+ol[role="list"] {
+  list-style: none;
+}
+
+:focus-visible {
+  outline: 2px solid var(--fz-color-brand-400);
+  outline-offset: 2px;
+}

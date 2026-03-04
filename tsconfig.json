@@ -3,6 +3,7 @@
     "target": "ES2022",
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
+    "jsx": "react-jsx",
     "strict": true,
     "noUncheckedIndexedAccess": true,
     "exactOptionalPropertyTypes": true,
@@ -24,6 +25,9 @@
       "@finanzas/ui": [
         "packages/ui/src/index.ts"
       ],
+      "@finanzas/ui/design-system": [
+        "packages/ui/src/design-system/index.ts"
+      ],
       "@finanzas/platform-shared": [
         "packages/platform/platform-shared/src/index.ts"
       ],
@@ -34,6 +38,10 @@
   },
   "include": [
     "packages/**/*.ts",
-    "apps/**/*.ts"
+    "packages/**/*.tsx",
+    "packages/**/*.d.ts",
+    "apps/**/*.ts",
+    "apps/**/*.tsx",
+    "apps/**/*.d.ts"
   ]
 }

@@ -1,13 +1,10 @@
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { defineConfig } from "vitest/config";
+import { defineConfig } from "vite";
 
 const currentDirectory = dirname(fileURLToPath(import.meta.url));
 
 export default defineConfig({
-  test: {
-    include: ["packages/**/*.spec.ts", "packages/**/*.spec.tsx", "apps/**/*.spec.ts", "apps/**/*.spec.tsx"],
-  },
   resolve: {
     alias: {
       "@finanzas/domain": resolve(currentDirectory, "packages/domain/src/index.ts"),

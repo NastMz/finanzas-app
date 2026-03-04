@@ -128,6 +128,7 @@ Estos contratos son de capa UI; se mapean a `commands`/`queries` existentes.
 Nota: `queryHomeSummary` ya puede mapearse con `GetAccountSummary` (por cuenta/rango).
 `querySyncStatus` ya puede mapearse con `GetSyncStatus`.
 Existe implementacion headless compartida (`createFinanzasUiService` en `@finanzas/ui`) con wrappers por host; `web` es el primer consumidor visual objetivo.
+La primera pantalla visual de `Inicio` ya existe en `apps/web` como componentes React con CSS Modules (`HomeScreen` + `loadHomeScreenHtml`).
 
 ## 7. Anti-patrones a evitar
 

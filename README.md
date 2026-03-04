@@ -18,6 +18,7 @@ Bootstrap inicial del proyecto basado en `ARCHITECTURE.md` y los ADR aprobados.
 - Bootstrap/context in-memory compartidos en `@finanzas/platform-shared` para `web`, `desktop` y `mobile`.
 - Contextos por host (`createWebContext`, `createDesktopContext`, `createMobileContext`) con separacion de `commands` y `queries` para facilitar composicion de UI.
 - Capa UI headless compartida en `@finanzas/ui` (`createFinanzasUiService`) y wrappers por host (`createWebUi`, `createMobileUi`) para materializar tabs v1 de forma web-first y reutilizable.
+- Sistema de diseño inicial compartido (tokens de color/espaciado/tipografia en `@finanzas/ui`) + reset global web, y Home en React refactorizada con componentes atómicos/reutilizables para un dashboard financiero consistente entre hosts.
 - Pruebas unitarias iniciales con Vitest.
 
 ## Comandos
@@ -27,6 +28,7 @@ npm install
 npm run typecheck
 npm run lint
 npm run test
+npm run web:dev
 ```
 
 ## Git hooks

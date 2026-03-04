@@ -1,0 +1,67 @@
+:root {
+  --fz-color-brand-300: #7dd3fc;
+  --fz-color-brand-400: #38bdf8;
+  --fz-color-brand-500: #0ea5e9;
+  --fz-color-brand-600: #0284c7;
+
+  --fz-color-bg-canvas: #070b16;
+  --fz-color-bg-elevated: #0a1222;
+  --fz-color-bg-surface: #0f172a;
+  --fz-color-bg-muted: #1e293b;
+
+  --fz-color-border-subtle: rgba(148, 163, 184, 0.14);
+  --fz-color-border-strong: rgba(148, 163, 184, 0.24);
+
+  --fz-color-text-primary: #f8fafc;
+  --fz-color-text-secondary: #cbd5e1;
+  --fz-color-text-muted: #94a3b8;
+
+  --fz-color-status-success: #86efac;
+  --fz-color-status-warning: #fde68a;
+  --fz-color-status-danger: #fecaca;
+  --fz-color-status-income: #86efac;
+  --fz-color-status-expense: #fda4af;
+
+  --fz-space-1: 0.25rem;
+  --fz-space-2: 0.5rem;
+  --fz-space-3: 0.75rem;
+  --fz-space-4: 1rem;
+  --fz-space-5: 1.25rem;
+  --fz-space-6: 1.5rem;
+  --fz-space-8: 2rem;
+  --fz-space-10: 2.5rem;
+
+  --fz-radius-sm: 0.5rem;
+  --fz-radius-md: 0.75rem;
+  --fz-radius-lg: 1rem;
+  --fz-radius-xl: 1.125rem;
+  --fz-radius-pill: 9999px;
+
+  --fz-font-family-sans:
+    Inter,
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    "Segoe UI",
+    sans-serif;
+  --fz-font-size-xs: 0.75rem;
+  --fz-font-size-sm: 0.875rem;
+  --fz-font-size-md: 1rem;
+  --fz-font-size-lg: 1.125rem;
+  --fz-font-size-xl: 1.5rem;
+  --fz-font-size-2xl: 1.875rem;
+
+  --fz-font-weight-regular: 400;
+  --fz-font-weight-medium: 500;
+  --fz-font-weight-semibold: 600;
+  --fz-font-weight-bold: 700;
+
+  --fz-letter-spacing-tight: -0.02em;
+  --fz-letter-spacing-normal: 0;
+  --fz-letter-spacing-wide: 0.12em;
+
+  --fz-shadow-card:
+    0 18px 44px rgba(2, 6, 23, 0.34),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  --fz-shadow-soft: 0 8px 24px rgba(2, 6, 23, 0.24);
+}
