@@ -27,7 +27,12 @@ export const RegisterCategoriesCard = ({
   const { expense, income } = splitCategories(categories);
 
   return (
-    <SurfaceCard title="Catálogo de categorías" subtitle={`${categories.length} disponibles`}>
+    <SurfaceCard
+      title="Catálogo de categorías"
+      subtitle={`${categories.length} disponibles`}
+      className={styles.catalogCard ?? ""}
+      contentClassName={styles.catalogContent ?? ""}
+    >
       <div className={styles.columns}>
         <section className={styles.column}>
           <h3 className={styles.title}>Gastos</h3>

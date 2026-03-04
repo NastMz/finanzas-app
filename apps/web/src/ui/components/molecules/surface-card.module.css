@@ -1,13 +1,32 @@
 .card {
+  position: relative;
+  overflow: hidden;
   border-radius: var(--fz-radius-xl);
-  border: 1px solid var(--fz-color-border-subtle);
-  background: linear-gradient(
-    180deg,
-    color-mix(in srgb, var(--fz-color-bg-surface) 84%, transparent) 0%,
-    color-mix(in srgb, var(--fz-color-bg-elevated) 88%, transparent) 100%
-  );
-  box-shadow: var(--fz-shadow-card);
-  padding: var(--fz-space-5);
+  border: 1px solid color-mix(in srgb, var(--fz-color-border-subtle) 82%, white);
+  background:
+    radial-gradient(
+      14rem 7rem at 116% -52%,
+      color-mix(in srgb, var(--fz-color-brand-500) 8%, transparent),
+      transparent 72%
+    ),
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--fz-color-bg-surface) 97%, transparent) 0%,
+      color-mix(in srgb, var(--fz-color-bg-elevated) 98%, transparent) 100%
+    );
+  box-shadow:
+    0 9px 20px rgba(2, 6, 23, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  padding: var(--fz-space-4);
+  transition: transform 140ms ease, border-color 170ms ease, box-shadow 200ms ease;
+}
+
+.card:hover {
+  transform: translateY(-0.5px);
+  border-color: color-mix(in srgb, var(--fz-color-brand-400) 20%, var(--fz-color-border-subtle));
+  box-shadow:
+    0 12px 24px rgba(2, 6, 23, 0.34),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
 .header {
@@ -15,23 +34,54 @@
   justify-content: space-between;
   align-items: baseline;
   gap: var(--fz-space-3);
-  margin-bottom: var(--fz-space-4);
+  margin-bottom: var(--fz-space-3);
+  min-width: 0;
 }
 
 .title {
   margin: 0;
-  font-size: var(--fz-font-size-md);
-  font-weight: var(--fz-font-weight-semibold);
-  letter-spacing: -0.01em;
+  font-size: 1rem;
+  font-weight: 720;
+  letter-spacing: -0.015em;
   color: var(--fz-color-text-primary);
+  text-wrap: balance;
 }
 
 .subtitle {
   margin: 0;
   font-size: var(--fz-font-size-xs);
   color: var(--fz-color-text-muted);
+  text-align: right;
+  white-space: nowrap;
 }
 
 .content {
   min-width: 0;
+}
+
+@media (max-width: 640px) {
+  .card {
+    padding: var(--fz-space-3);
+  }
+
+  .header {
+    align-items: flex-start;
+    flex-direction: column;
+    margin-bottom: var(--fz-space-3);
+  }
+
+  .subtitle {
+    text-align: left;
+    white-space: normal;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card {
+    transition: none;
+  }
+
+  .card:hover {
+    transform: none;
+  }
 }

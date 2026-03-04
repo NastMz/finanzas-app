@@ -1,26 +1,26 @@
 :root {
-  --fz-color-brand-300: #7dd3fc;
-  --fz-color-brand-400: #38bdf8;
-  --fz-color-brand-500: #0ea5e9;
-  --fz-color-brand-600: #0284c7;
+  --fz-color-brand-300: #7ddcff;
+  --fz-color-brand-400: #35c0ff;
+  --fz-color-brand-500: #148ce5;
+  --fz-color-brand-600: #0d6ebe;
 
-  --fz-color-bg-canvas: #070b16;
-  --fz-color-bg-elevated: #0a1222;
-  --fz-color-bg-surface: #0f172a;
-  --fz-color-bg-muted: #1e293b;
+  --fz-color-bg-canvas: #04070f;
+  --fz-color-bg-elevated: #0c1422;
+  --fz-color-bg-surface: #141f33;
+  --fz-color-bg-muted: #1b2b43;
 
-  --fz-color-border-subtle: rgba(148, 163, 184, 0.14);
-  --fz-color-border-strong: rgba(148, 163, 184, 0.24);
+  --fz-color-border-subtle: rgba(148, 163, 184, 0.16);
+  --fz-color-border-strong: rgba(148, 163, 184, 0.28);
 
   --fz-color-text-primary: #f8fafc;
   --fz-color-text-secondary: #cbd5e1;
   --fz-color-text-muted: #94a3b8;
 
-  --fz-color-status-success: #86efac;
-  --fz-color-status-warning: #fde68a;
-  --fz-color-status-danger: #fecaca;
-  --fz-color-status-income: #86efac;
-  --fz-color-status-expense: #fda4af;
+  --fz-color-status-success: #70ecb7;
+  --fz-color-status-warning: #f5d06f;
+  --fz-color-status-danger: #ff9aa6;
+  --fz-color-status-income: #70ecb7;
+  --fz-color-status-expense: #ff9aa6;
 
   --fz-space-1: 0.25rem;
   --fz-space-2: 0.5rem;
@@ -61,7 +61,7 @@
   --fz-letter-spacing-wide: 0.12em;
 
   --fz-shadow-card:
-    0 18px 44px rgba(2, 6, 23, 0.34),
+    0 16px 38px rgba(2, 6, 23, 0.42),
     inset 0 1px 0 rgba(255, 255, 255, 0.05);
-  --fz-shadow-soft: 0 8px 24px rgba(2, 6, 23, 0.24);
+  --fz-shadow-soft: 0 8px 24px rgba(2, 6, 23, 0.32);
 }

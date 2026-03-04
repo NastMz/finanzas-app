@@ -33,35 +33,53 @@ export const RegisterQuickAddCard = ({
   defaultDate,
   defaultCategoryId,
   categories,
-}: RegisterQuickAddCardProps): JSX.Element => (
-  <SurfaceCard title="Registro rápido" subtitle="Defaults listos para capturar">
-    <div className={styles.rows}>
-      <div className={styles.row}>
-        <span className={styles.label}>Monto</span>
-        <span className={styles.value}>—</span>
-      </div>
-      <div className={styles.row}>
-        <span className={styles.label}>Tipo</span>
-        <span className={styles.value}>Gasto</span>
-      </div>
-      <div className={styles.row}>
-        <span className={styles.label}>Cuenta</span>
-        <span className={styles.value}>{account.name}</span>
-      </div>
-      <div className={styles.row}>
-        <span className={styles.label}>Categoría sugerida</span>
-        <span className={styles.value}>
-          {resolveDefaultCategoryName(defaultCategoryId, categories)}
-        </span>
-      </div>
-      <div className={styles.row}>
-        <span className={styles.label}>Fecha</span>
-        <span className={styles.value}>{formatDateLabel(defaultDate)}</span>
-      </div>
-    </div>
+}: RegisterQuickAddCardProps): JSX.Element => {
+  const defaultCategoryName = resolveDefaultCategoryName(
+    defaultCategoryId,
+    categories,
+  );
 
-    <button type="button" className={styles.primaryAction}>
-      Registrar movimiento
-    </button>
-  </SurfaceCard>
-);
+  return (
+    <SurfaceCard
+      title="Registro rápido"
+      subtitle="Defaults listos para capturar"
+      className={styles.quickCard ?? ""}
+      contentClassName={styles.quickContent ?? ""}
+    >
+      <section className={styles.amountField} aria-label="Monto de transacción">
+        <span className={styles.amountLabel}>Monto</span>
+        <p className={styles.amountValue}>
+          <span className={styles.currency}>{account.currency}</span>
+          <span className={styles.amountPlaceholder}>—</span>
+        </p>
+      </section>
+
+      <div className={styles.fieldList}>
+        <div className={styles.inputRow}>
+          <span className={styles.label}>Tipo</span>
+          <span className={styles.value}>Gasto</span>
+          <span className={styles.affordance} aria-hidden="true">&gt;</span>
+        </div>
+        <div className={styles.inputRow}>
+          <span className={styles.label}>Cuenta</span>
+          <span className={styles.value}>{account.name}</span>
+          <span className={styles.affordance} aria-hidden="true">&gt;</span>
+        </div>
+        <div className={styles.inputRow}>
+          <span className={styles.label}>Categoría sugerida</span>
+          <span className={styles.value}>{defaultCategoryName}</span>
+          <span className={styles.affordance} aria-hidden="true">&gt;</span>
+        </div>
+        <div className={styles.inputRow}>
+          <span className={styles.label}>Fecha</span>
+          <span className={styles.value}>{formatDateLabel(defaultDate)}</span>
+          <span className={styles.affordance} aria-hidden="true">&gt;</span>
+        </div>
+      </div>
+
+      <button type="button" className={styles.primaryAction}>
+        Registrar movimiento
+      </button>
+    </SurfaceCard>
+  );
+};

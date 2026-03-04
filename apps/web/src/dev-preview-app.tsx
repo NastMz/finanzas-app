@@ -46,24 +46,27 @@ export const DevPreviewApp = ({
   return (
     <div className={styles.shell}>
       <nav className={styles.nav}>
-        <ul className={styles.tabs} role="list">
-          {tabConfig.map((tab) => (
-            <li key={tab.id}>
-              <button
-                type="button"
-                className={classNames(
-                  styles.tab,
-                  activeTab === tab.id ? styles.activeTab : undefined,
-                )}
-                onClick={() => {
-                  setActiveTab(tab.id);
-                }}
-              >
-                {tab.label}
-              </button>
-            </li>
-          ))}
-        </ul>
+        <div className={styles.navInner}>
+          <p className={styles.productLabel}>Finanzas App</p>
+          <ul className={styles.tabs} role="list">
+            {tabConfig.map((tab) => (
+              <li key={tab.id}>
+                <button
+                  type="button"
+                  className={classNames(
+                    styles.tab,
+                    activeTab === tab.id ? styles.activeTab : undefined,
+                  )}
+                  onClick={() => {
+                    setActiveTab(tab.id);
+                  }}
+                >
+                  {tab.label}
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
       </nav>
 
       {activeTab === "home" ? <HomeScreen viewModel={home} /> : null}

@@ -1,3 +1,23 @@
+.helperCard {
+  border-color: color-mix(in srgb, var(--fz-color-border-subtle) 78%, white);
+  box-shadow:
+    0 8px 18px rgba(2, 6, 23, 0.26),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+.helperCard:hover {
+  transform: none;
+  border-color: color-mix(in srgb, var(--fz-color-border-subtle) 82%, white);
+  box-shadow:
+    0 9px 18px rgba(2, 6, 23, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.helperContent {
+  display: grid;
+  align-content: start;
+}
+
 .chips {
   list-style: none;
   display: flex;
@@ -5,22 +25,48 @@
   gap: var(--fz-space-2);
 }
 
+.chipItem {
+  list-style: none;
+}
+
 .chip {
+  border: 1px solid transparent;
   border-radius: var(--fz-radius-pill);
-  padding: var(--fz-space-1) var(--fz-space-3);
+  padding: 0.42rem 0.78rem;
+  background: transparent;
+  font-size: 0.83rem;
+  font-weight: 670;
+  transition: transform 140ms ease, border-color 160ms ease, background-color 170ms ease;
+}
+
+.chip:hover {
+  transform: translateY(-0.5px);
+}
+
+.expense,
+.income {
+  border-radius: var(--fz-radius-pill);
   border: 1px solid var(--fz-color-border-subtle);
-  font-size: var(--fz-font-size-sm);
-  font-weight: var(--fz-font-weight-medium);
 }
 
 .expense {
-  color: var(--fz-color-status-expense);
-  background: color-mix(in srgb, var(--fz-color-status-expense) 16%, transparent);
+  color: color-mix(in srgb, var(--fz-color-status-expense) 90%, white);
+  background: color-mix(in srgb, var(--fz-color-status-expense) 14%, var(--fz-color-bg-surface));
+}
+
+.expense:hover {
+  border-color: color-mix(in srgb, var(--fz-color-status-expense) 38%, var(--fz-color-border-subtle));
+  background: color-mix(in srgb, var(--fz-color-status-expense) 20%, var(--fz-color-bg-surface));
 }
 
 .income {
-  color: var(--fz-color-status-income);
-  background: color-mix(in srgb, var(--fz-color-status-income) 16%, transparent);
+  color: color-mix(in srgb, var(--fz-color-status-income) 90%, white);
+  background: color-mix(in srgb, var(--fz-color-status-income) 14%, var(--fz-color-bg-surface));
+}
+
+.income:hover {
+  border-color: color-mix(in srgb, var(--fz-color-status-income) 38%, var(--fz-color-border-subtle));
+  background: color-mix(in srgb, var(--fz-color-status-income) 20%, var(--fz-color-bg-surface));
 }
 
 .empty {

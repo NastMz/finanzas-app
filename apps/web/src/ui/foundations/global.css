@@ -1,4 +1,14 @@
+@import url("https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&display=swap");
 @import "@finanzas/ui/design-system/tokens.css";
+
+:root {
+  --fz-font-family-sans:
+    "Manrope",
+    "Avenir Next",
+    "Segoe UI",
+    "SF Pro Text",
+    sans-serif;
+}
 
 *,
 *::before,
@@ -17,7 +27,13 @@ body,
 }
 
 body {
-  background: var(--fz-color-bg-canvas);
+  background:
+    radial-gradient(
+      50rem 24rem at 50% -26%,
+      color-mix(in srgb, var(--fz-color-brand-500) 6%, transparent),
+      transparent 74%
+    ),
+    var(--fz-color-bg-canvas);
   color: var(--fz-color-text-primary);
   font-family: var(--fz-font-family-sans);
   font-size: var(--fz-font-size-md);
@@ -44,6 +60,7 @@ select {
 
 button {
   cursor: pointer;
+  transition: transform 140ms ease, box-shadow 180ms ease, background-color 160ms ease;
 }
 
 ul[role="list"],
@@ -54,4 +71,18 @@ ol[role="list"] {
 :focus-visible {
   outline: 2px solid var(--fz-color-brand-400);
   outline-offset: 2px;
+}
+
+::selection {
+  background: color-mix(in srgb, var(--fz-color-brand-500) 34%, transparent);
+  color: var(--fz-color-text-primary);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0s !important;
+    transition-duration: 0s !important;
+  }
 }

@@ -29,25 +29,27 @@ export const HomeScreen = ({ viewModel }: HomeScreenProps): JSX.Element => (
       <HomeHeader
         account={viewModel.account}
         period={viewModel.period}
+        totals={viewModel.totals}
         sync={viewModel.sync}
       />
 
-      <section className={styles.grid}>
+      <section className={styles.statsSection}>
         <SummaryCard
           currency={viewModel.account.currency}
           totals={viewModel.totals}
         />
+      </section>
+
+      <section className={styles.insightsGrid}>
         <TopCategoriesCard
           categories={viewModel.topExpenseCategories}
           currency={viewModel.account.currency}
+          totalExpenseMinor={viewModel.totals.expenseMinor}
         />
-
-        <div className={styles.spanFull}>
-          <TransactionListCard
-            transactions={viewModel.recentTransactions}
-            transactionCount={viewModel.transactionCount}
-          />
-        </div>
+        <TransactionListCard
+          transactions={viewModel.recentTransactions}
+          transactionCount={viewModel.transactionCount}
+        />
       </section>
     </section>
   </DashboardPage>

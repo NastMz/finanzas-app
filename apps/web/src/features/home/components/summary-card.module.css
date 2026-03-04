@@ -1,34 +1,95 @@
-.rows {
-  display: flex;
-  flex-direction: column;
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: var(--fz-space-3);
 }
 
-.row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding-bottom: var(--fz-space-3);
-  border-bottom: 1px solid var(--fz-color-border-subtle);
+.statCard {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--fz-radius-lg);
+  border: 1px solid color-mix(in srgb, var(--fz-color-border-subtle) 84%, white);
+  padding: var(--fz-space-4);
+  background:
+    radial-gradient(
+      12rem 6rem at 110% -52%,
+      color-mix(in srgb, var(--fz-color-brand-500) 16%, transparent),
+      transparent 74%
+    ),
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--fz-color-bg-surface) 95%, transparent) 0%,
+      color-mix(in srgb, var(--fz-color-bg-elevated) 96%, transparent) 100%
+    );
+  box-shadow:
+    0 12px 26px rgba(2, 6, 23, 0.36),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  display: grid;
+  gap: var(--fz-space-1);
+  transition: transform 140ms ease, border-color 170ms ease, box-shadow 200ms ease;
 }
 
-.row:last-child {
-  border-bottom: none;
-  padding-bottom: 0;
+.statCard:hover {
+  transform: translateY(-1px);
+  border-color: color-mix(in srgb, var(--fz-color-brand-400) 30%, var(--fz-color-border-subtle));
+  box-shadow:
+    0 14px 30px rgba(2, 6, 23, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
-.netRow {
-  margin-top: var(--fz-space-1);
+.incomeCard {
+  --accent-color: var(--fz-color-status-income);
+}
+
+.expenseCard {
+  --accent-color: var(--fz-color-status-expense);
+}
+
+.balanceCard {
+  --accent-color: var(--fz-color-brand-300);
+}
+
+.statCard::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent-color) 20%, transparent);
+  opacity: 0.4;
+}
+
+.statCard::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 0.14rem;
+  background: color-mix(in srgb, var(--accent-color) 68%, transparent);
+  opacity: 0.95;
 }
 
 .label {
   color: var(--fz-color-text-muted);
-  font-size: var(--fz-font-size-sm);
+  font-size: var(--fz-font-size-xs);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
 }
 
 .value {
-  font-weight: var(--fz-font-weight-semibold);
-  letter-spacing: -0.01em;
+  font-size: clamp(1.15rem, 2vw, 1.45rem);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  font-weight: 760;
+  word-spacing: 0.09em;
+  font-variant-numeric: tabular-nums lining-nums;
+  font-feature-settings: "tnum" 1, "lnum" 1;
+  text-wrap: balance;
+}
+
+.helper {
+  color: var(--fz-color-text-secondary);
+  font-size: var(--fz-font-size-xs);
+  line-height: 1.32;
 }
 
 .income {
@@ -45,4 +106,27 @@
 
 .netNegative {
   color: var(--fz-color-status-danger);
+}
+
+@media (max-width: 980px) {
+  .grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .grid {
+    grid-template-columns: 1fr;
+    gap: var(--fz-space-3);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .statCard {
+    transition: none;
+  }
+
+  .statCard:hover {
+    transform: none;
+  }
 }

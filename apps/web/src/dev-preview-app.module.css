@@ -6,30 +6,102 @@
   position: sticky;
   top: 0;
   z-index: 20;
-  padding: var(--fz-space-4);
-  background: color-mix(in srgb, var(--fz-color-bg-canvas) 86%, transparent);
-  backdrop-filter: blur(8px);
-  border-bottom: 1px solid var(--fz-color-border-subtle);
+  padding: 0.66rem var(--fz-space-4);
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, #03060d 96%, transparent) 0%,
+    color-mix(in srgb, #040813 92%, transparent) 100%
+  );
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid color-mix(in srgb, var(--fz-color-border-subtle) 78%, transparent);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.04),
+    0 10px 20px rgba(2, 6, 23, 0.28);
+}
+
+.navInner {
+  margin: 0 auto;
+  max-width: 1120px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--fz-space-4);
+}
+
+.productLabel {
+  color: color-mix(in srgb, var(--fz-color-text-secondary) 86%, white);
+  font-size: var(--fz-font-size-sm);
+  font-weight: var(--fz-font-weight-semibold);
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  white-space: nowrap;
 }
 
 .tabs {
-  display: flex;
+  display: inline-grid;
+  grid-auto-flow: column;
   align-items: center;
-  gap: var(--fz-space-2);
+  gap: 0.16rem;
+  padding: 0.2rem;
+  border-radius: var(--fz-radius-lg);
+  background: color-mix(in srgb, var(--fz-color-bg-elevated) 90%, transparent);
+  border: 1px solid color-mix(in srgb, var(--fz-color-border-subtle) 84%, white);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
 }
 
 .tab {
-  border: 1px solid var(--fz-color-border-subtle);
-  border-radius: var(--fz-radius-pill);
-  background: color-mix(in srgb, var(--fz-color-bg-surface) 46%, transparent);
+  border: 1px solid transparent;
+  border-radius: calc(var(--fz-radius-md) - 0.15rem);
+  background: transparent;
   color: var(--fz-color-text-secondary);
-  padding: var(--fz-space-2) var(--fz-space-4);
+  padding: 0.46rem 0.86rem;
   font-size: var(--fz-font-size-sm);
   font-weight: var(--fz-font-weight-medium);
+  transition:
+    background-color 160ms ease,
+    color 160ms ease,
+    border-color 160ms ease,
+    box-shadow 170ms ease;
+}
+
+.tab:hover {
+  color: var(--fz-color-text-primary);
+  border-color: color-mix(in srgb, var(--fz-color-border-subtle) 42%, transparent);
+  background: color-mix(in srgb, var(--fz-color-bg-surface) 88%, transparent);
 }
 
 .activeTab {
-  border-color: color-mix(in srgb, var(--fz-color-brand-400) 40%, transparent);
+  border-color: color-mix(in srgb, var(--fz-color-brand-400) 42%, transparent);
   color: var(--fz-color-text-primary);
-  background: color-mix(in srgb, var(--fz-color-brand-500) 16%, transparent);
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--fz-color-brand-500) 28%, #14253f) 0%,
+    color-mix(in srgb, var(--fz-color-brand-500) 20%, #0f1e36) 100%
+  );
+  box-shadow:
+    0 6px 14px rgba(20, 140, 229, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+@media (max-width: 720px) {
+  .nav {
+    padding: var(--fz-space-3) var(--fz-space-4);
+  }
+
+  .navInner {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--fz-space-2);
+  }
+
+  .tabs {
+    width: 100%;
+    grid-auto-flow: column;
+    grid-auto-columns: 1fr;
+  }
+
+  .tab {
+    width: 100%;
+    text-align: center;
+  }
 }

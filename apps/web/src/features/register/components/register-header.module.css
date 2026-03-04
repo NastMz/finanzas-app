@@ -1,13 +1,21 @@
 .header {
   border-radius: var(--fz-radius-xl);
-  border: 1px solid var(--fz-color-border-strong);
-  background: linear-gradient(
-    180deg,
-    color-mix(in srgb, var(--fz-color-bg-surface) 90%, transparent) 0%,
-    color-mix(in srgb, var(--fz-color-bg-elevated) 90%, transparent) 100%
-  );
-  box-shadow: var(--fz-shadow-card);
-  padding: var(--fz-space-5);
+  border: 1px solid color-mix(in srgb, var(--fz-color-border-strong) 84%, transparent);
+  background:
+    radial-gradient(
+      18rem 9rem at 110% -36%,
+      color-mix(in srgb, var(--fz-color-brand-500) 9%, transparent),
+      transparent 72%
+    ),
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--fz-color-bg-surface) 96%, transparent) 0%,
+      color-mix(in srgb, var(--fz-color-bg-elevated) 97%, transparent) 100%
+    );
+  box-shadow:
+    0 11px 22px rgba(2, 6, 23, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  padding: var(--fz-space-4);
 }
 
 .titleGroup {
@@ -25,9 +33,10 @@
 
 .title {
   color: var(--fz-color-text-primary);
-  font-size: clamp(1.625rem, 2.2vw, var(--fz-font-size-2xl));
-  line-height: 1.15;
+  font-size: clamp(1.85rem, 2.3vw, 2.35rem);
+  line-height: 1.08;
   letter-spacing: var(--fz-letter-spacing-tight);
+  font-weight: 760;
 }
 
 .subtitle {

@@ -31,20 +31,27 @@ export const SuggestedCategoriesCard = ({
   );
 
   return (
-    <SurfaceCard title="Categorías sugeridas" subtitle="Basadas en uso reciente">
+    <SurfaceCard
+      title="Categorías sugeridas"
+      subtitle="Basadas en uso reciente"
+      className={styles.helperCard ?? ""}
+      contentClassName={styles.helperContent ?? ""}
+    >
       {suggestedCategories.length === 0
         ? <p className={styles.empty}>Sin sugerencias aún para esta cuenta.</p>
         : (
           <ul className={styles.chips}>
             {suggestedCategories.map((category) => (
-              <li
-                key={category.id}
-                className={classNames(
-                  styles.chip,
-                  category.type === "expense" ? styles.expense : styles.income,
-                )}
-              >
-                {category.name}
+              <li key={category.id} className={styles.chipItem}>
+                <button
+                  type="button"
+                  className={classNames(
+                    styles.chip,
+                    category.type === "expense" ? styles.expense : styles.income,
+                  )}
+                >
+                  {category.name}
+                </button>
               </li>
             ))}
           </ul>

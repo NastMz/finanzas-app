@@ -1,48 +1,155 @@
-.rows {
-  display: flex;
-  flex-direction: column;
+.quickCard {
+  border-color: color-mix(in srgb, var(--fz-color-brand-400) 22%, var(--fz-color-border-subtle));
+  box-shadow:
+    0 14px 28px rgba(2, 6, 23, 0.38),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.quickContent {
+  display: grid;
   gap: var(--fz-space-3);
 }
 
-.row {
-  display: flex;
-  justify-content: space-between;
+.amountField {
+  display: grid;
+  gap: var(--fz-space-2);
+  border: 1px solid color-mix(in srgb, var(--fz-color-brand-400) 34%, var(--fz-color-border-subtle));
+  border-radius: var(--fz-radius-lg);
+  padding: var(--fz-space-4);
+  background:
+    radial-gradient(
+      18rem 6.5rem at 96% -70%,
+      color-mix(in srgb, var(--fz-color-brand-400) 18%, transparent),
+      transparent 72%
+    ),
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--fz-color-bg-surface) 98%, transparent) 0%,
+      color-mix(in srgb, var(--fz-color-bg-elevated) 98%, transparent) 100%
+    );
+}
+
+.amountLabel {
+  color: var(--fz-color-text-muted);
+  font-size: var(--fz-font-size-xs);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.amountValue {
+  display: inline-flex;
   align-items: baseline;
-  gap: var(--fz-space-3);
-  padding-bottom: var(--fz-space-2);
-  border-bottom: 1px solid var(--fz-color-border-subtle);
+  gap: 0.5rem;
+  color: var(--fz-color-text-primary);
+  font-variant-numeric: tabular-nums lining-nums;
+  font-feature-settings: "tnum" 1, "lnum" 1;
+  line-height: 1;
 }
 
-.row:last-child {
-  border-bottom: none;
-  padding-bottom: 0;
+.currency {
+  font-size: 1.1rem;
+  font-weight: 680;
+  letter-spacing: 0.04em;
+}
+
+.amountPlaceholder {
+  font-size: clamp(2.1rem, 5.2vw, 3rem);
+  font-weight: 820;
+  letter-spacing: -0.035em;
+}
+
+.fieldList {
+  display: grid;
+  gap: var(--fz-space-2);
+}
+
+.inputRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: var(--fz-space-3);
+  border: 1px solid color-mix(in srgb, var(--fz-color-border-subtle) 88%, white);
+  border-radius: var(--fz-radius-md);
+  padding: 0.7rem var(--fz-space-3);
+  background: color-mix(in srgb, var(--fz-color-bg-surface) 88%, transparent);
+  transition: border-color 160ms ease, background-color 170ms ease;
+}
+
+.inputRow:hover {
+  border-color: color-mix(in srgb, var(--fz-color-brand-400) 24%, var(--fz-color-border-subtle));
+  background: color-mix(in srgb, var(--fz-color-bg-surface) 94%, transparent);
 }
 
 .label {
   color: var(--fz-color-text-muted);
-  font-size: var(--fz-font-size-sm);
+  font-size: var(--fz-font-size-xs);
+  letter-spacing: 0.03em;
 }
 
 .value {
   color: var(--fz-color-text-primary);
   font-size: var(--fz-font-size-sm);
-  font-weight: var(--fz-font-weight-semibold);
+  font-weight: 670;
   text-align: right;
+  min-width: 0;
+}
+
+.affordance {
+  color: var(--fz-color-text-muted);
+  font-size: var(--fz-font-size-xs);
+  line-height: 1;
 }
 
 .primaryAction {
-  margin-top: var(--fz-space-4);
+  margin-top: var(--fz-space-2);
   width: 100%;
   border: none;
   border-radius: var(--fz-radius-md);
-  padding: var(--fz-space-3) var(--fz-space-4);
+  padding: 0.86rem var(--fz-space-4);
   background: linear-gradient(
     180deg,
-    var(--fz-color-brand-400) 0%,
+    color-mix(in srgb, var(--fz-color-brand-300) 88%, white) 0%,
     var(--fz-color-brand-600) 100%
   );
-  color: #04111e;
-  font-weight: var(--fz-font-weight-bold);
-  font-size: var(--fz-font-size-sm);
-  box-shadow: var(--fz-shadow-soft);
+  color: #03111f;
+  font-weight: 760;
+  font-size: var(--fz-font-size-md);
+  letter-spacing: -0.01em;
+  box-shadow:
+    0 12px 20px rgba(20, 140, 229, 0.32),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  transition: transform 150ms ease, box-shadow 180ms ease, filter 170ms ease;
+}
+
+.primaryAction:hover {
+  transform: translateY(-1px);
+  filter: saturate(1.08);
+  box-shadow:
+    0 16px 24px rgba(20, 140, 229, 0.36),
+    inset 0 1px 0 rgba(255, 255, 255, 0.26);
+}
+
+@media (max-width: 640px) {
+  .amountField {
+    padding: var(--fz-space-3);
+  }
+
+  .amountPlaceholder {
+    font-size: clamp(1.8rem, 10vw, 2.4rem);
+  }
+
+  .inputRow {
+    padding: 0.68rem var(--fz-space-3);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .inputRow,
+  .primaryAction {
+    transition: none;
+  }
+
+  .primaryAction:hover {
+    transform: none;
+  }
 }
