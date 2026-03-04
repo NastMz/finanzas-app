@@ -1,7 +1,7 @@
 import type { FinanzasHomeTabViewModel } from "@finanzas/ui";
 
 import { SurfaceCard } from "../../../ui/components/index.js";
-import { TransactionList } from "./transaction-list.js";
+import { TransactionList } from "../../shared/components/index.js";
 
 /**
  * Wrapper card for recent transaction list.

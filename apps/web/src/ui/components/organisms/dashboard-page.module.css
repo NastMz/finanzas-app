@@ -1,0 +1,29 @@
+.page {
+  min-height: 100vh;
+  padding: clamp(var(--fz-space-4), 2.5vw, var(--fz-space-10));
+  background:
+    radial-gradient(
+      60rem 28rem at 10% -12%,
+      color-mix(in srgb, var(--fz-color-brand-400) 26%, transparent),
+      transparent 62%
+    ),
+    radial-gradient(
+      56rem 28rem at 90% -14%,
+      color-mix(in srgb, var(--fz-color-brand-500) 20%, transparent),
+      transparent 56%
+    ),
+    linear-gradient(
+      180deg,
+      var(--fz-color-bg-canvas) 0%,
+      var(--fz-color-bg-elevated) 44%,
+      #0b1528 100%
+    );
+  color: var(--fz-color-text-primary);
+}
+
+.container {
+  margin: 0 auto;
+  max-width: 1080px;
+  display: grid;
+  gap: var(--fz-space-4);
+}

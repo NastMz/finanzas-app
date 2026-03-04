@@ -1,7 +1,7 @@
 import type { FinanzasHomeTabViewModel } from "@finanzas/ui";
 
 import { SurfaceCard } from "../../../ui/components/index.js";
-import { formatMinorAmount } from "../lib/formatters.js";
+import { formatMinorAmount } from "../../shared/lib/formatters.js";
 import styles from "./summary-card.module.css";
 
 /**

@@ -1,0 +1,36 @@
+.rows {
+  display: flex;
+  flex-direction: column;
+  gap: var(--fz-space-3);
+}
+
+.row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: var(--fz-space-3);
+  border-bottom: 1px solid var(--fz-color-border-subtle);
+}
+
+.row:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.label {
+  color: var(--fz-color-text-muted);
+  font-size: var(--fz-font-size-sm);
+}
+
+.value {
+  font-weight: var(--fz-font-weight-semibold);
+  letter-spacing: -0.01em;
+}
+
+.income {
+  color: var(--fz-color-status-income);
+}
+
+.expense {
+  color: var(--fz-color-status-expense);
+}

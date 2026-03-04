@@ -1,0 +1,35 @@
+.shell {
+  min-height: 100vh;
+}
+
+.nav {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  padding: var(--fz-space-4);
+  background: color-mix(in srgb, var(--fz-color-bg-canvas) 86%, transparent);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--fz-color-border-subtle);
+}
+
+.tabs {
+  display: flex;
+  align-items: center;
+  gap: var(--fz-space-2);
+}
+
+.tab {
+  border: 1px solid var(--fz-color-border-subtle);
+  border-radius: var(--fz-radius-pill);
+  background: color-mix(in srgb, var(--fz-color-bg-surface) 46%, transparent);
+  color: var(--fz-color-text-secondary);
+  padding: var(--fz-space-2) var(--fz-space-4);
+  font-size: var(--fz-font-size-sm);
+  font-weight: var(--fz-font-weight-medium);
+}
+
+.activeTab {
+  border-color: color-mix(in srgb, var(--fz-color-brand-400) 40%, transparent);
+  color: var(--fz-color-text-primary);
+  background: color-mix(in srgb, var(--fz-color-brand-500) 16%, transparent);
+}

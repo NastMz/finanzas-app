@@ -1,7 +1,7 @@
 import type { LoadHomeTabInput } from "@finanzas/ui";
 import { createRoot } from "react-dom/client";
 
-import { HomeScreen } from "./home-screen.js";
+import { DevPreviewApp } from "./dev-preview-app.js";
 import { webCommands, webQueries, webUi } from "./main.js";
 import "./ui/foundations/global.css";
 
@@ -14,9 +14,29 @@ if (!rootElement) {
 await seedPreviewData();
 
 const homeInput = buildCurrentMonthInput(new Date());
-const homeViewModel = await webUi.loadHomeTab(homeInput);
+const previewAccountId = homeInput.accountId ?? "acc-main";
+const [homeViewModel, movementsViewModel, registerViewModel, accountViewModel] = await Promise.all([
+  webUi.loadHomeTab(homeInput),
+  webUi.loadMovementsTab({
+    accountId: previewAccountId,
+    includeDeleted: true,
+    limit: 12,
+  }),
+  webUi.loadRegisterTab({
+    accountId: previewAccountId,
+    suggestedCategoryLimit: 5,
+  }),
+  webUi.loadAccountTab(),
+]);
 
-createRoot(rootElement).render(<HomeScreen viewModel={homeViewModel} />);
+createRoot(rootElement).render(
+  <DevPreviewApp
+    home={homeViewModel}
+    movements={movementsViewModel}
+    register={registerViewModel}
+    account={accountViewModel}
+  />,
+);
 
 async function seedPreviewData(): Promise<void> {
   const existingTransactions = await webQueries.listTransactions({

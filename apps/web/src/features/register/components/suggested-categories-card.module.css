@@ -1,0 +1,29 @@
+.chips {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--fz-space-2);
+}
+
+.chip {
+  border-radius: var(--fz-radius-pill);
+  padding: var(--fz-space-1) var(--fz-space-3);
+  border: 1px solid var(--fz-color-border-subtle);
+  font-size: var(--fz-font-size-sm);
+  font-weight: var(--fz-font-weight-medium);
+}
+
+.expense {
+  color: var(--fz-color-status-expense);
+  background: color-mix(in srgb, var(--fz-color-status-expense) 16%, transparent);
+}
+
+.income {
+  color: var(--fz-color-status-income);
+  background: color-mix(in srgb, var(--fz-color-status-income) 16%, transparent);
+}
+
+.empty {
+  color: var(--fz-color-text-muted);
+  font-size: var(--fz-font-size-sm);
+}

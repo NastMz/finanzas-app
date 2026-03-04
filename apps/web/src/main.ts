@@ -1,8 +1,15 @@
-import type { LoadHomeTabInput } from "@finanzas/ui";
+import type {
+  LoadHomeTabInput,
+  LoadMovementsTabInput,
+  LoadRegisterTabInput,
+} from "@finanzas/ui";
 
 import { createWebContext } from "./create-web-context.js";
 import { createWebUi } from "./create-web-ui.js";
+import { loadAccountScreenHtml } from "./account-screen.js";
 import { loadHomeScreenHtml } from "./home-screen.js";
+import { loadMovementsScreenHtml } from "./movements-screen.js";
+import { loadRegisterScreenHtml } from "./register-screen.js";
 
 export const webContext = createWebContext();
 export const webApp = webContext.bootstrap;
@@ -12,3 +19,11 @@ export const webUi = createWebUi(webContext);
 export const loadWebHomeScreenHtml = (
   input?: LoadHomeTabInput,
 ): Promise<string> => loadHomeScreenHtml(webUi, input);
+export const loadWebMovementsScreenHtml = (
+  input?: LoadMovementsTabInput,
+): Promise<string> => loadMovementsScreenHtml(webUi, input);
+export const loadWebRegisterScreenHtml = (
+  input?: LoadRegisterTabInput,
+): Promise<string> => loadRegisterScreenHtml(webUi, input);
+export const loadWebAccountScreenHtml = (): Promise<string> =>
+  loadAccountScreenHtml(webUi);

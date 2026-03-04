@@ -1,13 +1,16 @@
-import type { FinanzasHomeTabViewModel } from "@finanzas/ui";
+import type { FinanzasTransactionItemViewModel } from "@finanzas/ui";
 
+import { classNames } from "../../../ui/lib/class-names.js";
 import { formatDateIso, formatTransactionAmount } from "../lib/formatters.js";
 import styles from "./transaction-list.module.css";
 
 /**
- * List of recent transactions for Home.
+ * Shared transaction list used across dashboard tabs.
  */
 export interface TransactionListProps {
-  transactions: FinanzasHomeTabViewModel["recentTransactions"];
+  transactions: FinanzasTransactionItemViewModel[];
+  emptyLabel?: string;
+  showDeletedState?: boolean;
 }
 
 const resolveNote = (note: string | null): string =>
@@ -15,9 +18,11 @@ const resolveNote = (note: string | null): string =>
 
 export const TransactionList = ({
   transactions,
+  emptyLabel = "Sin movimientos en el periodo.",
+  showDeletedState = false,
 }: TransactionListProps): JSX.Element => {
   if (transactions.length === 0) {
-    return <p className={styles.empty}>Sin movimientos en el periodo.</p>;
+    return <p className={styles.empty}>{emptyLabel}</p>;
   }
 
   return (
@@ -25,9 +30,18 @@ export const TransactionList = ({
       {transactions.map((transaction) => (
         <li key={transaction.id} className={styles.item}>
           <div className={styles.mainRow}>
-            <p className={styles.category}>{transaction.categoryName}</p>
+            <div className={styles.categoryBlock}>
+              <p className={styles.category}>{transaction.categoryName}</p>
+              {showDeletedState && transaction.deleted
+                ? <span className={styles.deletedLabel}>Eliminado</span>
+                : null}
+            </div>
+
             <p
-              className={`${styles.amount} ${transaction.kind === "expense" ? styles.expense : styles.income}`}
+              className={classNames(
+                styles.amount,
+                transaction.kind === "expense" ? styles.expense : styles.income,
+              )}
             >
               {formatTransactionAmount(transaction)}
             </p>

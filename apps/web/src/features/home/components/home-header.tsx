@@ -1,7 +1,7 @@
 import type { FinanzasHomeTabViewModel } from "@finanzas/ui";
 
-import { StatusPill, type StatusPillTone } from "../../../ui/components/index.js";
-import { getSyncStatusLabel } from "../lib/formatters.js";
+import { StatusPill } from "../../../ui/components/index.js";
+import { getSyncStatusLabel, getSyncTone } from "../../shared/lib/formatters.js";
 import styles from "./home-header.module.css";
 
 /**
@@ -34,16 +34,3 @@ export const HomeHeader = ({
     />
   </header>
 );
-
-const getSyncTone = (
-  status: FinanzasHomeTabViewModel["sync"]["status"],
-): StatusPillTone => {
-  switch (status) {
-    case "synced":
-      return "success";
-    case "pending":
-      return "warning";
-    case "error":
-      return "danger";
-  }
-};

@@ -1,0 +1,56 @@
+.header {
+  border-radius: var(--fz-radius-xl);
+  border: 1px solid var(--fz-color-border-strong);
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--fz-color-bg-surface) 90%, transparent) 0%,
+    color-mix(in srgb, var(--fz-color-bg-elevated) 90%, transparent) 100%
+  );
+  box-shadow: var(--fz-shadow-card);
+  padding: var(--fz-space-5);
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--fz-space-4);
+}
+
+.titleGroup {
+  display: grid;
+  gap: var(--fz-space-1);
+}
+
+.kicker {
+  color: var(--fz-color-brand-300);
+  font-size: var(--fz-font-size-xs);
+  letter-spacing: var(--fz-letter-spacing-wide);
+  text-transform: uppercase;
+  font-weight: var(--fz-font-weight-bold);
+}
+
+.title {
+  color: var(--fz-color-text-primary);
+  font-size: clamp(1.625rem, 2.2vw, var(--fz-font-size-2xl));
+  line-height: 1.15;
+  letter-spacing: var(--fz-letter-spacing-tight);
+}
+
+.subtitle {
+  color: var(--fz-color-text-secondary);
+  font-size: var(--fz-font-size-sm);
+}
+
+.period {
+  color: var(--fz-color-text-muted);
+  font-size: var(--fz-font-size-xs);
+}
+
+.syncBadge {
+  margin-top: var(--fz-space-1);
+}
+
+@media (max-width: 640px) {
+  .header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}

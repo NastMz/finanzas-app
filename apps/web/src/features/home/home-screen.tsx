@@ -1,6 +1,7 @@
 import type { FinanzasHomeTabViewModel } from "@finanzas/ui";
 import { renderToStaticMarkup } from "react-dom/server";
 
+import { DashboardPage } from "../../ui/components/index.js";
 import {
   HomeHeader,
   SummaryCard,
@@ -20,8 +21,11 @@ export interface HomeScreenProps {
  * React component for `Inicio` tab.
  */
 export const HomeScreen = ({ viewModel }: HomeScreenProps): JSX.Element => (
-  <main data-view="home" className={styles.page}>
-    <div className={styles.container}>
+  <DashboardPage
+    className={styles.page ?? ""}
+    containerClassName={styles.container ?? ""}
+  >
+    <section data-view="home" className={styles.content}>
       <HomeHeader
         account={viewModel.account}
         period={viewModel.period}
@@ -45,8 +49,8 @@ export const HomeScreen = ({ viewModel }: HomeScreenProps): JSX.Element => (
           />
         </div>
       </section>
-    </div>
-  </main>
+    </section>
+  </DashboardPage>
 );
 
 /**

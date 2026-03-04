@@ -1,0 +1,14 @@
+.content {
+  display: grid;
+  gap: var(--fz-space-4);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--fz-space-4);
+}
+
+.spanFull {
+  grid-column: 1 / -1;
+}

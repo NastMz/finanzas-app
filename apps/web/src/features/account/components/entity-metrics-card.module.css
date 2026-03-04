@@ -1,0 +1,29 @@
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--fz-space-3);
+}
+
+.item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--fz-color-border-subtle);
+  padding-bottom: var(--fz-space-3);
+}
+
+.item:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.label {
+  color: var(--fz-color-text-muted);
+  font-size: var(--fz-font-size-sm);
+}
+
+.value {
+  color: var(--fz-color-text-primary);
+  font-size: var(--fz-font-size-lg);
+  line-height: 1.1;
+}
