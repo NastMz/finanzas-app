@@ -5,7 +5,7 @@ Bootstrap inicial del proyecto basado en `ARCHITECTURE.md` y los ADR aprobados.
 ## Avance inicial
 
 - Monorepo con workspaces para apps y paquetes compartidos.
-- Paquetes implementados: `domain`, `application`, `data`, `sync`.
+- Paquetes implementados: `domain`, `application`, `data`, `sync`, `ui` y `platform-shared`.
 - Casos de uso actuales:
   - Cuentas: `AddAccount`, `UpdateAccount`, `DeleteAccount` (tombstones), `ListAccounts`.
   - Categorias: `AddCategory`, `UpdateCategory`, `DeleteCategory` (tombstones), `ListCategories`.
@@ -17,7 +17,7 @@ Bootstrap inicial del proyecto basado en `ARCHITECTURE.md` y los ADR aprobados.
 - Utilidades compartidas para evitar duplicacion entre hosts: `createUlidIdGenerator` en `@finanzas/data` y `createInMemorySyncApiClient` en `@finanzas/sync`.
 - Bootstrap/context in-memory compartidos en `@finanzas/platform-shared` para `web`, `desktop` y `mobile`.
 - Contextos por host (`createWebContext`, `createDesktopContext`, `createMobileContext`) con separacion de `commands` y `queries` para facilitar composicion de UI.
-- Capa UI headless inicial en mobile (`createMobileUiService`) para materializar tabs v1 (`Inicio`, `Movimientos`, `Registrar`, `Cuenta`) y fijar contratos de datos reales.
+- Capa UI headless compartida en `@finanzas/ui` (`createFinanzasUiService`) y wrappers por host (`createWebUi`, `createMobileUi`) para materializar tabs v1 de forma web-first y reutilizable.
 - Pruebas unitarias iniciales con Vitest.
 
 ## Comandos

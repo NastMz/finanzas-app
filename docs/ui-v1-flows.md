@@ -127,7 +127,7 @@ Estos contratos son de capa UI; se mapean a `commands`/`queries` existentes.
 
 Nota: `queryHomeSummary` ya puede mapearse con `GetAccountSummary` (por cuenta/rango).
 `querySyncStatus` ya puede mapearse con `GetSyncStatus`.
-En mobile ya existe una implementacion headless (`createMobileUiService`) que compone estos contratos por tab.
+Existe implementacion headless compartida (`createFinanzasUiService` en `@finanzas/ui`) con wrappers por host; `web` es el primer consumidor visual objetivo.
 
 ## 7. Anti-patrones a evitar
 

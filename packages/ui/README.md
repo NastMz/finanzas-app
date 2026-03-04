@@ -1,3 +1,9 @@
 # Package UI
 
-Componentes y primitives compartidos entre hosts.
+Capa de presentacion compartida (headless) para hosts web/mobile/desktop.
+
+Incluye:
+
+- `createFinanzasUiService`: orquesta tabs `Inicio`, `Movimientos`, `Registrar`, `Cuenta`.
+- View-models tipados para listas, resumen, sugerencias y estado de sync.
+- Dependencia solo en contratos `commands`/`queries` de aplicacion/sync.

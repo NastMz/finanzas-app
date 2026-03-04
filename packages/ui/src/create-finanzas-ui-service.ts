@@ -1,31 +1,67 @@
-import type { AddTransactionInput } from "@finanzas/application";
-import type { Account, Category, Transaction } from "@finanzas/domain";
-import type { SyncNowResult } from "@finanzas/sync";
-
-import type { MobileContext } from "../create-mobile-context.js";
 import type {
-  MobileAccountOption,
-  MobileAccountTabViewModel,
-  MobileCategoryOption,
-  MobileHomeTabViewModel,
-  MobileMovementsTabViewModel,
-  MobilePeriod,
-  MobileRegisterTabViewModel,
-  MobileSyncStatusViewModel,
-  MobileTransactionItemViewModel,
-  MobileTransactionKind,
-} from "./mobile-ui-types.js";
+  AddTransactionInput,
+  AddTransactionResult,
+  GetAccountSummaryInput,
+  GetAccountSummaryResult,
+  ListAccountsInput,
+  ListAccountsResult,
+  ListCategoriesInput,
+  ListCategoriesResult,
+  ListTransactionsInput,
+  ListTransactionsResult,
+} from "@finanzas/application";
+import type { Account, Category, Transaction } from "@finanzas/domain";
+import type { GetSyncStatusResult, SyncNowResult } from "@finanzas/sync";
 
-type MobileUiDependencies = Pick<MobileContext, "commands" | "queries">;
-type SyncStatusQueryResult = Awaited<ReturnType<MobileUiDependencies["queries"]["getSyncStatus"]>>;
+import type {
+  FinanzasAccountOption,
+  FinanzasAccountTabViewModel,
+  FinanzasCategoryOption,
+  FinanzasHomeTabViewModel,
+  FinanzasMovementsTabViewModel,
+  FinanzasPeriod,
+  FinanzasRegisterTabViewModel,
+  FinanzasSyncStatusViewModel,
+  FinanzasTransactionItemViewModel,
+  FinanzasTransactionKind,
+} from "./finanzas-ui-types.js";
+
+/**
+ * Minimal command dependencies required by the UI layer.
+ */
+export interface FinanzasUiCommands {
+  addTransaction(input: AddTransactionInput): Promise<AddTransactionResult>;
+  syncNow(): Promise<SyncNowResult>;
+}
+
+/**
+ * Minimal query dependencies required by the UI layer.
+ */
+export interface FinanzasUiQueries {
+  listAccounts(input?: ListAccountsInput): Promise<ListAccountsResult>;
+  listCategories(input?: ListCategoriesInput): Promise<ListCategoriesResult>;
+  listTransactions(input: ListTransactionsInput): Promise<ListTransactionsResult>;
+  getAccountSummary(
+    input: GetAccountSummaryInput,
+  ): Promise<GetAccountSummaryResult>;
+  getSyncStatus(): Promise<GetSyncStatusResult>;
+}
+
+/**
+ * Runtime dependencies required by `createFinanzasUiService`.
+ */
+export interface FinanzasUiDependencies {
+  commands: FinanzasUiCommands;
+  queries: FinanzasUiQueries;
+}
 
 /**
  * Custom UI error for invalid screen inputs or missing local entities.
  */
-export class MobileUiError extends Error {
+export class FinanzasUiError extends Error {
   constructor(message: string) {
     super(message);
-    this.name = "MobileUiError";
+    this.name = "FinanzasUiError";
   }
 }
 
@@ -34,7 +70,7 @@ export class MobileUiError extends Error {
  */
 export interface LoadHomeTabInput {
   accountId?: string;
-  period?: Omit<MobilePeriod, "label"> & { label?: string };
+  period?: Omit<FinanzasPeriod, "label"> & { label?: string };
   recentLimit?: number;
   topCategoriesLimit?: number;
 }
@@ -62,7 +98,7 @@ export interface LoadRegisterTabInput {
 export interface QuickAddTransactionInput {
   accountId?: string;
   amountMinor: number | bigint;
-  kind?: MobileTransactionKind;
+  kind?: FinanzasTransactionKind;
   categoryId: string;
   note?: string;
   tags?: string[];
@@ -77,55 +113,59 @@ export interface QuickAddTransactionResult {
   outboxOpId: string;
   accountId: string;
   currency: string;
-  kind: MobileTransactionKind;
+  kind: FinanzasTransactionKind;
   signedAmountMinor: bigint;
-  sync: MobileSyncStatusViewModel;
+  sync: FinanzasSyncStatusViewModel;
 }
 
 /**
  * Result returned by manual sync action in `Cuenta`.
  */
-export interface MobileSyncNowActionResult {
+export interface SyncNowActionResult {
   ok: boolean;
   result: SyncNowResult | null;
   error: string | null;
-  sync: MobileSyncStatusViewModel;
+  sync: FinanzasSyncStatusViewModel;
 }
 
 /**
- * Runtime options for creating the mobile UI service.
+ * Runtime options for creating the UI service.
  */
-export interface CreateMobileUiServiceOptions {
+export interface CreateFinanzasUiServiceOptions {
   now?: () => Date;
 }
 
 /**
- * Headless UI orchestrator for mobile tabs.
+ * Headless UI orchestrator for app tabs.
  */
-export interface MobileUiService {
-  loadHomeTab(input?: LoadHomeTabInput): Promise<MobileHomeTabViewModel>;
-  loadMovementsTab(input?: LoadMovementsTabInput): Promise<MobileMovementsTabViewModel>;
-  loadRegisterTab(input?: LoadRegisterTabInput): Promise<MobileRegisterTabViewModel>;
-  loadAccountTab(): Promise<MobileAccountTabViewModel>;
+export interface FinanzasUiService {
+  loadHomeTab(input?: LoadHomeTabInput): Promise<FinanzasHomeTabViewModel>;
+  loadMovementsTab(
+    input?: LoadMovementsTabInput,
+  ): Promise<FinanzasMovementsTabViewModel>;
+  loadRegisterTab(
+    input?: LoadRegisterTabInput,
+  ): Promise<FinanzasRegisterTabViewModel>;
+  loadAccountTab(): Promise<FinanzasAccountTabViewModel>;
   quickAddTransaction(
     input: QuickAddTransactionInput,
   ): Promise<QuickAddTransactionResult>;
-  syncNow(): Promise<MobileSyncNowActionResult>;
+  syncNow(): Promise<SyncNowActionResult>;
 }
 
 /**
- * Creates a mobile-oriented headless UI service over `commands`/`queries`.
+ * Creates a headless UI service over `commands`/`queries`.
  */
-export const createMobileUiService = (
-  dependencies: MobileUiDependencies,
-  options: CreateMobileUiServiceOptions = {},
-): MobileUiService => {
+export const createFinanzasUiService = (
+  dependencies: FinanzasUiDependencies,
+  options: CreateFinanzasUiServiceOptions = {},
+): FinanzasUiService => {
   const now = options.now ?? (() => new Date());
 
   return {
     loadHomeTab: async (
       input: LoadHomeTabInput = {},
-    ): Promise<MobileHomeTabViewModel> => {
+    ): Promise<FinanzasHomeTabViewModel> => {
       const account = await resolveActiveAccount(dependencies, input.accountId);
       const period = resolvePeriod(input.period, now());
 
@@ -168,7 +208,7 @@ export const createMobileUiService = (
     },
     loadMovementsTab: async (
       input: LoadMovementsTabInput = {},
-    ): Promise<MobileMovementsTabViewModel> => {
+    ): Promise<FinanzasMovementsTabViewModel> => {
       const account = await resolveActiveAccount(dependencies, input.accountId);
       const includeDeleted = input.includeDeleted ?? false;
 
@@ -199,7 +239,7 @@ export const createMobileUiService = (
     },
     loadRegisterTab: async (
       input: LoadRegisterTabInput = {},
-    ): Promise<MobileRegisterTabViewModel> => {
+    ): Promise<FinanzasRegisterTabViewModel> => {
       const account = await resolveActiveAccount(dependencies, input.accountId);
       const defaultDate = now();
       const period = resolvePeriod(undefined, defaultDate);
@@ -240,7 +280,7 @@ export const createMobileUiService = (
         defaultCategoryId: suggestedCategoryIds[0] ?? null,
       };
     },
-    loadAccountTab: async (): Promise<MobileAccountTabViewModel> => {
+    loadAccountTab: async (): Promise<FinanzasAccountTabViewModel> => {
       const [syncStatus, accountsResult, categoriesResult] = await Promise.all([
         dependencies.queries.getSyncStatus(),
         dependencies.queries.listAccounts({
@@ -275,7 +315,7 @@ export const createMobileUiService = (
       const categoryId = input.categoryId.trim();
 
       if (categoryId.length === 0) {
-        throw new MobileUiError("Category id is required.");
+        throw new FinanzasUiError("Category id is required.");
       }
 
       const kind = input.kind ?? "expense";
@@ -303,7 +343,7 @@ export const createMobileUiService = (
         sync: toSyncStatusViewModel(syncStatus),
       };
     },
-    syncNow: async (): Promise<MobileSyncNowActionResult> => {
+    syncNow: async (): Promise<SyncNowActionResult> => {
       let result: SyncNowResult | null = null;
       let error: string | null = null;
 
@@ -326,21 +366,21 @@ export const createMobileUiService = (
 };
 
 const resolveActiveAccount = async (
-  dependencies: MobileUiDependencies,
+  dependencies: FinanzasUiDependencies,
   accountId: string | undefined,
 ): Promise<Account> => {
   const accountsResult = await dependencies.queries.listAccounts();
   const accounts = accountsResult.accounts;
 
   if (accounts.length === 0) {
-    throw new MobileUiError("No active accounts available.");
+    throw new FinanzasUiError("No active accounts available.");
   }
 
   if (accountId === undefined) {
     const defaultAccount = accounts[0];
 
     if (!defaultAccount) {
-      throw new MobileUiError("Default account could not be resolved.");
+      throw new FinanzasUiError("Default account could not be resolved.");
     }
 
     return defaultAccount;
@@ -349,7 +389,7 @@ const resolveActiveAccount = async (
   const selectedAccount = accounts.find((account) => account.id === accountId);
 
   if (!selectedAccount) {
-    throw new MobileUiError(`Account ${accountId} is not available.`);
+    throw new FinanzasUiError(`Account ${accountId} is not available.`);
   }
 
   return selectedAccount;
@@ -358,7 +398,7 @@ const resolveActiveAccount = async (
 const resolvePeriod = (
   period: LoadHomeTabInput["period"] | undefined,
   baseDate: Date,
-): MobilePeriod => {
+): FinanzasPeriod => {
   if (period) {
     return {
       from: new Date(period.from),
@@ -397,9 +437,9 @@ const buildCategoryNameById = (categories: Category[]): Map<string, string> =>
 const toTransactionItemViewModel = (
   transaction: Transaction,
   categoryNameById: Map<string, string>,
-): MobileTransactionItemViewModel => {
+): FinanzasTransactionItemViewModel => {
   const signedAmountMinor = transaction.amount.amountMinor;
-  const kind: MobileTransactionKind =
+  const kind: FinanzasTransactionKind =
     signedAmountMinor < 0n ? "expense" : "income";
 
   return {
@@ -419,8 +459,8 @@ const toTransactionItemViewModel = (
 };
 
 const toSyncStatusViewModel = (
-  syncStatus: SyncStatusQueryResult,
-): MobileSyncStatusViewModel => ({
+  syncStatus: GetSyncStatusResult,
+): FinanzasSyncStatusViewModel => ({
   status: syncStatus.status,
   pendingOps: syncStatus.counts.pending,
   sentOps: syncStatus.counts.sent,
@@ -430,7 +470,7 @@ const toSyncStatusViewModel = (
   cursor: syncStatus.cursor,
 });
 
-const toAccountOption = (account: Account): MobileAccountOption => ({
+const toAccountOption = (account: Account): FinanzasAccountOption => ({
   id: account.id,
   name: account.name,
   type: account.type,
@@ -438,7 +478,7 @@ const toAccountOption = (account: Account): MobileAccountOption => ({
   deleted: account.deletedAt !== null,
 });
 
-const toCategoryOption = (category: Category): MobileCategoryOption => ({
+const toCategoryOption = (category: Category): FinanzasCategoryOption => ({
   id: category.id,
   name: category.name,
   type: category.type,
@@ -446,7 +486,7 @@ const toCategoryOption = (category: Category): MobileCategoryOption => ({
 });
 
 const getTotalsFromTransactionItems = (
-  items: MobileTransactionItemViewModel[],
+  items: FinanzasTransactionItemViewModel[],
 ): { incomeMinor: bigint; expenseMinor: bigint } => {
   let incomeMinor = 0n;
   let expenseMinor = 0n;
@@ -468,13 +508,13 @@ const getTotalsFromTransactionItems = (
 
 const normalizeSignedAmount = (
   amountMinor: number | bigint,
-  kind: MobileTransactionKind,
+  kind: FinanzasTransactionKind,
 ): bigint => {
   const value = typeof amountMinor === "bigint" ? amountMinor : BigInt(amountMinor);
   const absoluteAmount = value < 0n ? -value : value;
 
   if (absoluteAmount === 0n) {
-    throw new MobileUiError("Transaction amount cannot be zero.");
+    throw new FinanzasUiError("Transaction amount cannot be zero.");
   }
 
   return kind === "expense" ? -absoluteAmount : absoluteAmount;

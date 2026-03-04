@@ -8,6 +8,7 @@
     "@finanzas/data": "0.1.0",
     "@finanzas/domain": "0.1.0",
     "@finanzas/platform-shared": "0.1.0",
-    "@finanzas/sync": "0.1.0"
+    "@finanzas/sync": "0.1.0",
+    "@finanzas/ui": "0.1.0"
   }
 }

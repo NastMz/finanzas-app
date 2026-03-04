@@ -8,7 +8,7 @@ import type { SyncStatus } from "@finanzas/sync";
 /**
  * Time window rendered by UI tabs.
  */
-export interface MobilePeriod {
+export interface FinanzasPeriod {
   from: Date;
   to: Date;
   label: string;
@@ -17,7 +17,7 @@ export interface MobilePeriod {
 /**
  * Minimal account option shown in selectors.
  */
-export interface MobileAccountOption {
+export interface FinanzasAccountOption {
   id: string;
   name: string;
   type: AccountType;
@@ -28,7 +28,7 @@ export interface MobileAccountOption {
 /**
  * Minimal category option shown in selectors.
  */
-export interface MobileCategoryOption {
+export interface FinanzasCategoryOption {
   id: string;
   name: string;
   type: CategoryType;
@@ -36,20 +36,20 @@ export interface MobileCategoryOption {
 }
 
 /**
- * Transaction direction used in mobile lists/cards.
+ * Transaction direction used in lists/cards.
  */
-export type MobileTransactionKind = "income" | "expense";
+export type FinanzasTransactionKind = "income" | "expense";
 
 /**
  * Transaction item already mapped for UI consumption.
  */
-export interface MobileTransactionItemViewModel {
+export interface FinanzasTransactionItemViewModel {
   id: string;
   accountId: string;
   categoryId: string;
   categoryName: string;
   currency: CurrencyCode;
-  kind: MobileTransactionKind;
+  kind: FinanzasTransactionKind;
   signedAmountMinor: bigint;
   amountMinor: bigint;
   date: Date;
@@ -59,9 +59,9 @@ export interface MobileTransactionItemViewModel {
 }
 
 /**
- * Sync status model shown in account/header badges.
+ * Sync status model shown in header badges and settings.
  */
-export interface MobileSyncStatusViewModel {
+export interface FinanzasSyncStatusViewModel {
   status: SyncStatus;
   pendingOps: number;
   sentOps: number;
@@ -74,9 +74,9 @@ export interface MobileSyncStatusViewModel {
 /**
  * Home tab model (`Inicio`).
  */
-export interface MobileHomeTabViewModel {
-  account: MobileAccountOption;
-  period: MobilePeriod;
+export interface FinanzasHomeTabViewModel {
+  account: FinanzasAccountOption;
+  period: FinanzasPeriod;
   totals: {
     incomeMinor: bigint;
     expenseMinor: bigint;
@@ -87,32 +87,32 @@ export interface MobileHomeTabViewModel {
     categoryName: string;
     expenseMinor: bigint;
   }>;
-  recentTransactions: MobileTransactionItemViewModel[];
+  recentTransactions: FinanzasTransactionItemViewModel[];
   transactionCount: number;
-  sync: MobileSyncStatusViewModel;
+  sync: FinanzasSyncStatusViewModel;
 }
 
 /**
  * Movements tab model (`Movimientos`).
  */
-export interface MobileMovementsTabViewModel {
-  account: MobileAccountOption;
+export interface FinanzasMovementsTabViewModel {
+  account: FinanzasAccountOption;
   includeDeleted: boolean;
-  items: MobileTransactionItemViewModel[];
+  items: FinanzasTransactionItemViewModel[];
   totals: {
     incomeMinor: bigint;
     expenseMinor: bigint;
   };
-  sync: MobileSyncStatusViewModel;
+  sync: FinanzasSyncStatusViewModel;
 }
 
 /**
  * Register tab model (`Registrar`) with defaults and suggestions.
  */
-export interface MobileRegisterTabViewModel {
-  account: MobileAccountOption;
+export interface FinanzasRegisterTabViewModel {
+  account: FinanzasAccountOption;
   defaultDate: Date;
-  categories: MobileCategoryOption[];
+  categories: FinanzasCategoryOption[];
   suggestedCategoryIds: string[];
   defaultCategoryId: string | null;
 }
@@ -120,8 +120,8 @@ export interface MobileRegisterTabViewModel {
 /**
  * Account tab model (`Cuenta`) focused on sync and configuration counters.
  */
-export interface MobileAccountTabViewModel {
-  sync: MobileSyncStatusViewModel;
+export interface FinanzasAccountTabViewModel {
+  sync: FinanzasSyncStatusViewModel;
   accounts: {
     total: number;
     active: number;

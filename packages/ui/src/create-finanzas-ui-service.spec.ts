@@ -1,14 +1,18 @@
 import { describe, expect, it } from "vitest";
 
+import {
+  createInMemoryBootstrap,
+  createInMemoryBootstrapContext,
+  type CreateInMemoryBootstrapOptions,
+  type InMemoryBootstrapContext,
+} from "@finanzas/platform-shared";
 import type { SyncApiClient } from "@finanzas/sync";
 
-import type { CreateMobileBootstrapOptions } from "../bootstrap.js";
-import { createMobileContext } from "../create-mobile-context.js";
-import { createMobileUiService } from "./create-mobile-ui-service.js";
+import { createFinanzasUiService } from "./create-finanzas-ui-service.js";
 
 const FIXED_NOW = new Date("2026-03-03T10:00:00.000Z");
 
-describe("createMobileUiService", () => {
+describe("createFinanzasUiService", () => {
   it("loads Home tab with totals, top categories and sync badge", async () => {
     const { context, ui } = createUi();
 
@@ -149,11 +153,8 @@ describe("createMobileUiService", () => {
 
   it("returns sync error status after failed manual sync", async () => {
     const failingApi = createFailingPushSyncApiClient("Offline");
-    const context = createMobileContext({
+    const { ui } = createUi({
       syncApi: failingApi,
-    });
-    const ui = createMobileUiService(context, {
-      now: () => FIXED_NOW,
     });
 
     await ui.quickAddTransaction({
@@ -177,15 +178,19 @@ describe("createMobileUiService", () => {
 });
 
 interface CreateUiResult {
-  context: ReturnType<typeof createMobileContext>;
-  ui: ReturnType<typeof createMobileUiService>;
+  context: InMemoryBootstrapContext;
+  ui: ReturnType<typeof createFinanzasUiService>;
 }
 
 const createUi = (
-  options: CreateMobileBootstrapOptions = {},
+  options: Omit<CreateInMemoryBootstrapOptions, "defaultDeviceId"> = {},
 ): CreateUiResult => {
-  const context = createMobileContext(options);
-  const ui = createMobileUiService(context, {
+  const bootstrap = createInMemoryBootstrap({
+    defaultDeviceId: "ui-test-device",
+    ...options,
+  });
+  const context = createInMemoryBootstrapContext(bootstrap);
+  const ui = createFinanzasUiService(context, {
     now: () => FIXED_NOW,
   });
 
