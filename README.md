@@ -17,6 +17,7 @@ Bootstrap inicial del proyecto basado en `ARCHITECTURE.md` y los ADR aprobados.
 - Utilidades compartidas para evitar duplicacion entre hosts: `createUlidIdGenerator` en `@finanzas/data` y `createInMemorySyncApiClient` en `@finanzas/sync`.
 - Bootstrap/context in-memory compartidos en `@finanzas/platform-shared` para `web`, `desktop` y `mobile`.
 - Contextos por host (`createWebContext`, `createDesktopContext`, `createMobileContext`) con separacion de `commands` y `queries` para facilitar composicion de UI.
+- Capa UI headless inicial en mobile (`createMobileUiService`) para materializar tabs v1 (`Inicio`, `Movimientos`, `Registrar`, `Cuenta`) y fijar contratos de datos reales.
 - Pruebas unitarias iniciales con Vitest.
 
 ## Comandos
