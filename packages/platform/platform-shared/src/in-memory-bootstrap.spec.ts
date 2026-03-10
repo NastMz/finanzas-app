@@ -111,6 +111,46 @@ describe("createInMemoryBootstrap", () => {
     expect(transactionResult.outboxOpId).toBe(`op-${normalizedDeviceId}-2`);
   });
 
+  it("manages budget lifecycle through shared bootstrap wiring", async () => {
+    const app = createBootstrap();
+    const categoryResult = await app.addCategory({
+      name: "Comida",
+      type: "expense",
+    });
+
+    const created = await app.addBudget({
+      categoryId: categoryResult.category.id,
+      period: "2026-03",
+      limitAmountMinor: 400000,
+      currency: "COP",
+    });
+
+    const updated = await app.updateBudget({
+      budgetId: created.budget.id,
+      limitAmountMinor: 450000,
+    });
+
+    const activeBudgets = await app.listBudgets({
+      period: "2026-03",
+    });
+    expect(activeBudgets.budgets.map((budget) => budget.id)).toEqual([
+      created.budget.id,
+    ]);
+    expect(activeBudgets.budgets[0]?.limit.amountMinor).toBe(450000n);
+
+    await app.deleteBudget({
+      budgetId: created.budget.id,
+    });
+
+    const budgetsWithTombstones = await app.listBudgets({
+      includeDeleted: true,
+      period: "2026-03",
+    });
+    expect(budgetsWithTombstones.budgets).toHaveLength(1);
+    expect(budgetsWithTombstones.budgets[0]?.deletedAt).not.toBeNull();
+    expect(updated.budget.limit.amountMinor).toBe(450000n);
+  });
+
   it("marks operations as failed when sync push throws", async () => {
     const app = createBootstrap({
       syncApi: createFailingPushSyncApiClient(),

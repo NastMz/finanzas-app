@@ -1,29 +1,37 @@
 import {
   addAccount,
+  addBudget,
   addCategory,
   addTransaction,
   deleteAccount,
+  deleteBudget,
   deleteCategory,
   deleteTransaction,
   getAccountSummary,
   listAccounts,
+  listBudgets,
   listCategories,
   listTransactions,
   updateAccount,
+  updateBudget,
   updateCategory,
   updateTransaction,
   type IdGenerator,
   type AddAccountInput,
+  type AddBudgetInput,
   type AddCategoryInput,
   type AddTransactionInput,
   type DeleteAccountInput,
+  type DeleteBudgetInput,
   type DeleteCategoryInput,
   type DeleteTransactionInput,
   type GetAccountSummaryInput,
   type ListAccountsInput,
+  type ListBudgetsInput,
   type ListCategoriesInput,
   type ListTransactionsInput,
   type UpdateAccountInput,
+  type UpdateBudgetInput,
   type UpdateCategoryInput,
   type UpdateTransactionInput,
 } from "@finanzas/application";
@@ -44,6 +52,9 @@ export interface InMemoryBootstrap {
   addAccount(input: AddAccountInput): ReturnType<typeof addAccount>;
   updateAccount(input: UpdateAccountInput): ReturnType<typeof updateAccount>;
   deleteAccount(input: DeleteAccountInput): ReturnType<typeof deleteAccount>;
+  addBudget(input: AddBudgetInput): ReturnType<typeof addBudget>;
+  updateBudget(input: UpdateBudgetInput): ReturnType<typeof updateBudget>;
+  deleteBudget(input: DeleteBudgetInput): ReturnType<typeof deleteBudget>;
   addCategory(input: AddCategoryInput): ReturnType<typeof addCategory>;
   updateCategory(input: UpdateCategoryInput): ReturnType<typeof updateCategory>;
   deleteCategory(input: DeleteCategoryInput): ReturnType<typeof deleteCategory>;
@@ -55,6 +66,7 @@ export interface InMemoryBootstrap {
     input: DeleteTransactionInput,
   ): ReturnType<typeof deleteTransaction>;
   listAccounts(input?: ListAccountsInput): ReturnType<typeof listAccounts>;
+  listBudgets(input?: ListBudgetsInput): ReturnType<typeof listBudgets>;
   listCategories(input?: ListCategoriesInput): ReturnType<typeof listCategories>;
   listTransactions(input: ListTransactionsInput): ReturnType<typeof listTransactions>;
   getAccountSummary(
@@ -84,6 +96,7 @@ export const createInMemoryBootstrap = (
   const context = options.context ?? createInMemoryAppContext();
   const {
     accounts,
+    budgets,
     categories,
     transactions,
     outbox,
@@ -126,6 +139,41 @@ export const createInMemoryBootstrap = (
       deleteAccount(
         {
           accounts,
+          outbox,
+          clock,
+          ids,
+          deviceId,
+        },
+        input,
+      ),
+    addBudget: (input: AddBudgetInput) =>
+      addBudget(
+        {
+          budgets,
+          categories,
+          outbox,
+          clock,
+          ids,
+          deviceId,
+        },
+        input,
+      ),
+    updateBudget: (input: UpdateBudgetInput) =>
+      updateBudget(
+        {
+          budgets,
+          categories,
+          outbox,
+          clock,
+          ids,
+          deviceId,
+        },
+        input,
+      ),
+    deleteBudget: (input: DeleteBudgetInput) =>
+      deleteBudget(
+        {
+          budgets,
           outbox,
           clock,
           ids,
@@ -205,6 +253,13 @@ export const createInMemoryBootstrap = (
       listAccounts(
         {
           accounts,
+        },
+        input,
+      ),
+    listBudgets: (input: ListBudgetsInput = {}) =>
+      listBudgets(
+        {
+          budgets,
         },
         input,
       ),

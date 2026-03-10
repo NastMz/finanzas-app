@@ -1,4 +1,4 @@
-import type { Account, Category, Transaction } from "@finanzas/domain";
+import type { Account, Budget, Category, Transaction } from "@finanzas/domain";
 
 /**
  * Port for account persistence operations required by application use cases.
@@ -19,6 +19,19 @@ export interface CategoryRepository {
 }
 
 /**
+ * Port for budget persistence operations required by application use cases.
+ */
+export interface BudgetRepository {
+  findById(id: string): Promise<Budget | null>;
+  findActiveByCategoryIdAndPeriod(
+    categoryId: string,
+    period: string,
+  ): Promise<Budget | null>;
+  listAll(): Promise<Budget[]>;
+  save(budget: Budget): Promise<void>;
+}
+
+/**
  * Port for transaction persistence operations required by application use cases.
  */
 export interface TransactionRepository {
@@ -30,7 +43,7 @@ export interface TransactionRepository {
 /**
  * Entity types currently supported in the local outbox.
  */
-export type OutboxEntityType = "account" | "category" | "transaction";
+export type OutboxEntityType = "account" | "category" | "budget" | "transaction";
 
 export type OutboxOpType = "create" | "update" | "delete";
 
@@ -74,7 +87,12 @@ export interface Clock {
 /**
  * Purpose discriminator for generated identifiers.
  */
-export type IdPurpose = "account" | "category" | "transaction" | "outbox-op";
+export type IdPurpose =
+  | "account"
+  | "category"
+  | "budget"
+  | "transaction"
+  | "outbox-op";
 
 /**
  * Identifier generator abstraction for deterministic and platform-specific ids.

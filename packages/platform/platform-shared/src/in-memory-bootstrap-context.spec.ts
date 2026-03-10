@@ -30,6 +30,18 @@ describe("createInMemoryBootstrapContext", () => {
     expect(categoryListResult.categories.map((category) => category.id)).toEqual([
       categoryResult.category.id,
     ]);
+
+    const budgetResult = await context.commands.addBudget({
+      categoryId: categoryResult.category.id,
+      period: "2026-03",
+      limitAmountMinor: 250000,
+      currency: "COP",
+    });
+
+    const budgetListResult = await context.queries.listBudgets();
+    expect(budgetListResult.budgets.map((budget) => budget.id)).toEqual([
+      budgetResult.budget.id,
+    ]);
   });
 
   it("exposes account summary via query facade", async () => {

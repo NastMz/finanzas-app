@@ -1,6 +1,7 @@
 import { createAccount } from "@finanzas/domain";
 import {
   createAccountSyncChangeApplier,
+  createBudgetSyncChangeApplier,
   createCategorySyncChangeApplier,
   createCompositeSyncChangeApplier,
   createTransactionSyncChangeApplier,
@@ -9,6 +10,7 @@ import {
 import {
   FixedClock,
   InMemoryAccountRepository,
+  InMemoryBudgetRepository,
   InMemoryCategoryRepository,
   InMemoryOutboxRepository,
   InMemorySyncStateRepository,
@@ -20,6 +22,7 @@ import {
  */
 export interface InMemoryAppContext {
   accounts: InMemoryAccountRepository;
+  budgets: InMemoryBudgetRepository;
   categories: InMemoryCategoryRepository;
   transactions: InMemoryTransactionRepository;
   outbox: InMemoryOutboxRepository;
@@ -42,6 +45,7 @@ export const createInMemoryAppContext = (now = new Date()): InMemoryAppContext =
     }),
   ]);
 
+  const budgets = new InMemoryBudgetRepository();
   const categories = new InMemoryCategoryRepository();
   const transactions = new InMemoryTransactionRepository();
   const outbox = new InMemoryOutboxRepository();
@@ -52,6 +56,9 @@ export const createInMemoryAppContext = (now = new Date()): InMemoryAppContext =
     appliersByEntityType: {
       account: createAccountSyncChangeApplier({
         accounts,
+      }),
+      budget: createBudgetSyncChangeApplier({
+        budgets,
       }),
       category: createCategorySyncChangeApplier({
         categories,
@@ -64,6 +71,7 @@ export const createInMemoryAppContext = (now = new Date()): InMemoryAppContext =
 
   return {
     accounts,
+    budgets,
     categories,
     transactions,
     outbox,

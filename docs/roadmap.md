@@ -44,6 +44,7 @@ Cubrir el dominio base y los casos de uso operativos del manejo diario del diner
 
 - `[x]` Entidades base de dominio para cuentas, categorias, transacciones y dinero
 - `[x]` Casos de uso CRUD para cuentas
+- `[x]` Presupuestos por categoria y periodo
 - `[x]` Casos de uso CRUD para categorias
 - `[x]` Casos de uso CRUD para transacciones
 - `[x]` Resumen de cuenta por periodo con totales, top categorias y recientes
@@ -53,7 +54,6 @@ Cubrir el dominio base y los casos de uso operativos del manejo diario del diner
 
 ### Pendiente
 
-- `[ ]` Presupuestos por categoria y periodo
 - `[ ]` Reglas recurrentes y plantillas de movimientos
 - `[ ]` Validaciones adicionales para escenarios multi-moneda
 - `[ ]` Casos de uso de edicion masiva o acciones rapidas sobre movimientos

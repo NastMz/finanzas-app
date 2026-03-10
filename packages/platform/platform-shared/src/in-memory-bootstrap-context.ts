@@ -7,6 +7,9 @@ export interface InMemoryBootstrapCommands {
   addAccount: InMemoryBootstrap["addAccount"];
   updateAccount: InMemoryBootstrap["updateAccount"];
   deleteAccount: InMemoryBootstrap["deleteAccount"];
+  addBudget: InMemoryBootstrap["addBudget"];
+  updateBudget: InMemoryBootstrap["updateBudget"];
+  deleteBudget: InMemoryBootstrap["deleteBudget"];
   addCategory: InMemoryBootstrap["addCategory"];
   updateCategory: InMemoryBootstrap["updateCategory"];
   deleteCategory: InMemoryBootstrap["deleteCategory"];
@@ -21,6 +24,7 @@ export interface InMemoryBootstrapCommands {
  */
 export interface InMemoryBootstrapQueries {
   listAccounts: InMemoryBootstrap["listAccounts"];
+  listBudgets: InMemoryBootstrap["listBudgets"];
   listCategories: InMemoryBootstrap["listCategories"];
   listTransactions: InMemoryBootstrap["listTransactions"];
   getAccountSummary: InMemoryBootstrap["getAccountSummary"];
@@ -47,6 +51,9 @@ export const createInMemoryBootstrapContext = (
     addAccount: (input) => bootstrap.addAccount(input),
     updateAccount: (input) => bootstrap.updateAccount(input),
     deleteAccount: (input) => bootstrap.deleteAccount(input),
+    addBudget: (input) => bootstrap.addBudget(input),
+    updateBudget: (input) => bootstrap.updateBudget(input),
+    deleteBudget: (input) => bootstrap.deleteBudget(input),
     addCategory: (input) => bootstrap.addCategory(input),
     updateCategory: (input) => bootstrap.updateCategory(input),
     deleteCategory: (input) => bootstrap.deleteCategory(input),
@@ -57,6 +64,7 @@ export const createInMemoryBootstrapContext = (
   },
   queries: {
     listAccounts: (input) => bootstrap.listAccounts(input),
+    listBudgets: (input) => bootstrap.listBudgets(input),
     listCategories: (input) => bootstrap.listCategories(input),
     listTransactions: (input) => bootstrap.listTransactions(input),
     getAccountSummary: (input) => bootstrap.getAccountSummary(input),

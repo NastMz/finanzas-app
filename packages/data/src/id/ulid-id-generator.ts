@@ -3,6 +3,7 @@ import type { IdGenerator, IdPurpose } from "@finanzas/application";
 const DEFAULT_PREFIX_BY_PURPOSE: Record<IdPurpose, string> = {
   account: "acc",
   category: "cat",
+  budget: "bdg",
   transaction: "tx",
   "outbox-op": "op",
 };
