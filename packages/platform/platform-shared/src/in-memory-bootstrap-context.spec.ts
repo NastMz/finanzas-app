@@ -42,6 +42,32 @@ describe("createInMemoryBootstrapContext", () => {
     expect(budgetListResult.budgets.map((budget) => budget.id)).toEqual([
       budgetResult.budget.id,
     ]);
+
+    const templateResult = await context.commands.addTransactionTemplate({
+      name: "Arriendo",
+      accountId: "acc-main",
+      amountMinor: -900000,
+      currency: "COP",
+      categoryId: "home",
+    });
+
+    await context.commands.addRecurringRule({
+      templateId: templateResult.template.id,
+      schedule: {
+        frequency: "monthly",
+        interval: 1,
+        dayOfMonth: 5,
+      },
+      startsOn: new Date("2026-03-01T00:00:00.000Z"),
+    });
+
+    const templateListResult = await context.queries.listTransactionTemplates();
+    expect(templateListResult.templates.map((template) => template.id)).toEqual([
+      templateResult.template.id,
+    ]);
+
+    const recurringRuleListResult = await context.queries.listRecurringRules();
+    expect(recurringRuleListResult.recurringRules).toHaveLength(1);
   });
 
   it("exposes account summary via query facade", async () => {

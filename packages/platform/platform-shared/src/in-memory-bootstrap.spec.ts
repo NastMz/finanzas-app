@@ -151,6 +151,40 @@ describe("createInMemoryBootstrap", () => {
     expect(updated.budget.limit.amountMinor).toBe(450000n);
   });
 
+  it("runs recurring rules through shared bootstrap wiring", async () => {
+    const app = createBootstrap();
+
+    const templateResult = await app.addTransactionTemplate({
+      name: "Arriendo",
+      accountId: "acc-main",
+      amountMinor: -900000,
+      currency: "COP",
+      categoryId: "home",
+    });
+
+    await app.addRecurringRule({
+      templateId: templateResult.template.id,
+      schedule: {
+        frequency: "monthly",
+        interval: 1,
+        dayOfMonth: 5,
+      },
+      startsOn: new Date("2026-01-01T00:00:00.000Z"),
+    });
+
+    const runResult = await app.runRecurringRules({
+      asOf: new Date("2026-03-10T12:00:00.000Z"),
+    });
+
+    expect(runResult.generatedTransactions).toHaveLength(3);
+
+    const recurringRules = await app.listRecurringRules();
+    expect(recurringRules.recurringRules).toHaveLength(1);
+    expect(recurringRules.recurringRules[0]?.nextRunOn.toISOString()).toBe(
+      "2026-04-05T00:00:00.000Z",
+    );
+  });
+
   it("marks operations as failed when sync push throws", async () => {
     const app = createBootstrap({
       syncApi: createFailingPushSyncApiClient(),

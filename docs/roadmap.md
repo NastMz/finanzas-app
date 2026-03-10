@@ -46,6 +46,7 @@ Cubrir el dominio base y los casos de uso operativos del manejo diario del diner
 - `[x]` Casos de uso CRUD para cuentas
 - `[x]` Presupuestos por categoria y periodo
 - `[x]` Casos de uso CRUD para categorias
+- `[x]` Reglas recurrentes y plantillas de movimientos
 - `[x]` Casos de uso CRUD para transacciones
 - `[x]` Resumen de cuenta por periodo con totales, top categorias y recientes
 - `[x]` Soft delete con tombstones
@@ -54,7 +55,6 @@ Cubrir el dominio base y los casos de uso operativos del manejo diario del diner
 
 ### Pendiente
 
-- `[ ]` Reglas recurrentes y plantillas de movimientos
 - `[ ]` Validaciones adicionales para escenarios multi-moneda
 - `[ ]` Casos de uso de edicion masiva o acciones rapidas sobre movimientos
 - `[ ]` Importacion y exportacion de datos
@@ -75,7 +75,7 @@ Pasar de un flujo validado en memoria a una base robusta de persistencia local y
 - `[x]` Caso de uso `SyncNow`
 - `[x]` `GetSyncStatus` para UI
 - `[x]` Push/pull incremental con cursor
-- `[x]` Aplicacion de cambios remotos para cuentas, categorias y transacciones
+- `[x]` Aplicacion de cambios remotos para cuentas, categorias, presupuestos, plantillas, reglas recurrentes y transacciones
 - `[x]` Cliente de sync in-memory para pruebas
 
 ### Pendiente

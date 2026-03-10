@@ -4,7 +4,9 @@ import {
   createBudgetSyncChangeApplier,
   createCategorySyncChangeApplier,
   createCompositeSyncChangeApplier,
+  createRecurringRuleSyncChangeApplier,
   createTransactionSyncChangeApplier,
+  createTransactionTemplateSyncChangeApplier,
   type SyncChangeApplier,
 } from "@finanzas/sync";
 import {
@@ -13,8 +15,10 @@ import {
   InMemoryBudgetRepository,
   InMemoryCategoryRepository,
   InMemoryOutboxRepository,
+  InMemoryRecurringRuleRepository,
   InMemorySyncStateRepository,
   InMemoryTransactionRepository,
+  InMemoryTransactionTemplateRepository,
 } from "@finanzas/data";
 
 /**
@@ -24,7 +28,9 @@ export interface InMemoryAppContext {
   accounts: InMemoryAccountRepository;
   budgets: InMemoryBudgetRepository;
   categories: InMemoryCategoryRepository;
+  recurringRules: InMemoryRecurringRuleRepository;
   transactions: InMemoryTransactionRepository;
+  transactionTemplates: InMemoryTransactionTemplateRepository;
   outbox: InMemoryOutboxRepository;
   syncState: InMemorySyncStateRepository;
   clock: FixedClock;
@@ -47,7 +53,9 @@ export const createInMemoryAppContext = (now = new Date()): InMemoryAppContext =
 
   const budgets = new InMemoryBudgetRepository();
   const categories = new InMemoryCategoryRepository();
+  const recurringRules = new InMemoryRecurringRuleRepository();
   const transactions = new InMemoryTransactionRepository();
+  const transactionTemplates = new InMemoryTransactionTemplateRepository();
   const outbox = new InMemoryOutboxRepository();
   const syncState = new InMemorySyncStateRepository("0");
   const clock = new FixedClock(now);
@@ -63,8 +71,14 @@ export const createInMemoryAppContext = (now = new Date()): InMemoryAppContext =
       category: createCategorySyncChangeApplier({
         categories,
       }),
+      "recurring-rule": createRecurringRuleSyncChangeApplier({
+        recurringRules,
+      }),
       transaction: createTransactionSyncChangeApplier({
         transactions,
+      }),
+      "transaction-template": createTransactionTemplateSyncChangeApplier({
+        templates: transactionTemplates,
       }),
     },
   });
@@ -73,7 +87,9 @@ export const createInMemoryAppContext = (now = new Date()): InMemoryAppContext =
     accounts,
     budgets,
     categories,
+    recurringRules,
     transactions,
+    transactionTemplates,
     outbox,
     syncState,
     clock,

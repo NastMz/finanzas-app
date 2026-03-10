@@ -1,4 +1,11 @@
-import type { Account, Budget, Category, Transaction } from "@finanzas/domain";
+import type {
+  Account,
+  Budget,
+  Category,
+  RecurringRule,
+  Transaction,
+  TransactionTemplate,
+} from "@finanzas/domain";
 
 /**
  * Port for account persistence operations required by application use cases.
@@ -32,6 +39,25 @@ export interface BudgetRepository {
 }
 
 /**
+ * Port for transaction template persistence operations required by application use cases.
+ */
+export interface TransactionTemplateRepository {
+  findById(id: string): Promise<TransactionTemplate | null>;
+  listAll(): Promise<TransactionTemplate[]>;
+  save(template: TransactionTemplate): Promise<void>;
+}
+
+/**
+ * Port for recurring rule persistence operations required by application use cases.
+ */
+export interface RecurringRuleRepository {
+  findById(id: string): Promise<RecurringRule | null>;
+  findActiveByTemplateId(templateId: string): Promise<RecurringRule | null>;
+  listAll(): Promise<RecurringRule[]>;
+  save(rule: RecurringRule): Promise<void>;
+}
+
+/**
  * Port for transaction persistence operations required by application use cases.
  */
 export interface TransactionRepository {
@@ -43,7 +69,13 @@ export interface TransactionRepository {
 /**
  * Entity types currently supported in the local outbox.
  */
-export type OutboxEntityType = "account" | "category" | "budget" | "transaction";
+export type OutboxEntityType =
+  | "account"
+  | "category"
+  | "budget"
+  | "transaction-template"
+  | "recurring-rule"
+  | "transaction";
 
 export type OutboxOpType = "create" | "update" | "delete";
 
@@ -91,6 +123,8 @@ export type IdPurpose =
   | "account"
   | "category"
   | "budget"
+  | "transaction-template"
+  | "recurring-rule"
   | "transaction"
   | "outbox-op";
 

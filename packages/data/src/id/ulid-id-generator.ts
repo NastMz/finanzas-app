@@ -4,6 +4,8 @@ const DEFAULT_PREFIX_BY_PURPOSE: Record<IdPurpose, string> = {
   account: "acc",
   category: "cat",
   budget: "bdg",
+  "transaction-template": "tpl",
+  "recurring-rule": "rrl",
   transaction: "tx",
   "outbox-op": "op",
 };

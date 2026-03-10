@@ -2,38 +2,56 @@ import {
   addAccount,
   addBudget,
   addCategory,
+  addRecurringRule,
   addTransaction,
+  addTransactionTemplate,
   deleteAccount,
   deleteBudget,
   deleteCategory,
+  deleteRecurringRule,
   deleteTransaction,
+  deleteTransactionTemplate,
   getAccountSummary,
   listAccounts,
   listBudgets,
   listCategories,
+  listRecurringRules,
   listTransactions,
+  listTransactionTemplates,
+  runRecurringRules,
   updateAccount,
   updateBudget,
   updateCategory,
+  updateRecurringRule,
   updateTransaction,
+  updateTransactionTemplate,
   type IdGenerator,
   type AddAccountInput,
   type AddBudgetInput,
   type AddCategoryInput,
+  type AddRecurringRuleInput,
   type AddTransactionInput,
+  type AddTransactionTemplateInput,
   type DeleteAccountInput,
   type DeleteBudgetInput,
   type DeleteCategoryInput,
+  type DeleteRecurringRuleInput,
   type DeleteTransactionInput,
+  type DeleteTransactionTemplateInput,
   type GetAccountSummaryInput,
   type ListAccountsInput,
   type ListBudgetsInput,
   type ListCategoriesInput,
+  type ListRecurringRulesInput,
   type ListTransactionsInput,
+  type ListTransactionTemplatesInput,
+  type RunRecurringRulesInput,
   type UpdateAccountInput,
   type UpdateBudgetInput,
   type UpdateCategoryInput,
+  type UpdateRecurringRuleInput,
   type UpdateTransactionInput,
+  type UpdateTransactionTemplateInput,
 } from "@finanzas/application";
 import { createUlidIdGenerator } from "@finanzas/data";
 import {
@@ -55,6 +73,22 @@ export interface InMemoryBootstrap {
   addBudget(input: AddBudgetInput): ReturnType<typeof addBudget>;
   updateBudget(input: UpdateBudgetInput): ReturnType<typeof updateBudget>;
   deleteBudget(input: DeleteBudgetInput): ReturnType<typeof deleteBudget>;
+  addTransactionTemplate(
+    input: AddTransactionTemplateInput,
+  ): ReturnType<typeof addTransactionTemplate>;
+  updateTransactionTemplate(
+    input: UpdateTransactionTemplateInput,
+  ): ReturnType<typeof updateTransactionTemplate>;
+  deleteTransactionTemplate(
+    input: DeleteTransactionTemplateInput,
+  ): ReturnType<typeof deleteTransactionTemplate>;
+  addRecurringRule(input: AddRecurringRuleInput): ReturnType<typeof addRecurringRule>;
+  updateRecurringRule(
+    input: UpdateRecurringRuleInput,
+  ): ReturnType<typeof updateRecurringRule>;
+  deleteRecurringRule(
+    input: DeleteRecurringRuleInput,
+  ): ReturnType<typeof deleteRecurringRule>;
   addCategory(input: AddCategoryInput): ReturnType<typeof addCategory>;
   updateCategory(input: UpdateCategoryInput): ReturnType<typeof updateCategory>;
   deleteCategory(input: DeleteCategoryInput): ReturnType<typeof deleteCategory>;
@@ -67,11 +101,20 @@ export interface InMemoryBootstrap {
   ): ReturnType<typeof deleteTransaction>;
   listAccounts(input?: ListAccountsInput): ReturnType<typeof listAccounts>;
   listBudgets(input?: ListBudgetsInput): ReturnType<typeof listBudgets>;
+  listTransactionTemplates(
+    input?: ListTransactionTemplatesInput,
+  ): ReturnType<typeof listTransactionTemplates>;
+  listRecurringRules(
+    input?: ListRecurringRulesInput,
+  ): ReturnType<typeof listRecurringRules>;
   listCategories(input?: ListCategoriesInput): ReturnType<typeof listCategories>;
   listTransactions(input: ListTransactionsInput): ReturnType<typeof listTransactions>;
   getAccountSummary(
     input: GetAccountSummaryInput,
   ): ReturnType<typeof getAccountSummary>;
+  runRecurringRules(
+    input?: RunRecurringRulesInput,
+  ): ReturnType<typeof runRecurringRules>;
   getSyncStatus(): ReturnType<typeof runGetSyncStatus>;
   syncNow(): ReturnType<typeof runSyncNow>;
 }
@@ -98,7 +141,9 @@ export const createInMemoryBootstrap = (
     accounts,
     budgets,
     categories,
+    recurringRules,
     transactions,
+    transactionTemplates,
     outbox,
     syncState,
     clock,
@@ -174,6 +219,77 @@ export const createInMemoryBootstrap = (
       deleteBudget(
         {
           budgets,
+          outbox,
+          clock,
+          ids,
+          deviceId,
+        },
+        input,
+      ),
+    addTransactionTemplate: (input: AddTransactionTemplateInput) =>
+      addTransactionTemplate(
+        {
+          accounts,
+          templates: transactionTemplates,
+          outbox,
+          clock,
+          ids,
+          deviceId,
+        },
+        input,
+      ),
+    updateTransactionTemplate: (input: UpdateTransactionTemplateInput) =>
+      updateTransactionTemplate(
+        {
+          accounts,
+          templates: transactionTemplates,
+          outbox,
+          clock,
+          ids,
+          deviceId,
+        },
+        input,
+      ),
+    deleteTransactionTemplate: (input: DeleteTransactionTemplateInput) =>
+      deleteTransactionTemplate(
+        {
+          templates: transactionTemplates,
+          recurringRules,
+          outbox,
+          clock,
+          ids,
+          deviceId,
+        },
+        input,
+      ),
+    addRecurringRule: (input: AddRecurringRuleInput) =>
+      addRecurringRule(
+        {
+          recurringRules,
+          templates: transactionTemplates,
+          outbox,
+          clock,
+          ids,
+          deviceId,
+        },
+        input,
+      ),
+    updateRecurringRule: (input: UpdateRecurringRuleInput) =>
+      updateRecurringRule(
+        {
+          recurringRules,
+          templates: transactionTemplates,
+          outbox,
+          clock,
+          ids,
+          deviceId,
+        },
+        input,
+      ),
+    deleteRecurringRule: (input: DeleteRecurringRuleInput) =>
+      deleteRecurringRule(
+        {
+          recurringRules,
           outbox,
           clock,
           ids,
@@ -263,6 +379,20 @@ export const createInMemoryBootstrap = (
         },
         input,
       ),
+    listTransactionTemplates: (input: ListTransactionTemplatesInput = {}) =>
+      listTransactionTemplates(
+        {
+          templates: transactionTemplates,
+        },
+        input,
+      ),
+    listRecurringRules: (input: ListRecurringRulesInput = {}) =>
+      listRecurringRules(
+        {
+          recurringRules,
+        },
+        input,
+      ),
     listCategories: (input: ListCategoriesInput = {}) =>
       listCategories(
         {
@@ -275,6 +405,20 @@ export const createInMemoryBootstrap = (
         {
           accounts,
           transactions,
+        },
+        input,
+      ),
+    runRecurringRules: (input: RunRecurringRulesInput = {}) =>
+      runRecurringRules(
+        {
+          accounts,
+          transactions,
+          templates: transactionTemplates,
+          recurringRules,
+          outbox,
+          clock,
+          ids,
+          deviceId,
         },
         input,
       ),
