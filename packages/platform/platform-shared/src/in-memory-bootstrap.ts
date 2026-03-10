@@ -5,6 +5,8 @@ import {
   addRecurringRule,
   addTransaction,
   addTransactionTemplate,
+  bulkDeleteTransactions,
+  bulkUpdateTransactions,
   deleteAccount,
   deleteBudget,
   deleteCategory,
@@ -32,6 +34,8 @@ import {
   type AddRecurringRuleInput,
   type AddTransactionInput,
   type AddTransactionTemplateInput,
+  type BulkDeleteTransactionsInput,
+  type BulkUpdateTransactionsInput,
   type DeleteAccountInput,
   type DeleteBudgetInput,
   type DeleteCategoryInput,
@@ -93,6 +97,12 @@ export interface InMemoryBootstrap {
   updateCategory(input: UpdateCategoryInput): ReturnType<typeof updateCategory>;
   deleteCategory(input: DeleteCategoryInput): ReturnType<typeof deleteCategory>;
   addTransaction(input: AddTransactionInput): ReturnType<typeof addTransaction>;
+  bulkUpdateTransactions(
+    input: BulkUpdateTransactionsInput,
+  ): ReturnType<typeof bulkUpdateTransactions>;
+  bulkDeleteTransactions(
+    input: BulkDeleteTransactionsInput,
+  ): ReturnType<typeof bulkDeleteTransactions>;
   updateTransaction(
     input: UpdateTransactionInput,
   ): ReturnType<typeof updateTransaction>;
@@ -336,6 +346,29 @@ export const createInMemoryBootstrap = (
       addTransaction(
         {
           accounts,
+          transactions,
+          outbox,
+          clock,
+          ids,
+          deviceId,
+        },
+        input,
+      ),
+    bulkUpdateTransactions: (input: BulkUpdateTransactionsInput) =>
+      bulkUpdateTransactions(
+        {
+          accounts,
+          transactions,
+          outbox,
+          clock,
+          ids,
+          deviceId,
+        },
+        input,
+      ),
+    bulkDeleteTransactions: (input: BulkDeleteTransactionsInput) =>
+      bulkDeleteTransactions(
+        {
           transactions,
           outbox,
           clock,

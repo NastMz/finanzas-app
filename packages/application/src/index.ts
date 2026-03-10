@@ -6,6 +6,8 @@ export * from "./use-cases/add-category.js";
 export * from "./use-cases/add-recurring-rule.js";
 export * from "./use-cases/add-transaction.js";
 export * from "./use-cases/add-transaction-template.js";
+export * from "./use-cases/bulk-delete-transactions.js";
+export * from "./use-cases/bulk-update-transactions.js";
 export * from "./use-cases/delete-account.js";
 export * from "./use-cases/delete-budget.js";
 export * from "./use-cases/delete-category.js";

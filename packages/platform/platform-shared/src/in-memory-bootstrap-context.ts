@@ -20,6 +20,8 @@ export interface InMemoryBootstrapCommands {
   updateCategory: InMemoryBootstrap["updateCategory"];
   deleteCategory: InMemoryBootstrap["deleteCategory"];
   addTransaction: InMemoryBootstrap["addTransaction"];
+  bulkUpdateTransactions: InMemoryBootstrap["bulkUpdateTransactions"];
+  bulkDeleteTransactions: InMemoryBootstrap["bulkDeleteTransactions"];
   updateTransaction: InMemoryBootstrap["updateTransaction"];
   deleteTransaction: InMemoryBootstrap["deleteTransaction"];
   runRecurringRules: InMemoryBootstrap["runRecurringRules"];
@@ -73,6 +75,8 @@ export const createInMemoryBootstrapContext = (
     updateCategory: (input) => bootstrap.updateCategory(input),
     deleteCategory: (input) => bootstrap.deleteCategory(input),
     addTransaction: (input) => bootstrap.addTransaction(input),
+    bulkUpdateTransactions: (input) => bootstrap.bulkUpdateTransactions(input),
+    bulkDeleteTransactions: (input) => bootstrap.bulkDeleteTransactions(input),
     updateTransaction: (input) => bootstrap.updateTransaction(input),
     deleteTransaction: (input) => bootstrap.deleteTransaction(input),
     runRecurringRules: (input) => bootstrap.runRecurringRules(input),

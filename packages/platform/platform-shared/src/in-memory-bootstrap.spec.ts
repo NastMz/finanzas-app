@@ -260,6 +260,57 @@ describe("createInMemoryBootstrap", () => {
     expect(secondSync.nextCursor).toBe("3");
   });
 
+  it("supports bulk transaction quick actions through shared bootstrap wiring", async () => {
+    const app = createBootstrap();
+    const first = await app.addTransaction(
+      createTransactionInputFixture({
+        amountMinor: -120000,
+        categoryId: "food",
+        date: new Date("2026-03-03T10:00:00.000Z"),
+      }),
+    );
+    const second = await app.addTransaction(
+      createTransactionInputFixture({
+        amountMinor: -50000,
+        categoryId: "transport",
+        date: new Date("2026-03-04T10:00:00.000Z"),
+      }),
+    );
+
+    await app.bulkUpdateTransactions({
+      transactionIds: [first.transaction.id, second.transaction.id],
+      categoryId: "misc",
+      tags: ["Quick", "Review"],
+    });
+
+    const updatedTransactions = await app.listTransactions({
+      accountId: "acc-main",
+    });
+    expect(updatedTransactions.transactions.map((transaction) => transaction.categoryId)).toEqual([
+      "misc",
+      "misc",
+    ]);
+    expect(updatedTransactions.transactions[0]?.tags).toEqual(["quick", "review"]);
+
+    await app.bulkDeleteTransactions({
+      transactionIds: [first.transaction.id, second.transaction.id],
+    });
+
+    const activeTransactions = await app.listTransactions({
+      accountId: "acc-main",
+    });
+    expect(activeTransactions.transactions).toHaveLength(0);
+
+    const allTransactions = await app.listTransactions({
+      accountId: "acc-main",
+      includeDeleted: true,
+    });
+    expect(allTransactions.transactions).toHaveLength(2);
+    expect(allTransactions.transactions.every((transaction) => transaction.deletedAt !== null)).toBe(
+      true,
+    );
+  });
+
   it("reports failed operations when server ack is partial", async () => {
     const app = createBootstrap({
       syncApi: createPartialAckSyncApiClient(),

@@ -101,4 +101,43 @@ describe("createInMemoryBootstrapContext", () => {
     expect(syncStatus.status).toBe("pending");
     expect(syncStatus.counts.pending).toBe(1);
   });
+
+  it("exposes bulk transaction actions via command facade", async () => {
+    const bootstrap = createInMemoryBootstrap({
+      defaultDeviceId: "platform-context-device",
+    });
+    const context = createInMemoryBootstrapContext(bootstrap);
+
+    const first = await context.commands.addTransaction({
+      accountId: "acc-main",
+      amountMinor: -45000,
+      currency: "COP",
+      date: new Date("2026-03-03T10:00:00.000Z"),
+      categoryId: "food",
+    });
+    const second = await context.commands.addTransaction({
+      accountId: "acc-main",
+      amountMinor: -25000,
+      currency: "COP",
+      date: new Date("2026-03-04T10:00:00.000Z"),
+      categoryId: "transport",
+    });
+
+    await context.commands.bulkUpdateTransactions({
+      transactionIds: [first.transaction.id, second.transaction.id],
+      categoryId: "misc",
+    });
+    await context.commands.bulkDeleteTransactions({
+      transactionIds: [first.transaction.id, second.transaction.id],
+    });
+
+    const transactions = await context.queries.listTransactions({
+      accountId: "acc-main",
+      includeDeleted: true,
+    });
+    expect(transactions.transactions).toHaveLength(2);
+    expect(transactions.transactions.every((transaction) => transaction.deletedAt !== null)).toBe(
+      true,
+    );
+  });
 });

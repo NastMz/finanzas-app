@@ -48,6 +48,7 @@ Cubrir el dominio base y los casos de uso operativos del manejo diario del diner
 - `[x]` Casos de uso CRUD para categorias
 - `[x]` Reglas recurrentes y plantillas de movimientos
 - `[x]` Casos de uso CRUD para transacciones
+- `[x]` Casos de uso de edicion masiva o acciones rapidas sobre movimientos
 - `[x]` Resumen de cuenta por periodo con totales, top categorias y recientes
 - `[x]` Validaciones adicionales para escenarios multi-moneda
 - `[x]` Soft delete con tombstones
@@ -56,7 +57,6 @@ Cubrir el dominio base y los casos de uso operativos del manejo diario del diner
 
 ### Pendiente
 
-- `[ ]` Casos de uso de edicion masiva o acciones rapidas sobre movimientos
 - `[ ]` Importacion y exportacion de datos
 
 ## Fase 3. Sync y persistencia real
