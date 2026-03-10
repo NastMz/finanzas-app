@@ -83,6 +83,7 @@ Pasar de un flujo validado en memoria a una base robusta de persistencia local y
 - `[ ]` Persistencia web real sobre IndexedDB
 - `[ ]` Persistencia mobile y desktop real sobre SQLite
 - `[ ]` Mecanismo de migraciones de datos
+- `[ ]` Backend inicial de sync desplegable junto al host web en Vercel
 - `[ ]` Politica de reintentos y backoff mas completa para sync
 - `[ ]` Manejo explicito de conflictos con estrategia por entidad
 - `[ ]` UI de resolucion de conflictos
@@ -135,6 +136,9 @@ Llevar la experiencia web de preview a una aplicacion operable de punta a punta.
 
 ### Pendiente
 
+- `[ ]` Migrar `apps/web` de Vite a Next.js manteniendo la aplicacion financiera como SPA client-side
+- `[ ]` Exponer endpoints iniciales de backend desde el host web para despliegue monolitico en Vercel
+- `[ ]` Mantener el host web como capa de entrega/transporte sin mover dominio ni casos de uso fuera de `packages/*`
 - `[ ]` Formularios reales de captura y edicion de movimientos
 - `[ ]` Filtros reales en movimientos
 - `[ ]` Busqueda, orden y segmentacion por cuenta/categoria/fecha
@@ -203,6 +207,8 @@ Tener capacidad de diagnostico, monitoreo y control de calidad continua.
 ### Pendiente
 
 - `[ ]` Lint estable como parte del flujo de trabajo diario
+- `[ ]` Definir scripts por workspace (`build`, `dev`, `lint`, `test`, `typecheck`) como prerequisito de orquestacion
+- `[ ]` Adoptar `Turborepo` para ejecucion incremental y cache local/remota del monorepo
 - `[ ]` Telemetria estructurada transversal
 - `[ ]` Cobertura de pruebas para escenarios de sync complejos
 - `[ ]` Pruebas end-to-end de flujos criticos
