@@ -9,25 +9,48 @@ import styles from "./account-header.module.css";
  */
 export interface AccountHeaderProps {
   sync: FinanzasAccountTabViewModel["sync"];
+  accounts: FinanzasAccountTabViewModel["accounts"];
+  categories: FinanzasAccountTabViewModel["categories"];
 }
 
-export const AccountHeader = ({ sync }: AccountHeaderProps): JSX.Element => (
+export const AccountHeader = ({
+  sync,
+  accounts,
+  categories,
+}: AccountHeaderProps): JSX.Element => (
   <header className={styles.header}>
     <div className={styles.titleGroup}>
       <p className={styles.kicker}>Control Center</p>
       <h1 className={styles.title}>Cuenta</h1>
       <p className={styles.subtitle}>
-        Configuración local, salud de sincronización y estado del catálogo.
+        Configuracion local, salud de sincronizacion y estado del catalogo.
       </p>
       <p className={styles.period}>
         Cursor actual: {sync.cursor ?? "sin cursor"} · Pendientes: {sync.pendingOps}
       </p>
     </div>
 
-    <StatusPill
-      label={getSyncStatusLabel(sync.status)}
-      tone={getSyncTone(sync.status)}
-      className={styles.syncBadge ?? ""}
-    />
+    <div className={styles.sideBlock}>
+      <StatusPill
+        label={getSyncStatusLabel(sync.status)}
+        tone={getSyncTone(sync.status)}
+        className={styles.syncBadge ?? ""}
+      />
+
+      <div className={styles.metrics}>
+        <article className={styles.metricCard}>
+          <span className={styles.metricLabel}>Cuentas</span>
+          <strong className={styles.metricValue}>{accounts.total}</strong>
+        </article>
+        <article className={styles.metricCard}>
+          <span className={styles.metricLabel}>Categorias</span>
+          <strong className={styles.metricValue}>{categories.total}</strong>
+        </article>
+        <article className={styles.metricCard}>
+          <span className={styles.metricLabel}>Fallidos</span>
+          <strong className={styles.metricValue}>{sync.failedOps}</strong>
+        </article>
+      </div>
+    </div>
   </header>
 );

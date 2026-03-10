@@ -16,8 +16,8 @@ export const TransactionListCard = ({
   transactionCount,
 }: TransactionListCardProps): JSX.Element => (
   <SurfaceCard
-    title="Últimos movimientos"
-    subtitle={`${transactionCount} en el periodo`}
+    title="Actividad reciente"
+    subtitle={`${transactionCount} movimientos en el periodo`}
   >
     <TransactionList transactions={transactions} />
   </SurfaceCard>

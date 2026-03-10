@@ -1,32 +1,29 @@
 .rows {
-  display: flex;
-  flex-direction: column;
-  gap: var(--fz-space-2);
+  display: grid;
+  gap: var(--fz-space-3);
 }
 
 .row {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  padding-bottom: var(--fz-space-2);
-  border-bottom: 1px solid var(--fz-color-border-subtle);
-}
-
-.row:last-child {
-  border-bottom: none;
-  padding-bottom: 0;
+  display: grid;
+  gap: var(--fz-space-2);
+  padding: var(--fz-space-4);
+  border-radius: var(--fz-radius-lg);
+  border: 1px solid color-mix(in srgb, var(--fz-color-border-subtle) 88%, white);
+  background: rgba(255, 255, 255, 0.7);
 }
 
 .label {
   color: var(--fz-color-text-muted);
-  font-size: var(--fz-font-size-sm);
+  font-size: var(--fz-font-size-xs);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-weight: 800;
 }
 
 .value {
-  font-weight: 760;
-  letter-spacing: -0.015em;
-  min-width: 10.25rem;
-  text-align: right;
+  font-size: clamp(1.2rem, 1.8vw, 1.45rem);
+  font-weight: 800;
+  letter-spacing: -0.05em;
   font-variant-numeric: tabular-nums lining-nums;
   font-feature-settings: "tnum" 1, "lnum" 1;
 }

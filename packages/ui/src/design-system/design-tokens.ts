@@ -4,32 +4,32 @@
 export const designTokens = {
   colors: {
     brand: {
-      300: "#7dd3fc",
-      400: "#38bdf8",
-      500: "#0ea5e9",
-      600: "#0284c7",
+      300: "#8fb0ff",
+      400: "#2f6bff",
+      500: "#174ae6",
+      600: "#0f2fa8",
     },
     background: {
-      canvas: "#070b16",
-      elevated: "#0a1222",
-      surface: "#0f172a",
-      muted: "#1e293b",
+      canvas: "#eef3fb",
+      elevated: "#ffffff",
+      surface: "#f8fbff",
+      muted: "#dde6f3",
     },
     border: {
-      subtle: "rgba(148, 163, 184, 0.14)",
-      strong: "rgba(148, 163, 184, 0.24)",
+      subtle: "rgba(15, 23, 42, 0.08)",
+      strong: "rgba(15, 23, 42, 0.16)",
     },
     text: {
-      primary: "#f8fafc",
-      secondary: "#cbd5e1",
-      muted: "#94a3b8",
+      primary: "#0f172a",
+      secondary: "#475569",
+      muted: "#64748b",
     },
     status: {
-      success: "#86efac",
-      warning: "#fde68a",
-      danger: "#fecaca",
-      income: "#86efac",
-      expense: "#fda4af",
+      success: "#14946b",
+      warning: "#d97706",
+      danger: "#dc5c54",
+      income: "#14946b",
+      expense: "#dc5c54",
     },
   },
   spacing: {
@@ -43,15 +43,15 @@ export const designTokens = {
     10: "2.5rem",
   },
   radius: {
-    sm: "0.5rem",
-    md: "0.75rem",
-    lg: "1rem",
-    xl: "1.125rem",
+    sm: "0.75rem",
+    md: "1rem",
+    lg: "1.5rem",
+    xl: "1.75rem",
     pill: "9999px",
   },
   typography: {
     fontFamily:
-      "Inter, ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", sans-serif",
+      "\"Plus Jakarta Sans\", \"Avenir Next\", \"Segoe UI\", sans-serif",
     fontSize: {
       xs: "0.75rem",
       sm: "0.875rem",
@@ -61,20 +61,20 @@ export const designTokens = {
       "2xl": "1.875rem",
     },
     fontWeight: {
-      regular: 400,
+      regular: 500,
       medium: 500,
       semibold: 600,
-      bold: 700,
+      bold: 800,
     },
     letterSpacing: {
-      tight: "-0.02em",
+      tight: "-0.03em",
       normal: "0",
-      wide: "0.12em",
+      wide: "0.1em",
     },
   },
   shadow: {
-    card: "0 18px 44px rgba(2, 6, 23, 0.34), inset 0 1px 0 rgba(255, 255, 255, 0.05)",
-    soft: "0 8px 24px rgba(2, 6, 23, 0.24)",
+    card: "0 28px 60px rgba(15, 23, 42, 0.08), 0 6px 18px rgba(15, 23, 42, 0.06)",
+    soft: "0 18px 40px rgba(15, 23, 42, 0.08)",
   },
 } as const;
 

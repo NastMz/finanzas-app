@@ -5,13 +5,21 @@
 
 .grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: minmax(0, 1.18fr) minmax(18rem, 0.82fr);
   gap: var(--fz-space-4);
   align-items: start;
 }
 
-@media (max-width: 900px) {
+.syncPanel {
+  grid-row: span 2;
+}
+
+@media (max-width: 960px) {
   .grid {
     grid-template-columns: 1fr;
+  }
+
+  .syncPanel {
+    grid-row: auto;
   }
 }

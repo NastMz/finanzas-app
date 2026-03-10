@@ -21,11 +21,11 @@ const resolveDefaultCategoryName = (
   categories: FinanzasRegisterTabViewModel["categories"],
 ): string => {
   if (defaultCategoryId === null) {
-    return "Sin sugerencia automática";
+    return "Sin sugerencia automatica";
   }
 
   const category = categories.find((item) => item.id === defaultCategoryId);
-  return category?.name ?? "Sin sugerencia automática";
+  return category?.name ?? "Sin sugerencia automatica";
 };
 
 export const RegisterQuickAddCard = ({
@@ -46,40 +46,50 @@ export const RegisterQuickAddCard = ({
       className={styles.quickCard ?? ""}
       contentClassName={styles.quickContent ?? ""}
     >
-      <section className={styles.amountField} aria-label="Monto de transacción">
-        <span className={styles.amountLabel}>Monto</span>
+      <section className={styles.amountField} aria-label="Monto de transaccion">
+        <div className={styles.amountHeader}>
+          <span className={styles.amountLabel}>Monto</span>
+          <div className={styles.modeSwitch}>
+            <button type="button" className={`${styles.modeButton} ${styles.modeButtonActive}`}>
+              Gasto
+            </button>
+            <button type="button" className={styles.modeButton}>
+              Ingreso
+            </button>
+          </div>
+        </div>
+
         <p className={styles.amountValue}>
           <span className={styles.currency}>{account.currency}</span>
-          <span className={styles.amountPlaceholder}>—</span>
+          <span className={styles.amountPlaceholder}>--</span>
+        </p>
+
+        <p className={styles.amountHelper}>
+          Preparado para registrar un movimiento desde la cuenta activa.
         </p>
       </section>
 
       <div className={styles.fieldList}>
         <div className={styles.inputRow}>
-          <span className={styles.label}>Tipo</span>
-          <span className={styles.value}>Gasto</span>
-          <span className={styles.affordance} aria-hidden="true">&gt;</span>
-        </div>
-        <div className={styles.inputRow}>
           <span className={styles.label}>Cuenta</span>
           <span className={styles.value}>{account.name}</span>
-          <span className={styles.affordance} aria-hidden="true">&gt;</span>
         </div>
         <div className={styles.inputRow}>
-          <span className={styles.label}>Categoría sugerida</span>
+          <span className={styles.label}>Categoria sugerida</span>
           <span className={styles.value}>{defaultCategoryName}</span>
-          <span className={styles.affordance} aria-hidden="true">&gt;</span>
         </div>
         <div className={styles.inputRow}>
           <span className={styles.label}>Fecha</span>
           <span className={styles.value}>{formatDateLabel(defaultDate)}</span>
-          <span className={styles.affordance} aria-hidden="true">&gt;</span>
         </div>
       </div>
 
-      <button type="button" className={styles.primaryAction}>
-        Registrar movimiento
-      </button>
+      <div className={styles.footerBar}>
+        <p className={styles.footerCopy}>Todo listo para capturar sin cambiar de contexto.</p>
+        <button type="button" className={styles.primaryAction}>
+          Registrar movimiento
+        </button>
+      </div>
     </SurfaceCard>
   );
 };

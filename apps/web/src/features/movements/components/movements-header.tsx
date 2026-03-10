@@ -11,19 +11,23 @@ export interface MovementsHeaderProps {
   account: FinanzasMovementsTabViewModel["account"];
   includeDeleted: boolean;
   sync: FinanzasMovementsTabViewModel["sync"];
+  itemCount: number;
+  deletedCount: number;
 }
 
 export const MovementsHeader = ({
   account,
   includeDeleted,
   sync,
+  itemCount,
+  deletedCount,
 }: MovementsHeaderProps): JSX.Element => (
   <header className={styles.header}>
     <div className={styles.titleGroup}>
       <p className={styles.kicker}>Ledger</p>
       <h1 className={styles.title}>Movimientos</h1>
       <p className={styles.subtitle}>
-        Cuenta: {account.name} ({account.currency})
+        Cuenta: {account.name}{" "}({account.currency})
       </p>
       <p className={styles.period}>
         {includeDeleted
@@ -32,10 +36,27 @@ export const MovementsHeader = ({
       </p>
     </div>
 
-    <StatusPill
-      label={getSyncStatusLabel(sync.status)}
-      tone={getSyncTone(sync.status)}
-      className={styles.syncBadge ?? ""}
-    />
+    <div className={styles.sideBlock}>
+      <StatusPill
+        label={getSyncStatusLabel(sync.status)}
+        tone={getSyncTone(sync.status)}
+        className={styles.syncBadge ?? ""}
+      />
+
+      <div className={styles.metrics}>
+        <article className={styles.metricCard}>
+          <span className={styles.metricLabel}>Movimientos</span>
+          <strong className={styles.metricValue}>{itemCount}</strong>
+        </article>
+        <article className={styles.metricCard}>
+          <span className={styles.metricLabel}>Eliminados</span>
+          <strong className={styles.metricValue}>{deletedCount}</strong>
+        </article>
+        <article className={styles.metricCard}>
+          <span className={styles.metricLabel}>Tipo de cuenta</span>
+          <strong className={styles.metricValue}>{account.type}</strong>
+        </article>
+      </div>
+    </div>
   </header>
 );

@@ -13,25 +13,46 @@ export interface MovementsTotalsCardProps {
   itemCount: number;
 }
 
+const getAbsoluteMinor = (amountMinor: bigint): bigint =>
+  amountMinor < 0n ? -amountMinor : amountMinor;
+
 export const MovementsTotalsCard = ({
   currency,
   totals,
   itemCount,
-}: MovementsTotalsCardProps): JSX.Element => (
-  <SurfaceCard title="Totales" subtitle={`${itemCount} movimientos`}>
-    <div className={styles.rows}>
-      <div className={styles.row}>
-        <p className={styles.label}>Ingresos</p>
-        <p className={`${styles.value} ${styles.income}`}>
-          {formatMinorAmount(totals.incomeMinor, currency)}
-        </p>
+}: MovementsTotalsCardProps): JSX.Element => {
+  const incomeMinor = getAbsoluteMinor(totals.incomeMinor);
+  const expenseMinor = getAbsoluteMinor(totals.expenseMinor);
+  const netMinor = incomeMinor - expenseMinor;
+
+  const items = [
+    {
+      label: "Ingresos",
+      value: formatMinorAmount(incomeMinor, currency),
+      tone: styles.income,
+    },
+    {
+      label: "Gastos",
+      value: formatMinorAmount(expenseMinor, currency),
+      tone: styles.expense,
+    },
+    {
+      label: "Neto",
+      value: formatMinorAmount(netMinor, currency),
+      tone: netMinor < 0n ? styles.expense : styles.income,
+    },
+  ];
+
+  return (
+    <SurfaceCard title="Totales" subtitle={`${itemCount} movimientos`}>
+      <div className={styles.rows}>
+        {items.map((item) => (
+          <article key={item.label} className={styles.row}>
+            <p className={styles.label}>{item.label}</p>
+            <strong className={`${styles.value} ${item.tone}`}>{item.value}</strong>
+          </article>
+        ))}
       </div>
-      <div className={styles.row}>
-        <p className={styles.label}>Gastos</p>
-        <p className={`${styles.value} ${styles.expense}`}>
-          {formatMinorAmount(totals.expenseMinor, currency)}
-        </p>
-      </div>
-    </div>
-  </SurfaceCard>
-);
+    </SurfaceCard>
+  );
+};

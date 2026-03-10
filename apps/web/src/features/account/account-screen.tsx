@@ -25,10 +25,16 @@ export const AccountScreen = ({ viewModel }: AccountScreenProps): JSX.Element =>
     containerClassName={styles.container ?? ""}
   >
     <section data-view="account" className={styles.content}>
-      <AccountHeader sync={viewModel.sync} />
+      <AccountHeader
+        sync={viewModel.sync}
+        accounts={viewModel.accounts}
+        categories={viewModel.categories}
+      />
 
       <section className={styles.grid}>
-        <SyncOverviewCard sync={viewModel.sync} />
+        <div className={styles.syncPanel}>
+          <SyncOverviewCard sync={viewModel.sync} />
+        </div>
         <EntityMetricsCard
           title="Cuentas"
           subtitle="Estado de entidades de cuenta"
@@ -36,7 +42,7 @@ export const AccountScreen = ({ viewModel }: AccountScreenProps): JSX.Element =>
         />
         <EntityMetricsCard
           title="Categorías"
-          subtitle="Estado de catálogo local"
+          subtitle="Estado de catalogo local"
           metrics={viewModel.categories}
         />
       </section>

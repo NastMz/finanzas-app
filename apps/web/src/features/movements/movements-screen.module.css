@@ -5,10 +5,26 @@
 
 .grid {
   display: grid;
-  grid-template-columns: minmax(0, 1fr);
+  grid-template-columns: minmax(18rem, 0.72fr) minmax(0, 1.28fr);
   gap: var(--fz-space-4);
+  align-items: start;
 }
 
-.spanFull {
-  grid-column: 1 / -1;
+.summaryColumn {
+  position: sticky;
+  top: var(--fz-space-4);
+}
+
+.listColumn {
+  min-width: 0;
+}
+
+@media (max-width: 1080px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+
+  .summaryColumn {
+    position: static;
+  }
 }

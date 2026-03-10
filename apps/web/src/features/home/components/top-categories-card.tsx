@@ -42,6 +42,8 @@ const toPercentage = (valueMinor: bigint, totalMinor: bigint): number => {
   return basisPoints / 100;
 };
 
+const formatRank = (index: number): string => String(index + 1).padStart(2, "0");
+
 export const TopCategoriesCard = ({
   currency,
   categories,
@@ -50,29 +52,34 @@ export const TopCategoriesCard = ({
   const totalMinor = resolveTotalExpenseMinor(categories, totalExpenseMinor);
 
   return (
-    <SurfaceCard title="Top categorías" subtitle="Gastos más representativos">
+    <SurfaceCard title="Donde se va el dinero" subtitle="Participacion del gasto">
       {categories.length === 0
-        ? <p className={styles.empty}>Sin datos de categorías en el periodo.</p>
+        ? <p className={styles.empty}>Sin datos de categorias en el periodo.</p>
         : (
           <ul className={styles.list}>
-            {categories.map((category) => {
+            {categories.map((category, index) => {
               const percentage = toPercentage(category.expenseMinor, totalMinor);
 
               return (
                 <li key={category.categoryId} className={styles.item}>
-                  <div className={styles.row}>
-                    <p className={styles.name}>{category.categoryName}</p>
-                    <p className={styles.percent}>{percentage.toFixed(1)}%</p>
+                  <div className={styles.headerRow}>
+                    <div className={styles.identityBlock}>
+                      <span className={styles.rank}>{formatRank(index)}</span>
+                      <div className={styles.nameBlock}>
+                        <p className={styles.name}>{category.categoryName}</p>
+                        <p className={styles.helper}>{percentage.toFixed(1)}% del gasto total</p>
+                      </div>
+                    </div>
+                    <strong className={styles.amount}>
+                      {formatMinorAmount(category.expenseMinor, currency)}
+                    </strong>
                   </div>
                   <div className={styles.track} aria-hidden="true">
                     <div
                       className={styles.fill}
-                      style={{ width: `${Math.min(100, Math.max(6, percentage))}%` }}
+                      style={{ width: `${Math.min(100, Math.max(8, percentage))}%` }}
                     />
                   </div>
-                  <strong className={styles.amount}>
-                    {formatMinorAmount(category.expenseMinor, currency)}
-                  </strong>
                 </li>
               );
             })}

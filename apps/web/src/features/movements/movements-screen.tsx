@@ -21,35 +21,43 @@ export interface MovementsScreenProps {
  */
 export const MovementsScreen = ({
   viewModel,
-}: MovementsScreenProps): JSX.Element => (
-  <DashboardPage
-    className={styles.page ?? ""}
-    containerClassName={styles.container ?? ""}
-  >
-    <section data-view="movements" className={styles.content}>
-      <MovementsHeader
-        account={viewModel.account}
-        includeDeleted={viewModel.includeDeleted}
-        sync={viewModel.sync}
-      />
+}: MovementsScreenProps): JSX.Element => {
+  const deletedCount = viewModel.items.filter((item) => item.deleted).length;
 
-      <section className={styles.grid}>
-        <MovementsTotalsCard
-          currency={viewModel.account.currency}
-          totals={viewModel.totals}
+  return (
+    <DashboardPage
+      className={styles.page ?? ""}
+      containerClassName={styles.container ?? ""}
+    >
+      <section data-view="movements" className={styles.content}>
+        <MovementsHeader
+          account={viewModel.account}
+          includeDeleted={viewModel.includeDeleted}
+          sync={viewModel.sync}
           itemCount={viewModel.items.length}
+          deletedCount={deletedCount}
         />
 
-        <div className={styles.spanFull}>
-          <MovementsListCard
-            items={viewModel.items}
-            includeDeleted={viewModel.includeDeleted}
-          />
-        </div>
+        <section className={styles.grid}>
+          <aside className={styles.summaryColumn}>
+            <MovementsTotalsCard
+              currency={viewModel.account.currency}
+              totals={viewModel.totals}
+              itemCount={viewModel.items.length}
+            />
+          </aside>
+
+          <div className={styles.listColumn}>
+            <MovementsListCard
+              items={viewModel.items}
+              includeDeleted={viewModel.includeDeleted}
+            />
+          </div>
+        </section>
       </section>
-    </section>
-  </DashboardPage>
-);
+    </DashboardPage>
+  );
+};
 
 /**
  * Renders the Movements tab (`Movimientos`) as HTML.

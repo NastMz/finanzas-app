@@ -35,7 +35,10 @@ export const RegisterCategoriesCard = ({
     >
       <div className={styles.columns}>
         <section className={styles.column}>
-          <h3 className={styles.title}>Gastos</h3>
+          <div className={styles.columnHeader}>
+            <h3 className={styles.title}>Gastos</h3>
+            <span className={styles.count}>{expense.length}</span>
+          </div>
           <ul className={styles.items}>
             {expense.map((category) => (
               <li
@@ -49,7 +52,10 @@ export const RegisterCategoriesCard = ({
         </section>
 
         <section className={styles.column}>
-          <h3 className={styles.title}>Ingresos</h3>
+          <div className={styles.columnHeader}>
+            <h3 className={styles.title}>Ingresos</h3>
+            <span className={styles.count}>{income.length}</span>
+          </div>
           <ul className={styles.items}>
             {income.map((category) => (
               <li

@@ -26,14 +26,15 @@ export const HomeScreen = ({ viewModel }: HomeScreenProps): JSX.Element => (
     containerClassName={styles.container ?? ""}
   >
     <section data-view="home" className={styles.content}>
-      <HomeHeader
-        account={viewModel.account}
-        period={viewModel.period}
-        totals={viewModel.totals}
-        sync={viewModel.sync}
-      />
+      <section className={styles.heroGrid}>
+        <HomeHeader
+          account={viewModel.account}
+          period={viewModel.period}
+          totals={viewModel.totals}
+          sync={viewModel.sync}
+          transactionCount={viewModel.transactionCount}
+        />
 
-      <section className={styles.statsSection}>
         <SummaryCard
           currency={viewModel.account.currency}
           totals={viewModel.totals}

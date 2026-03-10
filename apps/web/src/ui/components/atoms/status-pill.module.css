@@ -1,36 +1,38 @@
 .badge {
   border-radius: var(--fz-radius-pill);
-  padding: var(--fz-space-2) var(--fz-space-4);
+  padding: 0.5rem 0.88rem;
   display: inline-flex;
   align-items: center;
   gap: var(--fz-space-2);
   font-size: var(--fz-font-size-xs);
-  font-weight: var(--fz-font-weight-semibold);
-  letter-spacing: 0.01em;
+  font-weight: 700;
+  letter-spacing: 0.02em;
   border: 1px solid transparent;
+  backdrop-filter: blur(10px);
 }
 
 .dot {
-  width: 0.5rem;
-  height: 0.5rem;
+  width: 0.45rem;
+  height: 0.45rem;
   border-radius: var(--fz-radius-pill);
   background: currentColor;
+  box-shadow: 0 0 0 0.18rem color-mix(in srgb, currentColor 18%, transparent);
 }
 
 .success {
   color: var(--fz-color-status-success);
-  background: rgba(34, 197, 94, 0.16);
-  border-color: rgba(34, 197, 94, 0.42);
+  background: color-mix(in srgb, var(--fz-color-status-success) 10%, white);
+  border-color: color-mix(in srgb, var(--fz-color-status-success) 18%, white);
 }
 
 .warning {
   color: var(--fz-color-status-warning);
-  background: rgba(250, 204, 21, 0.16);
-  border-color: rgba(250, 204, 21, 0.42);
+  background: color-mix(in srgb, var(--fz-color-status-warning) 10%, white);
+  border-color: color-mix(in srgb, var(--fz-color-status-warning) 18%, white);
 }
 
 .danger {
   color: var(--fz-color-status-danger);
-  background: rgba(248, 113, 113, 0.16);
-  border-color: rgba(248, 113, 113, 0.42);
+  background: color-mix(in srgb, var(--fz-color-status-danger) 10%, white);
+  border-color: color-mix(in srgb, var(--fz-color-status-danger) 18%, white);
 }

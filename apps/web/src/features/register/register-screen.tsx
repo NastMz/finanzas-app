@@ -31,6 +31,8 @@ export const RegisterScreen = ({
       <RegisterHeader
         account={viewModel.account}
         defaultDate={viewModel.defaultDate}
+        categoryCount={viewModel.categories.length}
+        suggestedCount={viewModel.suggestedCategoryIds.length}
       />
 
       <section className={styles.grid}>
@@ -44,10 +46,11 @@ export const RegisterScreen = ({
           categories={viewModel.categories}
           suggestedCategoryIds={viewModel.suggestedCategoryIds}
         />
-        <div className={styles.spanFull}>
-          <RegisterCategoriesCard categories={viewModel.categories} />
-        </div>
       </section>
+
+      <div className={styles.catalogSection}>
+        <RegisterCategoriesCard categories={viewModel.categories} />
+      </div>
     </section>
   </DashboardPage>
 );
