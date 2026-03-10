@@ -24,6 +24,7 @@ export interface InMemoryBootstrapCommands {
   bulkDeleteTransactions: InMemoryBootstrap["bulkDeleteTransactions"];
   updateTransaction: InMemoryBootstrap["updateTransaction"];
   deleteTransaction: InMemoryBootstrap["deleteTransaction"];
+  importData: InMemoryBootstrap["importData"];
   runRecurringRules: InMemoryBootstrap["runRecurringRules"];
   syncNow: InMemoryBootstrap["syncNow"];
 }
@@ -39,6 +40,7 @@ export interface InMemoryBootstrapQueries {
   listCategories: InMemoryBootstrap["listCategories"];
   listTransactions: InMemoryBootstrap["listTransactions"];
   getAccountSummary: InMemoryBootstrap["getAccountSummary"];
+  exportData: InMemoryBootstrap["exportData"];
   getSyncStatus: InMemoryBootstrap["getSyncStatus"];
 }
 
@@ -79,6 +81,7 @@ export const createInMemoryBootstrapContext = (
     bulkDeleteTransactions: (input) => bootstrap.bulkDeleteTransactions(input),
     updateTransaction: (input) => bootstrap.updateTransaction(input),
     deleteTransaction: (input) => bootstrap.deleteTransaction(input),
+    importData: (input) => bootstrap.importData(input),
     runRecurringRules: (input) => bootstrap.runRecurringRules(input),
     syncNow: () => bootstrap.syncNow(),
   },
@@ -90,6 +93,7 @@ export const createInMemoryBootstrapContext = (
     listCategories: (input) => bootstrap.listCategories(input),
     listTransactions: (input) => bootstrap.listTransactions(input),
     getAccountSummary: (input) => bootstrap.getAccountSummary(input),
+    exportData: () => bootstrap.exportData(),
     getSyncStatus: () => bootstrap.getSyncStatus(),
   },
 });

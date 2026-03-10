@@ -13,7 +13,9 @@ import {
   deleteRecurringRule,
   deleteTransaction,
   deleteTransactionTemplate,
+  exportData,
   getAccountSummary,
+  importData,
   listAccounts,
   listBudgets,
   listCategories,
@@ -42,7 +44,9 @@ import {
   type DeleteRecurringRuleInput,
   type DeleteTransactionInput,
   type DeleteTransactionTemplateInput,
+  type ExportDataResult,
   type GetAccountSummaryInput,
+  type ImportDataInput,
   type ListAccountsInput,
   type ListBudgetsInput,
   type ListCategoriesInput,
@@ -109,6 +113,7 @@ export interface InMemoryBootstrap {
   deleteTransaction(
     input: DeleteTransactionInput,
   ): ReturnType<typeof deleteTransaction>;
+  importData(input: ImportDataInput): ReturnType<typeof importData>;
   listAccounts(input?: ListAccountsInput): ReturnType<typeof listAccounts>;
   listBudgets(input?: ListBudgetsInput): ReturnType<typeof listBudgets>;
   listTransactionTemplates(
@@ -122,6 +127,7 @@ export interface InMemoryBootstrap {
   getAccountSummary(
     input: GetAccountSummaryInput,
   ): ReturnType<typeof getAccountSummary>;
+  exportData(): Promise<ExportDataResult>;
   runRecurringRules(
     input?: RunRecurringRulesInput,
   ): ReturnType<typeof runRecurringRules>;
@@ -400,6 +406,24 @@ export const createInMemoryBootstrap = (
         },
         input,
       ),
+    importData: async (input: ImportDataInput) => {
+      const result = await importData(
+        {
+          accounts,
+          categories,
+          budgets,
+          templates: transactionTemplates,
+          recurringRules,
+          transactions,
+        },
+        input,
+      );
+
+      await outbox.replaceAll([]);
+      await syncState.setCursor("0");
+
+      return result;
+    },
     listAccounts: (input: ListAccountsInput = {}) =>
       listAccounts(
         {
@@ -465,6 +489,16 @@ export const createInMemoryBootstrap = (
         },
         input,
       ),
+    exportData: () =>
+      exportData({
+        accounts,
+        categories,
+        budgets,
+        templates: transactionTemplates,
+        recurringRules,
+        transactions,
+        clock,
+      }),
     getSyncStatus: () =>
       runGetSyncStatus({
         outbox,

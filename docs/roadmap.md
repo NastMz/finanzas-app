@@ -38,7 +38,7 @@ Cubrir el dominio base y los casos de uso operativos del manejo diario del diner
 
 ### Estado general
 
-`[~]` Base implementada
+`[x]` Completada
 
 ### Implementado
 
@@ -49,15 +49,12 @@ Cubrir el dominio base y los casos de uso operativos del manejo diario del diner
 - `[x]` Reglas recurrentes y plantillas de movimientos
 - `[x]` Casos de uso CRUD para transacciones
 - `[x]` Casos de uso de edicion masiva o acciones rapidas sobre movimientos
+- `[x]` Importacion y exportacion de datos
 - `[x]` Resumen de cuenta por periodo con totales, top categorias y recientes
 - `[x]` Validaciones adicionales para escenarios multi-moneda
 - `[x]` Soft delete con tombstones
 - `[x]` IDs tipados por proposito y generadores para runtime y pruebas
 - `[x]` Adaptadores in-memory para desarrollo y testing
-
-### Pendiente
-
-- `[ ]` Importacion y exportacion de datos
 
 ## Fase 3. Sync y persistencia real
 

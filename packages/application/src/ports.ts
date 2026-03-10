@@ -14,6 +14,7 @@ export interface AccountRepository {
   findById(id: string): Promise<Account | null>;
   listAll(): Promise<Account[]>;
   save(account: Account): Promise<void>;
+  replaceAll(accounts: Account[]): Promise<void>;
 }
 
 /**
@@ -23,6 +24,7 @@ export interface CategoryRepository {
   findById(id: string): Promise<Category | null>;
   listAll(): Promise<Category[]>;
   save(category: Category): Promise<void>;
+  replaceAll(categories: Category[]): Promise<void>;
 }
 
 /**
@@ -36,6 +38,7 @@ export interface BudgetRepository {
   ): Promise<Budget | null>;
   listAll(): Promise<Budget[]>;
   save(budget: Budget): Promise<void>;
+  replaceAll(budgets: Budget[]): Promise<void>;
 }
 
 /**
@@ -45,6 +48,7 @@ export interface TransactionTemplateRepository {
   findById(id: string): Promise<TransactionTemplate | null>;
   listAll(): Promise<TransactionTemplate[]>;
   save(template: TransactionTemplate): Promise<void>;
+  replaceAll(templates: TransactionTemplate[]): Promise<void>;
 }
 
 /**
@@ -55,6 +59,7 @@ export interface RecurringRuleRepository {
   findActiveByTemplateId(templateId: string): Promise<RecurringRule | null>;
   listAll(): Promise<RecurringRule[]>;
   save(rule: RecurringRule): Promise<void>;
+  replaceAll(rules: RecurringRule[]): Promise<void>;
 }
 
 /**
@@ -64,6 +69,8 @@ export interface TransactionRepository {
   save(transaction: Transaction): Promise<void>;
   findById(id: string): Promise<Transaction | null>;
   listByAccountId(accountId: string): Promise<Transaction[]>;
+  listAll(): Promise<Transaction[]>;
+  replaceAll(transactions: Transaction[]): Promise<void>;
 }
 
 /**
@@ -107,6 +114,7 @@ export interface OutboxRepository {
   markAsSent(opIds: string[]): Promise<void>;
   markAsAcked(opIds: string[]): Promise<void>;
   markAsFailed(opIds: string[], errorMessage: string): Promise<void>;
+  replaceAll(ops: OutboxOp[]): Promise<void>;
 }
 
 /**

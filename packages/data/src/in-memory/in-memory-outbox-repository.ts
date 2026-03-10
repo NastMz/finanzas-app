@@ -71,6 +71,14 @@ export class InMemoryOutboxRepository implements OutboxRepository {
     }
   }
 
+  async replaceAll(ops: OutboxOp[]): Promise<void> {
+    this.operations.length = 0;
+
+    for (const operation of ops) {
+      this.operations.push(cloneOutboxOp(operation));
+    }
+  }
+
   /**
    * Lists all operations regardless of status.
    */

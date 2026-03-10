@@ -31,6 +31,14 @@ export class InMemoryTransactionRepository implements TransactionRepository {
   async listAll(): Promise<Transaction[]> {
     return [...this.transactions.values()].map(cloneTransaction);
   }
+
+  async replaceAll(transactions: Transaction[]): Promise<void> {
+    this.transactions.clear();
+
+    for (const transaction of transactions) {
+      this.transactions.set(transaction.id, cloneTransaction(transaction));
+    }
+  }
 }
 
 const cloneTransaction = (transaction: Transaction): Transaction => ({

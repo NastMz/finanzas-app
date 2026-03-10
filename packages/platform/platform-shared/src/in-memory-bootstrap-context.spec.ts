@@ -140,4 +140,28 @@ describe("createInMemoryBootstrapContext", () => {
       true,
     );
   });
+
+  it("exposes data export and import through context facades", async () => {
+    const bootstrap = createInMemoryBootstrap({
+      defaultDeviceId: "platform-context-device",
+    });
+    const context = createInMemoryBootstrapContext(bootstrap);
+
+    await context.commands.addTransaction({
+      accountId: "acc-main",
+      amountMinor: -45000,
+      currency: "COP",
+      date: new Date("2026-03-03T10:00:00.000Z"),
+      categoryId: "food",
+    });
+
+    const exported = await context.queries.exportData();
+
+    await context.commands.importData({
+      bundle: exported.bundle,
+    });
+
+    const syncStatus = await context.queries.getSyncStatus();
+    expect(syncStatus.status).toBe("synced");
+  });
 });

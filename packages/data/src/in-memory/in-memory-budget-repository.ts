@@ -42,6 +42,14 @@ export class InMemoryBudgetRepository implements BudgetRepository {
   async save(budget: Budget): Promise<void> {
     this.budgets.set(budget.id, cloneBudget(budget));
   }
+
+  async replaceAll(budgets: Budget[]): Promise<void> {
+    this.budgets.clear();
+
+    for (const budget of budgets) {
+      this.budgets.set(budget.id, cloneBudget(budget));
+    }
+  }
 }
 
 const cloneBudget = (budget: Budget): Budget => ({

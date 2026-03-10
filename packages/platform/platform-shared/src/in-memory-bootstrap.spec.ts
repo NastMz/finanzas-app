@@ -422,6 +422,56 @@ describe("createInMemoryBootstrap", () => {
     ]);
   });
 
+  it("exports and imports business data while resetting local sync state", async () => {
+    const source = createBootstrap();
+    await source.addCategory({
+      name: "Comida",
+      type: "expense",
+    });
+    await source.addTransaction(
+      createTransactionInputFixture({
+        amountMinor: -120000,
+        categoryId: "food",
+        date: new Date("2026-03-03T10:00:00.000Z"),
+      }),
+    );
+
+    const exported = await source.exportData();
+
+    const target = createBootstrap();
+    await target.addAccount({
+      name: "Cuenta local",
+      type: "cash",
+      currency: "COP",
+    });
+    await target.addTransaction(createTransactionInputFixture());
+
+    const pendingBeforeImport = await target.getSyncStatus();
+    expect(pendingBeforeImport.counts.pending).toBeGreaterThan(0);
+
+    await target.importData({
+      bundle: exported.bundle,
+    });
+
+    const accounts = await target.listAccounts();
+    expect(accounts.accounts.map((account) => account.id)).toEqual(["acc-main"]);
+
+    const transactions = await target.listTransactions({
+      accountId: "acc-main",
+    });
+    expect(transactions.transactions).toHaveLength(1);
+    expect(transactions.transactions[0]?.amount.amountMinor).toBe(-120000n);
+
+    const syncStatus = await target.getSyncStatus();
+    expect(syncStatus.status).toBe("synced");
+    expect(syncStatus.counts).toEqual({
+      pending: 0,
+      sent: 0,
+      failed: 0,
+      acked: 0,
+    });
+  });
+
   it("reports sync status for account settings UI", async () => {
     const app = createBootstrap({
       syncApi: createFailingPushSyncApiClient("Offline"),

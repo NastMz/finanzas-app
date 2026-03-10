@@ -26,6 +26,14 @@ implements TransactionTemplateRepository {
   async save(template: TransactionTemplate): Promise<void> {
     this.templates.set(template.id, cloneTransactionTemplate(template));
   }
+
+  async replaceAll(templates: TransactionTemplate[]): Promise<void> {
+    this.templates.clear();
+
+    for (const template of templates) {
+      this.templates.set(template.id, cloneTransactionTemplate(template));
+    }
+  }
 }
 
 const cloneTransactionTemplate = (

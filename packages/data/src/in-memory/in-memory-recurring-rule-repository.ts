@@ -39,6 +39,14 @@ export class InMemoryRecurringRuleRepository implements RecurringRuleRepository 
   async save(rule: RecurringRule): Promise<void> {
     this.recurringRules.set(rule.id, cloneRecurringRule(rule));
   }
+
+  async replaceAll(rules: RecurringRule[]): Promise<void> {
+    this.recurringRules.clear();
+
+    for (const rule of rules) {
+      this.recurringRules.set(rule.id, cloneRecurringRule(rule));
+    }
+  }
 }
 
 const cloneRecurringRule = (rule: RecurringRule): RecurringRule => ({

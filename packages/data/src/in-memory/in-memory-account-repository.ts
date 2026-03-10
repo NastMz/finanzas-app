@@ -25,6 +25,14 @@ export class InMemoryAccountRepository implements AccountRepository {
   async save(account: Account): Promise<void> {
     this.accounts.set(account.id, cloneAccount(account));
   }
+
+  async replaceAll(accounts: Account[]): Promise<void> {
+    this.accounts.clear();
+
+    for (const account of accounts) {
+      this.accounts.set(account.id, cloneAccount(account));
+    }
+  }
 }
 
 const cloneAccount = (account: Account): Account => ({
