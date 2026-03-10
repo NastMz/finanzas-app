@@ -92,6 +92,8 @@ docs/
 
 Regla: `apps/*` solo compone dependencias, configura adaptadores y bootstrap de plataforma.
 
+Convenciones de ubicacion, naming e imports: `docs/project-structure.md`.
+
 ## 5. Modelo de dominio y datos
 
 ### 5.1 Entidades principales

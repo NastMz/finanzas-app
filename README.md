@@ -41,3 +41,4 @@ npm run web:dev
 
 - Flujos y lineamientos UI mobile-first: `docs/ui-v1-flows.md`.
 - Roadmap de fases, avance y pendientes: `docs/roadmap.md`.
+- Estructura del monorepo, convenciones e imports: `docs/project-structure.md`.

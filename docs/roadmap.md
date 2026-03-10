@@ -16,7 +16,7 @@ Dejar lista la base tecnica del proyecto para crecer sin mezclar responsabilidad
 
 ### Estado general
 
-`[~]` Avanzada
+`[x]` Completada
 
 ### Implementado
 
@@ -26,12 +26,9 @@ Dejar lista la base tecnica del proyecto para crecer sin mezclar responsabilidad
 - `[x]` Reorganizacion de estructura para reducir carpetas planas en `apps/web`, `apps/mobile`, `apps/desktop` y `packages/ui`
 - `[x]` Comandos base de desarrollo, pruebas y typecheck documentados
 - `[x]` Hooks de git para validacion antes de commit y push
-
-### Pendiente
-
-- `[ ]` Definir una convención de nombres y ubicacion para nuevos modulos antes de seguir agregando features
-- `[ ]` Documentar reglas de importacion entre capas para evitar acoplamientos indebidos
-- `[ ]` Añadir una guia corta de estructura por carpeta para onboarding
+- `[x]` Convencion de nombres y ubicacion de modulos documentada
+- `[x]` Reglas de importacion entre capas documentadas
+- `[x]` Guia corta de estructura por carpeta para onboarding
 
 ## Fase 2. Core financiero local-first
 
