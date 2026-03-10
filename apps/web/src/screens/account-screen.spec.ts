@@ -2,8 +2,8 @@ import { describe, expect, it } from "vitest";
 
 import type { FinanzasAccountTabViewModel } from "@finanzas/ui";
 
-import { createWebContext } from "./create-web-context.js";
-import { createWebUi } from "./create-web-ui.js";
+import { createWebContext } from "../app/create-web-context.js";
+import { createWebUi } from "../app/create-web-ui.js";
 import { loadAccountScreenHtml, renderAccountScreen } from "./account-screen.js";
 
 describe("accountScreen", () => {

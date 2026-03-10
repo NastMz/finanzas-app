@@ -1,9 +1,9 @@
-import type { WebUi } from "./create-web-ui.js";
+import type { WebUi } from "../app/create-web-ui.js";
 import {
   AccountScreen,
   renderAccountScreen,
   type AccountScreenProps,
-} from "./features/account/account-screen.js";
+} from "../features/account/account-screen.js";
 
 export { AccountScreen, renderAccountScreen, type AccountScreenProps };
 

@@ -2,8 +2,8 @@ import type { LoadHomeTabInput } from "@finanzas/ui";
 import { createRoot } from "react-dom/client";
 
 import { DevPreviewApp } from "./dev-preview-app.js";
-import { webCommands, webQueries, webUi } from "./main.js";
-import "./ui/foundations/global.css";
+import { webCommands, webQueries, webUi } from "../app/main.js";
+import "../ui/foundations/global.css";
 
 const rootElement = document.getElementById("app");
 

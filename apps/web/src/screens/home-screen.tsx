@@ -2,12 +2,12 @@ import type {
   LoadHomeTabInput,
 } from "@finanzas/ui";
 
-import type { WebUi } from "./create-web-ui.js";
+import type { WebUi } from "../app/create-web-ui.js";
 import {
   renderHomeScreen,
   HomeScreen,
   type HomeScreenProps,
-} from "./features/home/home-screen.js";
+} from "../features/home/home-screen.js";
 
 export { HomeScreen, renderHomeScreen, type HomeScreenProps };
 

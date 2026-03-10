@@ -1,11 +1,11 @@
 import type { LoadRegisterTabInput } from "@finanzas/ui";
 
-import type { WebUi } from "./create-web-ui.js";
+import type { WebUi } from "../app/create-web-ui.js";
 import {
   RegisterScreen,
   renderRegisterScreen,
   type RegisterScreenProps,
-} from "./features/register/register-screen.js";
+} from "../features/register/register-screen.js";
 
 export { RegisterScreen, renderRegisterScreen, type RegisterScreenProps };
 

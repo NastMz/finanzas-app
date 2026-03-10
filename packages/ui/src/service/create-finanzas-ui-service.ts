@@ -24,7 +24,7 @@ import type {
   FinanzasSyncStatusViewModel,
   FinanzasTransactionItemViewModel,
   FinanzasTransactionKind,
-} from "./finanzas-ui-types.js";
+} from "../models/finanzas-ui-types.js";
 
 /**
  * Minimal command dependencies required by the UI layer.

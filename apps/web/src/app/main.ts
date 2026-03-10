@@ -6,10 +6,10 @@ import type {
 
 import { createWebContext } from "./create-web-context.js";
 import { createWebUi } from "./create-web-ui.js";
-import { loadAccountScreenHtml } from "./account-screen.js";
-import { loadHomeScreenHtml } from "./home-screen.js";
-import { loadMovementsScreenHtml } from "./movements-screen.js";
-import { loadRegisterScreenHtml } from "./register-screen.js";
+import { loadAccountScreenHtml } from "../screens/account-screen.js";
+import { loadHomeScreenHtml } from "../screens/home-screen.js";
+import { loadMovementsScreenHtml } from "../screens/movements-screen.js";
+import { loadRegisterScreenHtml } from "../screens/register-screen.js";
 
 export const webContext = createWebContext();
 export const webApp = webContext.bootstrap;

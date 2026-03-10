@@ -1,11 +1,11 @@
 import type { LoadMovementsTabInput } from "@finanzas/ui";
 
-import type { WebUi } from "./create-web-ui.js";
+import type { WebUi } from "../app/create-web-ui.js";
 import {
   MovementsScreen,
   renderMovementsScreen,
   type MovementsScreenProps,
-} from "./features/movements/movements-screen.js";
+} from "../features/movements/movements-screen.js";
 
 export { MovementsScreen, renderMovementsScreen, type MovementsScreenProps };
 

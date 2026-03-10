@@ -2,8 +2,8 @@ import { describe, expect, it } from "vitest";
 
 import type { FinanzasHomeTabViewModel } from "@finanzas/ui";
 
-import { createWebContext } from "./create-web-context.js";
-import { createWebUi } from "./create-web-ui.js";
+import { createWebContext } from "../app/create-web-context.js";
+import { createWebUi } from "../app/create-web-ui.js";
 import { loadHomeScreenHtml, renderHomeScreen } from "./home-screen.js";
 
 describe("homeScreen", () => {

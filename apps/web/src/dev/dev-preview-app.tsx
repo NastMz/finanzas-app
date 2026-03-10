@@ -7,17 +7,17 @@ import type {
   FinanzasSyncStatusViewModel,
 } from "@finanzas/ui";
 
-import { AccountScreen } from "./account-screen.js";
-import { HomeScreen } from "./home-screen.js";
-import { MovementsScreen } from "./movements-screen.js";
-import { RegisterScreen } from "./register-screen.js";
+import { AccountScreen } from "../screens/account-screen.js";
+import { HomeScreen } from "../screens/home-screen.js";
+import { MovementsScreen } from "../screens/movements-screen.js";
+import { RegisterScreen } from "../screens/register-screen.js";
 import {
   formatMinorAmount,
   getSyncStatusLabel,
   getSyncTone,
-} from "./features/shared/lib/formatters.js";
-import { StatusPill } from "./ui/components/index.js";
-import { classNames } from "./ui/lib/class-names.js";
+} from "../features/shared/lib/formatters.js";
+import { StatusPill } from "../ui/components/index.js";
+import { classNames } from "../ui/lib/class-names.js";
 import styles from "./dev-preview-app.module.css";
 
 type PreviewTab = "home" | "movements" | "register" | "account";
