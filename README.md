@@ -40,3 +40,4 @@ npm run web:dev
 ## UX v1
 
 - Flujos y lineamientos UI mobile-first: `docs/ui-v1-flows.md`.
+- Roadmap de fases, avance y pendientes: `docs/roadmap.md`.
