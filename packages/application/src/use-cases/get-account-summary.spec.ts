@@ -162,6 +162,35 @@ describe("getAccountSummary", () => {
       ),
     ).rejects.toBeInstanceOf(ApplicationError);
   });
+
+  it("fails when stored transaction currency does not match the account currency", async () => {
+    const account = createTestAccount();
+    const inconsistentTransaction = {
+      ...createTransactionFixture({
+        id: "tx-invalid-currency",
+        accountId: account.id,
+        amountMinor: -150000,
+        categoryId: "food",
+        date: "2026-03-05T10:00:00.000Z",
+        createdAt: "2026-03-05T10:00:00.000Z",
+      }),
+      amount: createMoney(-150000, "USD"),
+    };
+
+    await expect(
+      getAccountSummary(
+        {
+          accounts: new InMemoryAccountRepository([account]),
+          transactions: new InMemoryTransactionRepository([inconsistentTransaction]),
+        },
+        {
+          accountId: account.id,
+          from: new Date("2026-03-01T00:00:00.000Z"),
+          to: new Date("2026-03-31T23:59:59.999Z"),
+        },
+      ),
+    ).rejects.toBeInstanceOf(ApplicationError);
+  });
 });
 
 const createTestAccount = (): Account =>

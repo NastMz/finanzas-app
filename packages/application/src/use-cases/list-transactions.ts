@@ -2,6 +2,7 @@ import type { Transaction } from "@finanzas/domain";
 
 import { ApplicationError } from "../errors.js";
 import type { AccountRepository, TransactionRepository } from "../ports.js";
+import { assertTransactionsMatchAccountCurrency } from "./shared/account-currency-consistency.js";
 
 /**
  * Query parameters for listing transactions of an account.
@@ -48,6 +49,7 @@ export const listTransactions = async (
   }
 
   const transactions = await dependencies.transactions.listByAccountId(account.id);
+  assertTransactionsMatchAccountCurrency(account, transactions);
   const includeDeleted = input.includeDeleted ?? false;
 
   const filteredTransactions = includeDeleted

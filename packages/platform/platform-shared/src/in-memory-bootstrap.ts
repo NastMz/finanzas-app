@@ -173,6 +173,8 @@ export const createInMemoryBootstrap = (
       updateAccount(
         {
           accounts,
+          transactions,
+          templates: transactionTemplates,
           outbox,
           clock,
           ids,

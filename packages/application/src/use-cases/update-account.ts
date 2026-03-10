@@ -7,7 +7,13 @@ import type {
   IdGenerator,
   OutboxOp,
   OutboxRepository,
+  TransactionRepository,
+  TransactionTemplateRepository,
 } from "../ports.js";
+import {
+  assertTransactionTemplatesMatchAccountCurrency,
+  assertTransactionsMatchAccountCurrency,
+} from "./shared/account-currency-consistency.js";
 import { toAccountOutboxPayload } from "./shared/account-outbox-payload.js";
 
 /**
@@ -25,6 +31,8 @@ export interface UpdateAccountInput {
  */
 export interface UpdateAccountDependencies {
   accounts: AccountRepository;
+  transactions: TransactionRepository;
+  templates: TransactionTemplateRepository;
   outbox: OutboxRepository;
   ids: IdGenerator;
   clock: Clock;
@@ -62,6 +70,28 @@ export const updateAccount = async (
 
   if (!hasFieldsToUpdate) {
     throw new ApplicationError("At least one account field must be provided to update.");
+  }
+
+  if (isCurrencyChanging(account.currency, input.currency)) {
+    const accountTransactions = await dependencies.transactions.listByAccountId(account.id);
+
+    if (accountTransactions.length > 0) {
+      assertTransactionsMatchAccountCurrency(account, accountTransactions);
+      throw new ApplicationError(
+        `Account ${account.id} currency cannot be changed while it has transaction history.`,
+      );
+    }
+
+    const accountTemplates = (await dependencies.templates.listAll()).filter(
+      (template) => template.accountId === account.id,
+    );
+
+    if (accountTemplates.length > 0) {
+      assertTransactionTemplatesMatchAccountCurrency(account, accountTemplates);
+      throw new ApplicationError(
+        `Account ${account.id} currency cannot be changed while it has transaction templates.`,
+      );
+    }
   }
 
   const now = dependencies.clock.now();
@@ -107,3 +137,10 @@ export const updateAccount = async (
     outboxOpId,
   };
 };
+
+const isCurrencyChanging = (
+  currentCurrency: string,
+  nextCurrency: string | undefined,
+): boolean =>
+  nextCurrency !== undefined &&
+  nextCurrency.trim().toUpperCase() !== currentCurrency;

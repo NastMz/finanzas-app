@@ -2,6 +2,7 @@ import type { Transaction } from "@finanzas/domain";
 
 import { ApplicationError } from "../errors.js";
 import type { AccountRepository, TransactionRepository } from "../ports.js";
+import { assertTransactionsMatchAccountCurrency } from "./shared/account-currency-consistency.js";
 
 /**
  * Query parameters for building an account summary in a given period.
@@ -92,6 +93,7 @@ export const getAccountSummary = async (
   const accountTransactions = await dependencies.transactions.listByAccountId(
     account.id,
   );
+  assertTransactionsMatchAccountCurrency(account, accountTransactions);
 
   const transactionsInPeriod = accountTransactions.filter((transaction) => {
     const transactionTime = transaction.date.getTime();
