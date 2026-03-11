@@ -1,157 +1,43 @@
-import type {
-  AddTransactionInput,
-  AddTransactionResult,
-  GetAccountSummaryInput,
-  GetAccountSummaryResult,
-  ListAccountsInput,
-  ListAccountsResult,
-  ListCategoriesInput,
-  ListCategoriesResult,
-  ListTransactionsInput,
-  ListTransactionsResult,
-} from "@finanzas/application";
-import type { Account, Category, Transaction } from "@finanzas/domain";
-import type { GetSyncStatusResult, SyncNowResult } from "@finanzas/sync";
+import type { AddTransactionInput } from "@finanzas/application";
+import type { SyncNowResult } from "@finanzas/sync";
 
 import type {
-  FinanzasAccountOption,
   FinanzasAccountTabViewModel,
-  FinanzasCategoryOption,
   FinanzasHomeTabViewModel,
   FinanzasMovementsTabViewModel,
-  FinanzasPeriod,
   FinanzasRegisterTabViewModel,
-  FinanzasSyncStatusViewModel,
-  FinanzasTransactionItemViewModel,
-  FinanzasTransactionKind,
 } from "../models/finanzas-ui-types.js";
+import type {
+  CreateFinanzasUiServiceOptions,
+  FinanzasUiDependencies,
+  FinanzasUiService,
+  LoadHomeTabInput,
+  LoadMovementsTabInput,
+  LoadRegisterTabInput,
+  QuickAddTransactionInput,
+  QuickAddTransactionResult,
+  SyncNowActionResult,
+} from "./create-finanzas-ui-service/contracts/index.js";
+import { FinanzasUiError } from "./create-finanzas-ui-service/contracts/index.js";
+import {
+  buildCategoryNameById,
+  resolveActiveAccount,
+  toAccountOption,
+  toCategoryOption,
+} from "./create-finanzas-ui-service/lib/accounts.js";
+import { resolvePeriod } from "./create-finanzas-ui-service/lib/periods.js";
+import {
+  getErrorMessage,
+  toSyncStatusViewModel,
+} from "./create-finanzas-ui-service/lib/sync.js";
+import {
+  dedupeStrings,
+  getTotalsFromTransactionItems,
+  normalizeSignedAmount,
+  toTransactionItemViewModel,
+} from "./create-finanzas-ui-service/lib/transactions.js";
 
-/**
- * Minimal command dependencies required by the UI layer.
- */
-export interface FinanzasUiCommands {
-  addTransaction(input: AddTransactionInput): Promise<AddTransactionResult>;
-  syncNow(): Promise<SyncNowResult>;
-}
-
-/**
- * Minimal query dependencies required by the UI layer.
- */
-export interface FinanzasUiQueries {
-  listAccounts(input?: ListAccountsInput): Promise<ListAccountsResult>;
-  listCategories(input?: ListCategoriesInput): Promise<ListCategoriesResult>;
-  listTransactions(input: ListTransactionsInput): Promise<ListTransactionsResult>;
-  getAccountSummary(
-    input: GetAccountSummaryInput,
-  ): Promise<GetAccountSummaryResult>;
-  getSyncStatus(): Promise<GetSyncStatusResult>;
-}
-
-/**
- * Runtime dependencies required by `createFinanzasUiService`.
- */
-export interface FinanzasUiDependencies {
-  commands: FinanzasUiCommands;
-  queries: FinanzasUiQueries;
-}
-
-/**
- * Custom UI error for invalid screen inputs or missing local entities.
- */
-export class FinanzasUiError extends Error {
-  constructor(message: string) {
-    super(message);
-    this.name = "FinanzasUiError";
-  }
-}
-
-/**
- * Input to load Home tab data.
- */
-export interface LoadHomeTabInput {
-  accountId?: string;
-  period?: Omit<FinanzasPeriod, "label"> & { label?: string };
-  recentLimit?: number;
-  topCategoriesLimit?: number;
-}
-
-/**
- * Input to load Movements tab data.
- */
-export interface LoadMovementsTabInput {
-  accountId?: string;
-  includeDeleted?: boolean;
-  limit?: number;
-}
-
-/**
- * Input to load Register tab defaults/suggestions.
- */
-export interface LoadRegisterTabInput {
-  accountId?: string;
-  suggestedCategoryLimit?: number;
-}
-
-/**
- * Input for quick transaction creation from `Registrar`.
- */
-export interface QuickAddTransactionInput {
-  accountId?: string;
-  amountMinor: number | bigint;
-  kind?: FinanzasTransactionKind;
-  categoryId: string;
-  note?: string;
-  tags?: string[];
-  date?: Date;
-}
-
-/**
- * Result returned by quick-add command.
- */
-export interface QuickAddTransactionResult {
-  transactionId: string;
-  outboxOpId: string;
-  accountId: string;
-  currency: string;
-  kind: FinanzasTransactionKind;
-  signedAmountMinor: bigint;
-  sync: FinanzasSyncStatusViewModel;
-}
-
-/**
- * Result returned by manual sync action in `Cuenta`.
- */
-export interface SyncNowActionResult {
-  ok: boolean;
-  result: SyncNowResult | null;
-  error: string | null;
-  sync: FinanzasSyncStatusViewModel;
-}
-
-/**
- * Runtime options for creating the UI service.
- */
-export interface CreateFinanzasUiServiceOptions {
-  now?: () => Date;
-}
-
-/**
- * Headless UI orchestrator for app tabs.
- */
-export interface FinanzasUiService {
-  loadHomeTab(input?: LoadHomeTabInput): Promise<FinanzasHomeTabViewModel>;
-  loadMovementsTab(
-    input?: LoadMovementsTabInput,
-  ): Promise<FinanzasMovementsTabViewModel>;
-  loadRegisterTab(
-    input?: LoadRegisterTabInput,
-  ): Promise<FinanzasRegisterTabViewModel>;
-  loadAccountTab(): Promise<FinanzasAccountTabViewModel>;
-  quickAddTransaction(
-    input: QuickAddTransactionInput,
-  ): Promise<QuickAddTransactionResult>;
-  syncNow(): Promise<SyncNowActionResult>;
-}
+export * from "./create-finanzas-ui-service/contracts/index.js";
 
 /**
  * Creates a headless UI service over `commands`/`queries`.
@@ -363,169 +249,4 @@ export const createFinanzasUiService = (
       };
     },
   };
-};
-
-const resolveActiveAccount = async (
-  dependencies: FinanzasUiDependencies,
-  accountId: string | undefined,
-): Promise<Account> => {
-  const accountsResult = await dependencies.queries.listAccounts();
-  const accounts = accountsResult.accounts;
-
-  if (accounts.length === 0) {
-    throw new FinanzasUiError("No active accounts available.");
-  }
-
-  if (accountId === undefined) {
-    const defaultAccount = accounts[0];
-
-    if (!defaultAccount) {
-      throw new FinanzasUiError("Default account could not be resolved.");
-    }
-
-    return defaultAccount;
-  }
-
-  const selectedAccount = accounts.find((account) => account.id === accountId);
-
-  if (!selectedAccount) {
-    throw new FinanzasUiError(`Account ${accountId} is not available.`);
-  }
-
-  return selectedAccount;
-};
-
-const resolvePeriod = (
-  period: LoadHomeTabInput["period"] | undefined,
-  baseDate: Date,
-): FinanzasPeriod => {
-  if (period) {
-    return {
-      from: new Date(period.from),
-      to: new Date(period.to),
-      label:
-        period.label ??
-        `${period.from.toISOString().slice(0, 10)} - ${period.to.toISOString().slice(0, 10)}`,
-    };
-  }
-
-  const from = new Date(
-    Date.UTC(baseDate.getUTCFullYear(), baseDate.getUTCMonth(), 1, 0, 0, 0, 0),
-  );
-  const to = new Date(
-    Date.UTC(
-      baseDate.getUTCFullYear(),
-      baseDate.getUTCMonth() + 1,
-      0,
-      23,
-      59,
-      59,
-      999,
-    ),
-  );
-
-  return {
-    from,
-    to,
-    label: `${from.getUTCFullYear()}-${String(from.getUTCMonth() + 1).padStart(2, "0")}`,
-  };
-};
-
-const buildCategoryNameById = (categories: Category[]): Map<string, string> =>
-  new Map(categories.map((category) => [category.id, category.name]));
-
-const toTransactionItemViewModel = (
-  transaction: Transaction,
-  categoryNameById: Map<string, string>,
-): FinanzasTransactionItemViewModel => {
-  const signedAmountMinor = transaction.amount.amountMinor;
-  const kind: FinanzasTransactionKind =
-    signedAmountMinor < 0n ? "expense" : "income";
-
-  return {
-    id: transaction.id,
-    accountId: transaction.accountId,
-    categoryId: transaction.categoryId,
-    categoryName: categoryNameById.get(transaction.categoryId) ?? "Sin categoria",
-    currency: transaction.amount.currency,
-    kind,
-    signedAmountMinor,
-    amountMinor: signedAmountMinor < 0n ? -signedAmountMinor : signedAmountMinor,
-    date: new Date(transaction.date),
-    note: transaction.note,
-    tags: [...transaction.tags],
-    deleted: transaction.deletedAt !== null,
-  };
-};
-
-const toSyncStatusViewModel = (
-  syncStatus: GetSyncStatusResult,
-): FinanzasSyncStatusViewModel => ({
-  status: syncStatus.status,
-  pendingOps: syncStatus.counts.pending,
-  sentOps: syncStatus.counts.sent,
-  failedOps: syncStatus.counts.failed,
-  ackedOps: syncStatus.counts.acked,
-  lastError: syncStatus.lastError,
-  cursor: syncStatus.cursor,
-});
-
-const toAccountOption = (account: Account): FinanzasAccountOption => ({
-  id: account.id,
-  name: account.name,
-  type: account.type,
-  currency: account.currency,
-  deleted: account.deletedAt !== null,
-});
-
-const toCategoryOption = (category: Category): FinanzasCategoryOption => ({
-  id: category.id,
-  name: category.name,
-  type: category.type,
-  deleted: category.deletedAt !== null,
-});
-
-const getTotalsFromTransactionItems = (
-  items: FinanzasTransactionItemViewModel[],
-): { incomeMinor: bigint; expenseMinor: bigint } => {
-  let incomeMinor = 0n;
-  let expenseMinor = 0n;
-
-  for (const item of items) {
-    if (item.kind === "income") {
-      incomeMinor += item.amountMinor;
-      continue;
-    }
-
-    expenseMinor += item.amountMinor;
-  }
-
-  return {
-    incomeMinor,
-    expenseMinor,
-  };
-};
-
-const normalizeSignedAmount = (
-  amountMinor: number | bigint,
-  kind: FinanzasTransactionKind,
-): bigint => {
-  const value = typeof amountMinor === "bigint" ? amountMinor : BigInt(amountMinor);
-  const absoluteAmount = value < 0n ? -value : value;
-
-  if (absoluteAmount === 0n) {
-    throw new FinanzasUiError("Transaction amount cannot be zero.");
-  }
-
-  return kind === "expense" ? -absoluteAmount : absoluteAmount;
-};
-
-const dedupeStrings = (items: string[]): string[] => [...new Set(items)];
-
-const getErrorMessage = (error: unknown): string => {
-  if (error instanceof Error && error.message.trim().length > 0) {
-    return error.message;
-  }
-
-  return "Unknown sync error.";
 };
