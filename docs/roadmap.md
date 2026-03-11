@@ -74,10 +74,10 @@ Pasar de un flujo validado en memoria a una base robusta de persistencia local y
 - `[x]` Push/pull incremental con cursor
 - `[x]` Aplicacion de cambios remotos para cuentas, categorias, presupuestos, plantillas, reglas recurrentes y transacciones
 - `[x]` Cliente de sync in-memory para pruebas
+- `[x]` Persistencia web real sobre IndexedDB
 
 ### Pendiente
 
-- `[ ]` Persistencia web real sobre IndexedDB
 - `[ ]` Persistencia mobile y desktop real sobre SQLite
 - `[ ]` Mecanismo de migraciones de datos
 - `[ ]` Backend inicial de sync desplegable junto al host web en Vercel

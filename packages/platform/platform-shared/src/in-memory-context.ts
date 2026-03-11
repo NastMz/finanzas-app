@@ -1,3 +1,13 @@
+import type {
+  AccountRepository,
+  BudgetRepository,
+  CategoryRepository,
+  Clock,
+  OutboxRepository,
+  RecurringRuleRepository,
+  TransactionRepository,
+  TransactionTemplateRepository,
+} from "@finanzas/application";
 import { createAccount } from "@finanzas/domain";
 import {
   createAccountSyncChangeApplier,
@@ -8,6 +18,8 @@ import {
   createTransactionSyncChangeApplier,
   createTransactionTemplateSyncChangeApplier,
   type SyncChangeApplier,
+  type SyncStateRepository,
+  type SyncStatusOutboxRepository,
 } from "@finanzas/sync";
 import {
   FixedClock,
@@ -25,15 +37,15 @@ import {
  * Shared in-memory context used by host bootstraps.
  */
 export interface InMemoryAppContext {
-  accounts: InMemoryAccountRepository;
-  budgets: InMemoryBudgetRepository;
-  categories: InMemoryCategoryRepository;
-  recurringRules: InMemoryRecurringRuleRepository;
-  transactions: InMemoryTransactionRepository;
-  transactionTemplates: InMemoryTransactionTemplateRepository;
-  outbox: InMemoryOutboxRepository;
-  syncState: InMemorySyncStateRepository;
-  clock: FixedClock;
+  accounts: AccountRepository;
+  budgets: BudgetRepository;
+  categories: CategoryRepository;
+  recurringRules: RecurringRuleRepository;
+  transactions: TransactionRepository;
+  transactionTemplates: TransactionTemplateRepository;
+  outbox: OutboxRepository & SyncStatusOutboxRepository;
+  syncState: SyncStateRepository;
+  clock: Clock;
   changeApplier: SyncChangeApplier;
 }
 
