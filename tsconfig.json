@@ -16,6 +16,9 @@
       "@finanzas/application": [
         "packages/application/src/index.ts"
       ],
+      "@finanzas/data/sqlite": [
+        "packages/data/src/sqlite/index.ts"
+      ],
       "@finanzas/data": [
         "packages/data/src/index.ts"
       ],
@@ -27,6 +30,9 @@
       ],
       "@finanzas/ui/design-system": [
         "packages/ui/src/design-system/index.ts"
+      ],
+      "@finanzas/platform-shared/sqlite": [
+        "packages/platform/platform-shared/src/sqlite-context.ts"
       ],
       "@finanzas/platform-shared": [
         "packages/platform/platform-shared/src/index.ts"

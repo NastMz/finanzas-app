@@ -4,7 +4,9 @@ import { createMobileContext } from "./create-mobile-context.js";
 
 describe("createMobileContext", () => {
   it("exposes commands and queries for mobile host composition", async () => {
-    const context = createMobileContext();
+    const context = createMobileContext({
+      databasePath: ":memory:",
+    });
 
     const initialAccounts = await context.queries.listAccounts();
     expect(initialAccounts.accounts.map((account) => account.id)).toContain(

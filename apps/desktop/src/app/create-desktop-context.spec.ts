@@ -4,7 +4,9 @@ import { createDesktopContext } from "./create-desktop-context.js";
 
 describe("createDesktopContext", () => {
   it("exposes commands and queries for desktop host composition", async () => {
-    const context = createDesktopContext();
+    const context = createDesktopContext({
+      databasePath: ":memory:",
+    });
 
     const initialAccounts = await context.queries.listAccounts();
     expect(initialAccounts.accounts.map((account) => account.id)).toContain(

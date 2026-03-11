@@ -5,7 +5,9 @@ import { createMobileUi } from "./create-mobile-ui.js";
 
 describe("createMobileUi", () => {
   it("builds the shared UI facade over mobile context", async () => {
-    const context = createMobileContext();
+    const context = createMobileContext({
+      databasePath: ":memory:",
+    });
     const ui = createMobileUi(context);
 
     const home = await ui.loadHomeTab({
