@@ -10,6 +10,7 @@ const { DatabaseSync } = require("node:sqlite") as typeof NodeSqliteModule;
 type NodeSqliteDatabaseSync = NodeSqliteModule.DatabaseSync;
 
 export const FINANZAS_SQLITE_DIRECTORY = ".finanzas";
+export const FINANZAS_SQLITE_SCHEMA_VERSION = 2;
 
 export const FINANZAS_SQLITE_TABLES = {
   accounts: "accounts",
@@ -20,6 +21,8 @@ export const FINANZAS_SQLITE_TABLES = {
   transactionTemplates: "transaction_templates",
   outbox: "outbox_ops",
   syncState: "sync_state",
+  metadata: "app_metadata",
+  schemaMigrations: "schema_migrations",
 } as const;
 
 export type FinanzasSqliteTableName =
@@ -50,6 +53,20 @@ interface SyncStateRow {
   value: string;
 }
 
+interface SqliteVersionRow {
+  user_version: number;
+}
+
+interface SqliteTableCountRow {
+  count: number;
+}
+
+interface SqliteMigration {
+  version: number;
+  name: string;
+  up(database: NodeSqliteDatabaseSync): void;
+}
+
 type EncodedValue =
   | null
   | boolean
@@ -59,6 +76,23 @@ type EncodedValue =
   | {
     [key: string]: EncodedValue;
   };
+
+const SQLITE_MIGRATIONS: SqliteMigration[] = [
+  {
+    version: 1,
+    name: "create-core-tables",
+    up: (database) => {
+      createCoreTables(database);
+    },
+  },
+  {
+    version: 2,
+    name: "add-migration-metadata-tables",
+    up: (database) => {
+      createMigrationTables(database);
+    },
+  },
+];
 
 export const openFinanzasSqlite = (
   options: OpenFinanzasSqliteOptions,
@@ -77,43 +111,11 @@ export const openFinanzasSqlite = (
     database.exec("PRAGMA journal_mode = WAL;");
   }
 
-  database.exec(`
-    CREATE TABLE IF NOT EXISTS ${FINANZAS_SQLITE_TABLES.accounts} (
-      id TEXT PRIMARY KEY NOT NULL,
-      payload TEXT NOT NULL
-    );
-    CREATE TABLE IF NOT EXISTS ${FINANZAS_SQLITE_TABLES.budgets} (
-      id TEXT PRIMARY KEY NOT NULL,
-      payload TEXT NOT NULL
-    );
-    CREATE TABLE IF NOT EXISTS ${FINANZAS_SQLITE_TABLES.categories} (
-      id TEXT PRIMARY KEY NOT NULL,
-      payload TEXT NOT NULL
-    );
-    CREATE TABLE IF NOT EXISTS ${FINANZAS_SQLITE_TABLES.recurringRules} (
-      id TEXT PRIMARY KEY NOT NULL,
-      payload TEXT NOT NULL
-    );
-    CREATE TABLE IF NOT EXISTS ${FINANZAS_SQLITE_TABLES.transactions} (
-      id TEXT PRIMARY KEY NOT NULL,
-      account_id TEXT NOT NULL,
-      payload TEXT NOT NULL
-    );
-    CREATE INDEX IF NOT EXISTS transactions_by_account_id
-      ON ${FINANZAS_SQLITE_TABLES.transactions}(account_id);
-    CREATE TABLE IF NOT EXISTS ${FINANZAS_SQLITE_TABLES.transactionTemplates} (
-      id TEXT PRIMARY KEY NOT NULL,
-      payload TEXT NOT NULL
-    );
-    CREATE TABLE IF NOT EXISTS ${FINANZAS_SQLITE_TABLES.outbox} (
-      op_id TEXT PRIMARY KEY NOT NULL,
-      payload TEXT NOT NULL
-    );
-    CREATE TABLE IF NOT EXISTS ${FINANZAS_SQLITE_TABLES.syncState} (
-      key TEXT PRIMARY KEY NOT NULL,
-      value TEXT NOT NULL
-    );
-  `);
+  const currentSchemaVersion = detectCurrentSqliteSchemaVersion(database);
+
+  if (currentSchemaVersion < FINANZAS_SQLITE_SCHEMA_VERSION) {
+    applySqliteMigrations(database, currentSchemaVersion);
+  }
 
   if (options.seedAccount !== undefined) {
     const accountsCount = database
@@ -233,6 +235,133 @@ export const setCursorValue = (
 
 const normalizeDatabasePath = (databasePath: string): string =>
   databasePath === ":memory:" ? databasePath : resolve(databasePath);
+
+const createCoreTables = (database: NodeSqliteDatabaseSync): void => {
+  database.exec(`
+    CREATE TABLE IF NOT EXISTS ${FINANZAS_SQLITE_TABLES.accounts} (
+      id TEXT PRIMARY KEY NOT NULL,
+      payload TEXT NOT NULL
+    );
+    CREATE TABLE IF NOT EXISTS ${FINANZAS_SQLITE_TABLES.budgets} (
+      id TEXT PRIMARY KEY NOT NULL,
+      payload TEXT NOT NULL
+    );
+    CREATE TABLE IF NOT EXISTS ${FINANZAS_SQLITE_TABLES.categories} (
+      id TEXT PRIMARY KEY NOT NULL,
+      payload TEXT NOT NULL
+    );
+    CREATE TABLE IF NOT EXISTS ${FINANZAS_SQLITE_TABLES.recurringRules} (
+      id TEXT PRIMARY KEY NOT NULL,
+      payload TEXT NOT NULL
+    );
+    CREATE TABLE IF NOT EXISTS ${FINANZAS_SQLITE_TABLES.transactions} (
+      id TEXT PRIMARY KEY NOT NULL,
+      account_id TEXT NOT NULL,
+      payload TEXT NOT NULL
+    );
+    CREATE INDEX IF NOT EXISTS transactions_by_account_id
+      ON ${FINANZAS_SQLITE_TABLES.transactions}(account_id);
+    CREATE TABLE IF NOT EXISTS ${FINANZAS_SQLITE_TABLES.transactionTemplates} (
+      id TEXT PRIMARY KEY NOT NULL,
+      payload TEXT NOT NULL
+    );
+    CREATE TABLE IF NOT EXISTS ${FINANZAS_SQLITE_TABLES.outbox} (
+      op_id TEXT PRIMARY KEY NOT NULL,
+      payload TEXT NOT NULL
+    );
+    CREATE TABLE IF NOT EXISTS ${FINANZAS_SQLITE_TABLES.syncState} (
+      key TEXT PRIMARY KEY NOT NULL,
+      value TEXT NOT NULL
+    );
+  `);
+};
+
+const createMigrationTables = (database: NodeSqliteDatabaseSync): void => {
+  database.exec(`
+    CREATE TABLE IF NOT EXISTS ${FINANZAS_SQLITE_TABLES.metadata} (
+      key TEXT PRIMARY KEY NOT NULL,
+      value TEXT NOT NULL
+    );
+    CREATE TABLE IF NOT EXISTS ${FINANZAS_SQLITE_TABLES.schemaMigrations} (
+      version INTEGER PRIMARY KEY NOT NULL,
+      name TEXT NOT NULL,
+      applied_at TEXT NOT NULL
+    );
+  `);
+};
+
+const detectCurrentSqliteSchemaVersion = (
+  database: NodeSqliteDatabaseSync,
+): number => {
+  const versionRow = database
+    .prepare("PRAGMA user_version")
+    .get() as unknown as SqliteVersionRow | undefined;
+
+  if (versionRow !== undefined && versionRow.user_version > 0) {
+    return versionRow.user_version;
+  }
+
+  const legacyTables = [
+    FINANZAS_SQLITE_TABLES.accounts,
+    FINANZAS_SQLITE_TABLES.budgets,
+    FINANZAS_SQLITE_TABLES.categories,
+    FINANZAS_SQLITE_TABLES.recurringRules,
+    FINANZAS_SQLITE_TABLES.transactions,
+    FINANZAS_SQLITE_TABLES.transactionTemplates,
+    FINANZAS_SQLITE_TABLES.outbox,
+    FINANZAS_SQLITE_TABLES.syncState,
+  ];
+  const placeholders = legacyTables.map(() => "?").join(", ");
+  const legacyCount = database
+    .prepare(
+      `SELECT COUNT(*) AS count FROM sqlite_master WHERE type = 'table' AND name IN (${placeholders})`,
+    )
+    .get(...legacyTables) as unknown as SqliteTableCountRow;
+
+  return legacyCount.count > 0 ? 1 : 0;
+};
+
+const applySqliteMigrations = (
+  database: NodeSqliteDatabaseSync,
+  currentSchemaVersion: number,
+): void => {
+  for (const migration of SQLITE_MIGRATIONS) {
+    if (migration.version <= currentSchemaVersion) {
+      continue;
+    }
+
+    migration.up(database);
+  }
+
+  if (FINANZAS_SQLITE_SCHEMA_VERSION >= 2) {
+    backfillSqliteMigrationState(database);
+  }
+
+  database.exec(`PRAGMA user_version = ${FINANZAS_SQLITE_SCHEMA_VERSION}`);
+};
+
+const backfillSqliteMigrationState = (database: NodeSqliteDatabaseSync): void => {
+  const appliedAt = new Date().toISOString();
+
+  database
+    .prepare(
+      `INSERT OR REPLACE INTO ${FINANZAS_SQLITE_TABLES.metadata}(key, value) VALUES (?, ?)`,
+    )
+    .run("schemaVersion", String(FINANZAS_SQLITE_SCHEMA_VERSION));
+  database
+    .prepare(
+      `INSERT OR REPLACE INTO ${FINANZAS_SQLITE_TABLES.metadata}(key, value) VALUES (?, ?)`,
+    )
+    .run("lastMigratedAt", appliedAt);
+
+  for (const migration of SQLITE_MIGRATIONS) {
+    database
+      .prepare(
+        `INSERT OR IGNORE INTO ${FINANZAS_SQLITE_TABLES.schemaMigrations}(version, name, applied_at) VALUES (?, ?, ?)`,
+      )
+      .run(migration.version, migration.name, appliedAt);
+  }
+};
 
 const serializePayload = (payload: unknown): string =>
   JSON.stringify(encodePayloadNode(payload));

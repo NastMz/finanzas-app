@@ -76,10 +76,10 @@ Pasar de un flujo validado en memoria a una base robusta de persistencia local y
 - `[x]` Cliente de sync in-memory para pruebas
 - `[x]` Persistencia web real sobre IndexedDB
 - `[x]` Persistencia mobile y desktop real sobre SQLite
+- `[x]` Mecanismo de migraciones versionadas para IndexedDB y SQLite
 
 ### Pendiente
 
-- `[ ]` Mecanismo de migraciones de datos
 - `[ ]` Backend inicial de sync desplegable junto al host web en Vercel
 - `[ ]` Politica de reintentos y backoff mas completa para sync
 - `[ ]` Manejo explicito de conflictos con estrategia por entidad

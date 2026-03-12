@@ -1,7 +1,7 @@
 import type { AccountType } from "@finanzas/domain";
 
 export const FINANZAS_INDEXED_DB_NAME = "finanzas-app";
-export const FINANZAS_INDEXED_DB_VERSION = 1;
+export const FINANZAS_INDEXED_DB_VERSION = 2;
 export const TRANSACTION_ACCOUNT_ID_INDEX = "by-account-id";
 
 export const FINANZAS_STORE_NAMES = {
@@ -13,6 +13,8 @@ export const FINANZAS_STORE_NAMES = {
   transactionTemplates: "transactionTemplates",
   outbox: "outbox",
   syncState: "syncState",
+  metadata: "metadata",
+  schemaMigrations: "schemaMigrations",
 } as const;
 
 export type FinanzasStoreName =
@@ -43,23 +45,28 @@ interface SyncStateSeedRecord {
   value: string;
 }
 
-export const openFinanzasIndexedDb = (
-  options: OpenFinanzasIndexedDbOptions = {},
-): IndexedDbConnection => {
-  const indexedDb = options.indexedDb ?? globalThis.indexedDB;
+interface IndexedDbMetadataRecord {
+  key: string;
+  value: string;
+}
 
-  if (indexedDb === undefined) {
-    return Promise.reject(
-      new Error("IndexedDB is not available in this runtime."),
-    );
-  }
+interface IndexedDbMigrationRecord {
+  version: number;
+  name: string;
+  appliedAt: string;
+}
 
-  const databaseName = options.databaseName ?? FINANZAS_INDEXED_DB_NAME;
-  const initialCursor = options.initialCursor ?? "0";
+interface IndexedDbMigration {
+  version: number;
+  name: string;
+  up(database: IDBDatabase, transaction: IDBTransaction | null): void;
+}
 
-  return awaitOpenRequest(
-    indexedDb.open(databaseName, FINANZAS_INDEXED_DB_VERSION),
-    (database, transaction, previousVersion) => {
+const INDEXED_DB_MIGRATIONS: IndexedDbMigration[] = [
+  {
+    version: 1,
+    name: "create-core-stores",
+    up: (database, transaction) => {
       ensureStore(database, transaction, FINANZAS_STORE_NAMES.accounts, "id");
       ensureStore(database, transaction, FINANZAS_STORE_NAMES.budgets, "id");
       ensureStore(database, transaction, FINANZAS_STORE_NAMES.categories, "id");
@@ -85,10 +92,47 @@ export const openFinanzasIndexedDb = (
           unique: false,
         });
       }
+    },
+  },
+  {
+    version: 2,
+    name: "add-migration-metadata-stores",
+    up: (database, transaction) => {
+      ensureStore(database, transaction, FINANZAS_STORE_NAMES.metadata, "key");
+      ensureStore(
+        database,
+        transaction,
+        FINANZAS_STORE_NAMES.schemaMigrations,
+        "version",
+      );
+    },
+  },
+];
+
+export const openFinanzasIndexedDb = (
+  options: OpenFinanzasIndexedDbOptions = {},
+): IndexedDbConnection => {
+  const indexedDb = options.indexedDb ?? globalThis.indexedDB;
+
+  if (indexedDb === undefined) {
+    return Promise.reject(
+      new Error("IndexedDB is not available in this runtime."),
+    );
+  }
+
+  const databaseName = options.databaseName ?? FINANZAS_INDEXED_DB_NAME;
+  const initialCursor = options.initialCursor ?? "0";
+
+  return awaitOpenRequest(
+    indexedDb.open(databaseName, FINANZAS_INDEXED_DB_VERSION),
+    (database, transaction, previousVersion) => {
+      applyIndexedDbMigrations(database, transaction, previousVersion);
 
       if (previousVersion === 0 && transaction !== null) {
         seedInitialState(transaction, options.seedAccount, initialCursor);
       }
+
+      backfillMigrationState(database, transaction);
     },
   );
 };
@@ -164,6 +208,56 @@ const seedInitialState = (
     key: "cursor",
     value: initialCursor,
   } satisfies SyncStateSeedRecord);
+};
+
+const applyIndexedDbMigrations = (
+  database: IDBDatabase,
+  transaction: IDBTransaction | null,
+  previousVersion: number,
+): void => {
+  for (const migration of INDEXED_DB_MIGRATIONS) {
+    if (migration.version <= previousVersion) {
+      continue;
+    }
+
+    migration.up(database, transaction);
+  }
+};
+
+const backfillMigrationState = (
+  database: IDBDatabase,
+  transaction: IDBTransaction | null,
+): void => {
+  if (
+    transaction === null ||
+    !database.objectStoreNames.contains(FINANZAS_STORE_NAMES.metadata) ||
+    !database.objectStoreNames.contains(FINANZAS_STORE_NAMES.schemaMigrations)
+  ) {
+    return;
+  }
+
+  const appliedAt = new Date().toISOString();
+  const metadataStore = transaction.objectStore(FINANZAS_STORE_NAMES.metadata);
+  const migrationsStore = transaction.objectStore(
+    FINANZAS_STORE_NAMES.schemaMigrations,
+  );
+
+  metadataStore.put({
+    key: "schemaVersion",
+    value: String(FINANZAS_INDEXED_DB_VERSION),
+  } satisfies IndexedDbMetadataRecord);
+  metadataStore.put({
+    key: "lastMigratedAt",
+    value: appliedAt,
+  } satisfies IndexedDbMetadataRecord);
+
+  for (const migration of INDEXED_DB_MIGRATIONS) {
+    migrationsStore.put({
+      version: migration.version,
+      name: migration.name,
+      appliedAt,
+    } satisfies IndexedDbMigrationRecord);
+  }
 };
 
 const ensureStore = (

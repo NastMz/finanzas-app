@@ -15,6 +15,7 @@ Bootstrap inicial del proyecto basado en `ARCHITECTURE.md` y los ADR aprobados.
 - Adaptadores in-memory para validar flujo offline-first en desarrollo y pruebas.
 - Persistencia web real sobre IndexedDB para conservar entidades, outbox y cursor entre sesiones del navegador.
 - Persistencia mobile y desktop real sobre SQLite con rutas configurables por host.
+- Migraciones versionadas de persistencia para IndexedDB y SQLite, incluyendo upgrade de esquemas legacy con metadatos de version e historial aplicado.
 - Estrategia de IDs por proposito para evitar strings genericos (`account`, `category`, `transaction`, `outbox-op`), con generacion ULID para ejecucion normal y secuencial deterministica para pruebas.
 - Utilidades compartidas para evitar duplicacion entre hosts: `createUlidIdGenerator` en `@finanzas/data` y `createInMemorySyncApiClient` en `@finanzas/sync`.
 - Bootstrap/context in-memory compartidos en `@finanzas/platform-shared` para `web`, `desktop` y `mobile`.
