@@ -1,9 +1,12 @@
 import { describe, expect, it } from "vitest";
 
-import type { FinanzasRegisterTabViewModel } from "@finanzas/ui";
+import {
+  createFinanzasUiService,
+  selectFinanzasUiDependencies,
+  type FinanzasRegisterTabViewModel,
+} from "@finanzas/ui";
 
-import { createWebContext } from "../app/create-web-context.js";
-import { createWebUi } from "../app/create-web-ui.js";
+import { createWebBootstrap } from "../../app/bootstrap.js";
 import { loadRegisterScreenHtml, renderRegisterScreen } from "./register-screen.js";
 
 describe("registerScreen", () => {
@@ -37,19 +40,18 @@ describe("registerScreen", () => {
   });
 
   it("loads and renders Register tab from shared web UI facade", async () => {
-    const context = createWebContext();
-    const ui = createWebUi(context);
+    const { bootstrap, ui } = createWebFeatureRuntime();
 
-    await context.commands.addCategory({
+    await bootstrap.addCategory({
       name: "Transporte",
       type: "expense",
     });
-    await context.commands.addCategory({
+    await bootstrap.addCategory({
       name: "Salario",
       type: "income",
     });
 
-    const html = await loadRegisterScreenHtml(ui, {
+    const html = await loadRegisterScreenHtml((input) => ui.loadRegisterTab(input), {
       accountId: "acc-main",
       suggestedCategoryLimit: 4,
     });
@@ -61,3 +63,21 @@ describe("registerScreen", () => {
     expect(html).toContain("Salario");
   });
 });
+
+const createWebFeatureRuntime = (): {
+  bootstrap: ReturnType<typeof createWebBootstrap>;
+  ui: ReturnType<typeof createFinanzasUiService>;
+} => {
+  const bootstrap = createWebBootstrap();
+  const ui = createFinanzasUiService(
+    selectFinanzasUiDependencies({
+      commands: bootstrap,
+      queries: bootstrap,
+    }),
+  );
+
+  return {
+    bootstrap,
+    ui,
+  };
+};

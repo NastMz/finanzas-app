@@ -1,9 +1,12 @@
 import { describe, expect, it } from "vitest";
 
-import type { FinanzasMovementsTabViewModel } from "@finanzas/ui";
+import {
+  createFinanzasUiService,
+  selectFinanzasUiDependencies,
+  type FinanzasMovementsTabViewModel,
+} from "@finanzas/ui";
 
-import { createWebContext } from "../app/create-web-context.js";
-import { createWebUi } from "../app/create-web-ui.js";
+import { createWebBootstrap } from "../../app/bootstrap.js";
 import {
   loadMovementsScreenHtml,
   renderMovementsScreen,
@@ -64,15 +67,14 @@ describe("movementsScreen", () => {
   });
 
   it("loads and renders Movements tab from shared web UI facade", async () => {
-    const context = createWebContext();
-    const ui = createWebUi(context);
+    const { bootstrap, ui } = createWebFeatureRuntime();
 
-    const foodCategory = await context.commands.addCategory({
+    const foodCategory = await bootstrap.addCategory({
       name: "Comida",
       type: "expense",
     });
 
-    const created = await context.commands.addTransaction({
+    const created = await bootstrap.addTransaction({
       accountId: "acc-main",
       amountMinor: -19000,
       currency: "COP",
@@ -81,15 +83,18 @@ describe("movementsScreen", () => {
       note: "almuerzo",
     });
 
-    await context.commands.deleteTransaction({
+    await bootstrap.deleteTransaction({
       transactionId: created.transaction.id,
     });
 
-    const html = await loadMovementsScreenHtml(ui, {
-      accountId: "acc-main",
-      includeDeleted: true,
-      limit: 10,
-    });
+    const html = await loadMovementsScreenHtml(
+      (input) => ui.loadMovementsTab(input),
+      {
+        accountId: "acc-main",
+        includeDeleted: true,
+        limit: 10,
+      },
+    );
 
     expect(html).toContain("Vista: activos + eliminados");
     expect(html).toContain("Incluye eliminados");
@@ -97,3 +102,21 @@ describe("movementsScreen", () => {
     expect(html).toContain("Eliminado");
   });
 });
+
+const createWebFeatureRuntime = (): {
+  bootstrap: ReturnType<typeof createWebBootstrap>;
+  ui: ReturnType<typeof createFinanzasUiService>;
+} => {
+  const bootstrap = createWebBootstrap();
+  const ui = createFinanzasUiService(
+    selectFinanzasUiDependencies({
+      commands: bootstrap,
+      queries: bootstrap,
+    }),
+  );
+
+  return {
+    bootstrap,
+    ui,
+  };
+};

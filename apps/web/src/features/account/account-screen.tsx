@@ -1,4 +1,7 @@
-import type { FinanzasAccountTabViewModel } from "@finanzas/ui";
+import type {
+  FinanzasAccountTabViewModel,
+  FinanzasUiServiceContract,
+} from "@finanzas/ui";
 import { renderToStaticMarkup } from "react-dom/server";
 
 import { DashboardPage } from "../../ui/components/index.js";
@@ -56,3 +59,10 @@ export const AccountScreen = ({ viewModel }: AccountScreenProps): JSX.Element =>
 export const renderAccountScreen = (
   viewModel: FinanzasAccountTabViewModel,
 ): string => renderToStaticMarkup(<AccountScreen viewModel={viewModel} />);
+
+/**
+ * Loads Account tab data and returns render-ready HTML.
+ */
+export const loadAccountScreenHtml = async (
+  loadAccountTab: FinanzasUiServiceContract["loadAccountTab"],
+): Promise<string> => renderAccountScreen(await loadAccountTab());

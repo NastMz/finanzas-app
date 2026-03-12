@@ -1,4 +1,8 @@
-import type { FinanzasMovementsTabViewModel } from "@finanzas/ui";
+import type {
+  FinanzasMovementsTabViewModel,
+  FinanzasUiServiceContract,
+  LoadMovementsTabInput,
+} from "@finanzas/ui";
 import { renderToStaticMarkup } from "react-dom/server";
 
 import { DashboardPage } from "../../ui/components/index.js";
@@ -65,3 +69,11 @@ export const MovementsScreen = ({
 export const renderMovementsScreen = (
   viewModel: FinanzasMovementsTabViewModel,
 ): string => renderToStaticMarkup(<MovementsScreen viewModel={viewModel} />);
+
+/**
+ * Loads Movements tab data and returns render-ready HTML.
+ */
+export const loadMovementsScreenHtml = async (
+  loadMovementsTab: FinanzasUiServiceContract["loadMovementsTab"],
+  input?: LoadMovementsTabInput,
+): Promise<string> => renderMovementsScreen(await loadMovementsTab(input));

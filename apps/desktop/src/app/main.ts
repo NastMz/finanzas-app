@@ -1,6 +1,5 @@
-import { createDesktopContext } from "./create-desktop-context.js";
+import { createDesktopBootstrap } from "./bootstrap.js";
 
-export const desktopContext = createDesktopContext();
-export const desktopApp = desktopContext.bootstrap;
-export const desktopCommands = desktopContext.commands;
-export const desktopQueries = desktopContext.queries;
+export const desktopApp = createDesktopBootstrap();
+export const desktopCommands = desktopApp;
+export const desktopQueries = desktopApp;

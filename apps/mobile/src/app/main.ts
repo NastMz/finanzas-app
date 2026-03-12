@@ -1,8 +1,16 @@
-import { createMobileContext } from "./create-mobile-context.js";
-import { createMobileUi } from "./create-mobile-ui.js";
+import {
+  createFinanzasUiService,
+  selectFinanzasUiDependencies,
+} from "@finanzas/ui";
 
-export const mobileContext = createMobileContext();
-export const mobileApp = mobileContext.bootstrap;
-export const mobileCommands = mobileContext.commands;
-export const mobileQueries = mobileContext.queries;
-export const mobileUi = createMobileUi(mobileContext);
+import { createMobileBootstrap } from "./bootstrap.js";
+
+export const mobileApp = createMobileBootstrap();
+export const mobileCommands = mobileApp;
+export const mobileQueries = mobileApp;
+export const mobileUi = createFinanzasUiService(
+  selectFinanzasUiDependencies({
+    commands: mobileCommands,
+    queries: mobileQueries,
+  }),
+);

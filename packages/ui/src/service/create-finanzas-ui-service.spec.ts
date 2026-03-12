@@ -8,7 +8,10 @@ import {
 } from "@finanzas/platform-shared";
 import type { SyncApiClient } from "@finanzas/sync";
 
-import { createFinanzasUiService } from "./create-finanzas-ui-service.js";
+import {
+  createFinanzasUiService,
+  selectFinanzasUiDependencies,
+} from "./create-finanzas-ui-service.js";
 
 const FIXED_NOW = new Date("2026-03-03T10:00:00.000Z");
 
@@ -190,7 +193,7 @@ const createUi = (
     ...options,
   });
   const context = createInMemoryBootstrapContext(bootstrap);
-  const ui = createFinanzasUiService(context, {
+  const ui = createFinanzasUiService(selectFinanzasUiDependencies(context), {
     now: () => FIXED_NOW,
   });
 

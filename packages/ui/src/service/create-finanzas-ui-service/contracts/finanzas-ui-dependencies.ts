@@ -8,3 +8,22 @@ export interface FinanzasUiDependencies {
   commands: FinanzasUiCommands;
   queries: FinanzasUiQueries;
 }
+
+/**
+ * Selects the minimal command/query surface consumed by the UI orchestrator.
+ */
+export const selectFinanzasUiDependencies = (
+  dependencies: FinanzasUiDependencies,
+): FinanzasUiDependencies => ({
+  commands: {
+    addTransaction: (input) => dependencies.commands.addTransaction(input),
+    syncNow: () => dependencies.commands.syncNow(),
+  },
+  queries: {
+    listAccounts: (input) => dependencies.queries.listAccounts(input),
+    listCategories: (input) => dependencies.queries.listCategories(input),
+    listTransactions: (input) => dependencies.queries.listTransactions(input),
+    getAccountSummary: (input) => dependencies.queries.getAccountSummary(input),
+    getSyncStatus: () => dependencies.queries.getSyncStatus(),
+  },
+});

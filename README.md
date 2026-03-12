@@ -19,8 +19,8 @@ Bootstrap inicial del proyecto basado en `ARCHITECTURE.md` y los ADR aprobados.
 - Estrategia de IDs por proposito para evitar strings genericos (`account`, `category`, `transaction`, `outbox-op`), con generacion ULID para ejecucion normal y secuencial deterministica para pruebas.
 - Utilidades compartidas para evitar duplicacion entre hosts: `createUlidIdGenerator` en `@finanzas/data` y `createInMemorySyncApiClient` en `@finanzas/sync`.
 - Bootstrap/context in-memory compartidos en `@finanzas/platform-shared` para `web`, `desktop` y `mobile`.
-- Contextos por host (`createWebContext`, `createDesktopContext`, `createMobileContext`) con separacion de `commands` y `queries` para facilitar composicion de UI.
-- Capa UI headless compartida en `@finanzas/ui` (`createFinanzasUiService`) y wrappers por host (`createWebUi`, `createMobileUi`) para materializar tabs v1 de forma web-first y reutilizable.
+- Los puntos de entrada por host exponen `app`, `commands` y `queries` de forma declarativa desde `main.ts`, sin wrappers de contexto adicionales.
+- Capa UI headless compartida en `@finanzas/ui` (`createFinanzasUiService`) con seleccion explicita de dependencias minimas en cada host para materializar tabs v1 de forma web-first y reutilizable.
 - Sistema de diseño inicial compartido (tokens de color/espaciado/tipografia en `@finanzas/ui`) + reset global web, y Home en React refactorizada con componentes atómicos/reutilizables para un dashboard financiero consistente entre hosts.
 - Pruebas unitarias iniciales con Vitest.
 

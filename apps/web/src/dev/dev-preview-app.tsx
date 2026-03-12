@@ -7,10 +7,10 @@ import type {
   FinanzasSyncStatusViewModel,
 } from "@finanzas/ui";
 
-import { AccountScreen } from "../screens/account-screen.js";
-import { HomeScreen } from "../screens/home-screen.js";
-import { MovementsScreen } from "../screens/movements-screen.js";
-import { RegisterScreen } from "../screens/register-screen.js";
+import { AccountScreen } from "../features/account/account-screen.js";
+import { HomeScreen } from "../features/home/home-screen.js";
+import { MovementsScreen } from "../features/movements/movements-screen.js";
+import { RegisterScreen } from "../features/register/register-screen.js";
 import {
   formatMinorAmount,
   getSyncStatusLabel,

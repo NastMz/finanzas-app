@@ -1,9 +1,12 @@
 import { describe, expect, it } from "vitest";
 
-import type { FinanzasHomeTabViewModel } from "@finanzas/ui";
+import {
+  createFinanzasUiService,
+  selectFinanzasUiDependencies,
+  type FinanzasHomeTabViewModel,
+} from "@finanzas/ui";
 
-import { createWebContext } from "../app/create-web-context.js";
-import { createWebUi } from "../app/create-web-ui.js";
+import { createWebBootstrap } from "../../app/bootstrap.js";
 import { loadHomeScreenHtml, renderHomeScreen } from "./home-screen.js";
 
 describe("homeScreen", () => {
@@ -74,15 +77,14 @@ describe("homeScreen", () => {
   });
 
   it("loads and renders Home tab from shared web UI facade", async () => {
-    const context = createWebContext();
-    const ui = createWebUi(context);
+    const { bootstrap, ui } = createWebFeatureRuntime();
 
-    const foodCategory = await context.commands.addCategory({
+    const foodCategory = await bootstrap.addCategory({
       name: "Comida",
       type: "expense",
     });
 
-    await context.commands.addTransaction({
+    await bootstrap.addTransaction({
       accountId: "acc-main",
       amountMinor: -12000,
       currency: "COP",
@@ -91,7 +93,7 @@ describe("homeScreen", () => {
       note: "almuerzo web",
     });
 
-    const html = await loadHomeScreenHtml(ui, {
+    const html = await loadHomeScreenHtml((input) => ui.loadHomeTab(input), {
       accountId: "acc-main",
       period: {
         from: new Date("2026-03-01T00:00:00.000Z"),
@@ -106,3 +108,21 @@ describe("homeScreen", () => {
     expect(html).toContain("Pendiente");
   });
 });
+
+const createWebFeatureRuntime = (): {
+  bootstrap: ReturnType<typeof createWebBootstrap>;
+  ui: ReturnType<typeof createFinanzasUiService>;
+} => {
+  const bootstrap = createWebBootstrap();
+  const ui = createFinanzasUiService(
+    selectFinanzasUiDependencies({
+      commands: bootstrap,
+      queries: bootstrap,
+    }),
+  );
+
+  return {
+    bootstrap,
+    ui,
+  };
+};

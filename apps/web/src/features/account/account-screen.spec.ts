@@ -1,9 +1,12 @@
 import { describe, expect, it } from "vitest";
 
-import type { FinanzasAccountTabViewModel } from "@finanzas/ui";
+import {
+  createFinanzasUiService,
+  selectFinanzasUiDependencies,
+  type FinanzasAccountTabViewModel,
+} from "@finanzas/ui";
 
-import { createWebContext } from "../app/create-web-context.js";
-import { createWebUi } from "../app/create-web-ui.js";
+import { createWebBootstrap } from "../../app/bootstrap.js";
 import { loadAccountScreenHtml, renderAccountScreen } from "./account-screen.js";
 
 describe("accountScreen", () => {
@@ -43,15 +46,14 @@ describe("accountScreen", () => {
   });
 
   it("loads and renders Account tab from shared web UI facade", async () => {
-    const context = createWebContext();
-    const ui = createWebUi(context);
+    const { bootstrap, ui } = createWebFeatureRuntime();
 
-    await context.commands.addCategory({
+    await bootstrap.addCategory({
       name: "Hogar",
       type: "expense",
     });
 
-    const html = await loadAccountScreenHtml(ui);
+    const html = await loadAccountScreenHtml(() => ui.loadAccountTab());
 
     expect(html).toContain("Control Center");
     expect(html).toContain("Sincronización");
@@ -60,3 +62,21 @@ describe("accountScreen", () => {
     expect(html).toContain("Sin errores recientes.");
   });
 });
+
+const createWebFeatureRuntime = (): {
+  bootstrap: ReturnType<typeof createWebBootstrap>;
+  ui: ReturnType<typeof createFinanzasUiService>;
+} => {
+  const bootstrap = createWebBootstrap();
+  const ui = createFinanzasUiService(
+    selectFinanzasUiDependencies({
+      commands: bootstrap,
+      queries: bootstrap,
+    }),
+  );
+
+  return {
+    bootstrap,
+    ui,
+  };
+};

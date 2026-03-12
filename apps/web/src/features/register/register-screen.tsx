@@ -1,4 +1,8 @@
-import type { FinanzasRegisterTabViewModel } from "@finanzas/ui";
+import type {
+  FinanzasRegisterTabViewModel,
+  FinanzasUiServiceContract,
+  LoadRegisterTabInput,
+} from "@finanzas/ui";
 import { renderToStaticMarkup } from "react-dom/server";
 
 import { DashboardPage } from "../../ui/components/index.js";
@@ -61,3 +65,11 @@ export const RegisterScreen = ({
 export const renderRegisterScreen = (
   viewModel: FinanzasRegisterTabViewModel,
 ): string => renderToStaticMarkup(<RegisterScreen viewModel={viewModel} />);
+
+/**
+ * Loads Register tab data and returns render-ready HTML.
+ */
+export const loadRegisterScreenHtml = async (
+  loadRegisterTab: FinanzasUiServiceContract["loadRegisterTab"],
+  input?: LoadRegisterTabInput,
+): Promise<string> => renderRegisterScreen(await loadRegisterTab(input));

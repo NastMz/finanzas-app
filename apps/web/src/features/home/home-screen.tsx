@@ -1,4 +1,8 @@
-import type { FinanzasHomeTabViewModel } from "@finanzas/ui";
+import type {
+  FinanzasHomeTabViewModel,
+  FinanzasUiServiceContract,
+  LoadHomeTabInput,
+} from "@finanzas/ui";
 import { renderToStaticMarkup } from "react-dom/server";
 
 import { DashboardPage } from "../../ui/components/index.js";
@@ -62,3 +66,11 @@ export const HomeScreen = ({ viewModel }: HomeScreenProps): JSX.Element => (
 export const renderHomeScreen = (
   viewModel: FinanzasHomeTabViewModel,
 ): string => renderToStaticMarkup(<HomeScreen viewModel={viewModel} />);
+
+/**
+ * Loads Home tab data and returns render-ready HTML.
+ */
+export const loadHomeScreenHtml = async (
+  loadHomeTab: FinanzasUiServiceContract["loadHomeTab"],
+  input?: LoadHomeTabInput,
+): Promise<string> => renderHomeScreen(await loadHomeTab(input));
