@@ -1,8 +1,11 @@
 import type { OutboxOp, OutboxRepository } from "@finanzas/application";
 import type { SyncStateRepository, SyncStatusOutboxRepository } from "@finanzas/sync";
+import {
+  PERSISTENCE_COLLECTION_IDS,
+  PERSISTENCE_SYNC_STATE_KEYS,
+} from "../persistence/persistence-schema.js";
 
 import {
-  FINANZAS_STORE_NAMES,
   clearStore,
   getAllRecords,
   getRecord,
@@ -38,7 +41,11 @@ implements OutboxRepository, SyncStatusOutboxRepository {
   }
 
   async append(op: OutboxOp): Promise<void> {
-    await putRecord(this.database, FINANZAS_STORE_NAMES.outbox, toStoredOutboxOp(op));
+    await putRecord(
+      this.database,
+      PERSISTENCE_COLLECTION_IDS.outbox,
+      toStoredOutboxOp(op),
+    );
   }
 
   async listPending(): Promise<OutboxOp[]> {
@@ -99,7 +106,7 @@ implements OutboxRepository, SyncStatusOutboxRepository {
   }
 
   async replaceAll(ops: OutboxOp[]): Promise<void> {
-    await clearStore(this.database, FINANZAS_STORE_NAMES.outbox);
+    await clearStore(this.database, PERSISTENCE_COLLECTION_IDS.outbox);
 
     for (const operation of ops) {
       await this.saveOperation(operation);
@@ -109,7 +116,7 @@ implements OutboxRepository, SyncStatusOutboxRepository {
   async listAll(): Promise<OutboxOp[]> {
     const records = await getAllRecords<StoredOutboxOp>(
       this.database,
-      FINANZAS_STORE_NAMES.outbox,
+      PERSISTENCE_COLLECTION_IDS.outbox,
     );
 
     return records.map(fromStoredOutboxOp);
@@ -118,7 +125,7 @@ implements OutboxRepository, SyncStatusOutboxRepository {
   private async saveOperation(operation: OutboxOp): Promise<void> {
     await putRecord(
       this.database,
-      FINANZAS_STORE_NAMES.outbox,
+      PERSISTENCE_COLLECTION_IDS.outbox,
       toStoredOutboxOp(operation),
     );
   }
@@ -136,16 +143,16 @@ export class IndexedDbSyncStateRepository implements SyncStateRepository {
   async getCursor(): Promise<string | null> {
     const record = await getRecord<StoredSyncState>(
       this.database,
-      FINANZAS_STORE_NAMES.syncState,
-      "cursor",
+      PERSISTENCE_COLLECTION_IDS.syncState,
+      PERSISTENCE_SYNC_STATE_KEYS.cursor,
     );
 
     return record?.value ?? this.initialCursor;
   }
 
   async setCursor(cursor: string): Promise<void> {
-    await putRecord(this.database, FINANZAS_STORE_NAMES.syncState, {
-      key: "cursor",
+    await putRecord(this.database, PERSISTENCE_COLLECTION_IDS.syncState, {
+      key: PERSISTENCE_SYNC_STATE_KEYS.cursor,
       value: cursor,
     } satisfies StoredSyncState);
   }

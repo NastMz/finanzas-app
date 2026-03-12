@@ -12,4 +12,5 @@ export * from "./indexeddb/indexeddb-core-repositories.js";
 export * from "./indexeddb/indexeddb-sync-repositories.js";
 export * from "./in-memory/sequence-id-generator.js";
 export * from "./id/ulid-id-generator.js";
+export * from "./persistence/persistence-schema.js";
 export * from "./runtime/system-clock.js";

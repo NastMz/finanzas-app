@@ -17,10 +17,12 @@ import type {
   TransactionRepository,
   TransactionTemplateRepository,
 } from "@finanzas/application";
+import {
+  PERSISTENCE_COLLECTION_IDS,
+  PERSISTENCE_INDEX_IDS,
+} from "../persistence/persistence-schema.js";
 
 import {
-  FINANZAS_STORE_NAMES,
-  TRANSACTION_ACCOUNT_ID_INDEX,
   clearStore,
   getAllRecords,
   getAllRecordsByIndex,
@@ -130,7 +132,7 @@ export class IndexedDbAccountRepository implements AccountRepository {
   async findById(id: string): Promise<Account | null> {
     const record = await getRecord<StoredAccount>(
       this.database,
-      FINANZAS_STORE_NAMES.accounts,
+      PERSISTENCE_COLLECTION_IDS.accounts,
       id,
     );
 
@@ -140,7 +142,7 @@ export class IndexedDbAccountRepository implements AccountRepository {
   async listAll(): Promise<Account[]> {
     const records = await getAllRecords<StoredAccount>(
       this.database,
-      FINANZAS_STORE_NAMES.accounts,
+      PERSISTENCE_COLLECTION_IDS.accounts,
     );
 
     return records.map(fromStoredAccount);
@@ -149,13 +151,13 @@ export class IndexedDbAccountRepository implements AccountRepository {
   async save(account: Account): Promise<void> {
     await putRecord(
       this.database,
-      FINANZAS_STORE_NAMES.accounts,
+      PERSISTENCE_COLLECTION_IDS.accounts,
       toStoredAccount(account),
     );
   }
 
   async replaceAll(accounts: Account[]): Promise<void> {
-    await clearStore(this.database, FINANZAS_STORE_NAMES.accounts);
+    await clearStore(this.database, PERSISTENCE_COLLECTION_IDS.accounts);
 
     for (const account of accounts) {
       await this.save(account);
@@ -173,7 +175,7 @@ export class IndexedDbBudgetRepository implements BudgetRepository {
   async findById(id: string): Promise<Budget | null> {
     const record = await getRecord<StoredBudget>(
       this.database,
-      FINANZAS_STORE_NAMES.budgets,
+      PERSISTENCE_COLLECTION_IDS.budgets,
       id,
     );
 
@@ -199,7 +201,7 @@ export class IndexedDbBudgetRepository implements BudgetRepository {
   async listAll(): Promise<Budget[]> {
     const records = await getAllRecords<StoredBudget>(
       this.database,
-      FINANZAS_STORE_NAMES.budgets,
+      PERSISTENCE_COLLECTION_IDS.budgets,
     );
 
     return records.map(fromStoredBudget);
@@ -208,13 +210,13 @@ export class IndexedDbBudgetRepository implements BudgetRepository {
   async save(budget: Budget): Promise<void> {
     await putRecord(
       this.database,
-      FINANZAS_STORE_NAMES.budgets,
+      PERSISTENCE_COLLECTION_IDS.budgets,
       toStoredBudget(budget),
     );
   }
 
   async replaceAll(budgets: Budget[]): Promise<void> {
-    await clearStore(this.database, FINANZAS_STORE_NAMES.budgets);
+    await clearStore(this.database, PERSISTENCE_COLLECTION_IDS.budgets);
 
     for (const budget of budgets) {
       await this.save(budget);
@@ -232,7 +234,7 @@ export class IndexedDbCategoryRepository implements CategoryRepository {
   async findById(id: string): Promise<Category | null> {
     const record = await getRecord<StoredCategory>(
       this.database,
-      FINANZAS_STORE_NAMES.categories,
+      PERSISTENCE_COLLECTION_IDS.categories,
       id,
     );
 
@@ -242,7 +244,7 @@ export class IndexedDbCategoryRepository implements CategoryRepository {
   async listAll(): Promise<Category[]> {
     const records = await getAllRecords<StoredCategory>(
       this.database,
-      FINANZAS_STORE_NAMES.categories,
+      PERSISTENCE_COLLECTION_IDS.categories,
     );
 
     return records.map(fromStoredCategory);
@@ -251,13 +253,13 @@ export class IndexedDbCategoryRepository implements CategoryRepository {
   async save(category: Category): Promise<void> {
     await putRecord(
       this.database,
-      FINANZAS_STORE_NAMES.categories,
+      PERSISTENCE_COLLECTION_IDS.categories,
       toStoredCategory(category),
     );
   }
 
   async replaceAll(categories: Category[]): Promise<void> {
-    await clearStore(this.database, FINANZAS_STORE_NAMES.categories);
+    await clearStore(this.database, PERSISTENCE_COLLECTION_IDS.categories);
 
     for (const category of categories) {
       await this.save(category);
@@ -275,7 +277,7 @@ export class IndexedDbRecurringRuleRepository implements RecurringRuleRepository
   async findById(id: string): Promise<RecurringRule | null> {
     const record = await getRecord<StoredRecurringRule>(
       this.database,
-      FINANZAS_STORE_NAMES.recurringRules,
+      PERSISTENCE_COLLECTION_IDS.recurringRules,
       id,
     );
 
@@ -298,7 +300,7 @@ export class IndexedDbRecurringRuleRepository implements RecurringRuleRepository
   async listAll(): Promise<RecurringRule[]> {
     const records = await getAllRecords<StoredRecurringRule>(
       this.database,
-      FINANZAS_STORE_NAMES.recurringRules,
+      PERSISTENCE_COLLECTION_IDS.recurringRules,
     );
 
     return records.map(fromStoredRecurringRule);
@@ -307,13 +309,13 @@ export class IndexedDbRecurringRuleRepository implements RecurringRuleRepository
   async save(rule: RecurringRule): Promise<void> {
     await putRecord(
       this.database,
-      FINANZAS_STORE_NAMES.recurringRules,
+      PERSISTENCE_COLLECTION_IDS.recurringRules,
       toStoredRecurringRule(rule),
     );
   }
 
   async replaceAll(rules: RecurringRule[]): Promise<void> {
-    await clearStore(this.database, FINANZAS_STORE_NAMES.recurringRules);
+    await clearStore(this.database, PERSISTENCE_COLLECTION_IDS.recurringRules);
 
     for (const rule of rules) {
       await this.save(rule);
@@ -331,7 +333,7 @@ export class IndexedDbTransactionRepository implements TransactionRepository {
   async save(transaction: Transaction): Promise<void> {
     await putRecord(
       this.database,
-      FINANZAS_STORE_NAMES.transactions,
+      PERSISTENCE_COLLECTION_IDS.transactions,
       toStoredTransaction(transaction),
     );
   }
@@ -339,7 +341,7 @@ export class IndexedDbTransactionRepository implements TransactionRepository {
   async findById(id: string): Promise<Transaction | null> {
     const record = await getRecord<StoredTransaction>(
       this.database,
-      FINANZAS_STORE_NAMES.transactions,
+      PERSISTENCE_COLLECTION_IDS.transactions,
       id,
     );
 
@@ -349,8 +351,8 @@ export class IndexedDbTransactionRepository implements TransactionRepository {
   async listByAccountId(accountId: string): Promise<Transaction[]> {
     const records = await getAllRecordsByIndex<StoredTransaction>(
       this.database,
-      FINANZAS_STORE_NAMES.transactions,
-      TRANSACTION_ACCOUNT_ID_INDEX,
+      PERSISTENCE_COLLECTION_IDS.transactions,
+      PERSISTENCE_INDEX_IDS.byAccountId,
       accountId,
     );
 
@@ -360,14 +362,14 @@ export class IndexedDbTransactionRepository implements TransactionRepository {
   async listAll(): Promise<Transaction[]> {
     const records = await getAllRecords<StoredTransaction>(
       this.database,
-      FINANZAS_STORE_NAMES.transactions,
+      PERSISTENCE_COLLECTION_IDS.transactions,
     );
 
     return records.map(fromStoredTransaction);
   }
 
   async replaceAll(transactions: Transaction[]): Promise<void> {
-    await clearStore(this.database, FINANZAS_STORE_NAMES.transactions);
+    await clearStore(this.database, PERSISTENCE_COLLECTION_IDS.transactions);
 
     for (const transaction of transactions) {
       await this.save(transaction);
@@ -386,7 +388,7 @@ implements TransactionTemplateRepository {
   async findById(id: string): Promise<TransactionTemplate | null> {
     const record = await getRecord<StoredTransactionTemplate>(
       this.database,
-      FINANZAS_STORE_NAMES.transactionTemplates,
+      PERSISTENCE_COLLECTION_IDS.transactionTemplates,
       id,
     );
 
@@ -396,7 +398,7 @@ implements TransactionTemplateRepository {
   async listAll(): Promise<TransactionTemplate[]> {
     const records = await getAllRecords<StoredTransactionTemplate>(
       this.database,
-      FINANZAS_STORE_NAMES.transactionTemplates,
+      PERSISTENCE_COLLECTION_IDS.transactionTemplates,
     );
 
     return records.map(fromStoredTransactionTemplate);
@@ -405,13 +407,13 @@ implements TransactionTemplateRepository {
   async save(template: TransactionTemplate): Promise<void> {
     await putRecord(
       this.database,
-      FINANZAS_STORE_NAMES.transactionTemplates,
+      PERSISTENCE_COLLECTION_IDS.transactionTemplates,
       toStoredTransactionTemplate(template),
     );
   }
 
   async replaceAll(templates: TransactionTemplate[]): Promise<void> {
-    await clearStore(this.database, FINANZAS_STORE_NAMES.transactionTemplates);
+    await clearStore(this.database, PERSISTENCE_COLLECTION_IDS.transactionTemplates);
 
     for (const template of templates) {
       await this.save(template);

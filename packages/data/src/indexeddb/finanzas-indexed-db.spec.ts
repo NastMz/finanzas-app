@@ -3,11 +3,16 @@ import { describe, expect, it } from "vitest";
 
 import {
   FINANZAS_INDEXED_DB_VERSION,
-  FINANZAS_STORE_NAMES,
   TRANSACTION_ACCOUNT_ID_INDEX,
+  PERSISTENCE_COLLECTION_IDS,
+  PERSISTENCE_MIGRATIONS,
+  PERSISTENCE_METADATA_KEYS,
+  PERSISTENCE_SYNC_STATE_KEYS,
   getAllRecords,
+  getIndexedDbStoreName,
   getRecord,
   openFinanzasIndexedDb,
+  type PersistenceCollectionId,
   type SeededAccountRecord,
 } from "@finanzas/data";
 
@@ -63,40 +68,44 @@ describe("openFinanzasIndexedDb", () => {
     const database = await connection;
 
     expect(database.version).toBe(FINANZAS_INDEXED_DB_VERSION);
-    expect(database.objectStoreNames.contains(FINANZAS_STORE_NAMES.metadata)).toBe(
-      true,
-    );
     expect(
-      database.objectStoreNames.contains(FINANZAS_STORE_NAMES.schemaMigrations),
+      database.objectStoreNames.contains(
+        getIndexedDbStoreName(PERSISTENCE_COLLECTION_IDS.metadata),
+      ),
+    ).toBe(true);
+    expect(
+      database.objectStoreNames.contains(
+        getIndexedDbStoreName(PERSISTENCE_COLLECTION_IDS.schemaMigrations),
+      ),
     ).toBe(true);
 
     const schemaVersion = await getRecord<IndexedDbMetadataRecord>(
       connection,
-      FINANZAS_STORE_NAMES.metadata,
-      "schemaVersion",
+      PERSISTENCE_COLLECTION_IDS.metadata,
+      PERSISTENCE_METADATA_KEYS.schemaVersion,
     );
     const lastMigratedAt = await getRecord<IndexedDbMetadataRecord>(
       connection,
-      FINANZAS_STORE_NAMES.metadata,
-      "lastMigratedAt",
+      PERSISTENCE_COLLECTION_IDS.metadata,
+      PERSISTENCE_METADATA_KEYS.lastMigratedAt,
     );
     const migrations = await getAllRecords<IndexedDbMigrationRecord>(
       connection,
-      FINANZAS_STORE_NAMES.schemaMigrations,
+      PERSISTENCE_COLLECTION_IDS.schemaMigrations,
     );
     const account = await getRecord<SeededAccountRecord>(
       connection,
-      FINANZAS_STORE_NAMES.accounts,
+      PERSISTENCE_COLLECTION_IDS.accounts,
       seededAccount.id,
     );
     const cursor = await getRecord<SyncStateRecord>(
       connection,
-      FINANZAS_STORE_NAMES.syncState,
-      "cursor",
+      PERSISTENCE_COLLECTION_IDS.syncState,
+      PERSISTENCE_SYNC_STATE_KEYS.cursor,
     );
 
     expect(schemaVersion).toEqual({
-      key: "schemaVersion",
+      key: PERSISTENCE_METADATA_KEYS.schemaVersion,
       value: String(FINANZAS_INDEXED_DB_VERSION),
     });
     expect(lastMigratedAt?.value).toMatch(
@@ -108,16 +117,7 @@ describe("openFinanzasIndexedDb", () => {
         version: migration.version,
         name: migration.name,
       })),
-    ).toEqual([
-      {
-        version: 1,
-        name: "create-core-stores",
-      },
-      {
-        version: 2,
-        name: "add-migration-metadata-stores",
-      },
-    ]);
+    ).toEqual(expectedMigrationSummaries);
     expect(migrations.every((migration) => migration.appliedAt.length > 0)).toBe(
       true,
     );
@@ -159,19 +159,19 @@ describe("openFinanzasIndexedDb", () => {
 
     await putLegacyRecord(
       legacyDatabase,
-      FINANZAS_STORE_NAMES.accounts,
+      PERSISTENCE_COLLECTION_IDS.accounts,
       legacyAccount,
     );
     await putLegacyRecord(
       legacyDatabase,
-      FINANZAS_STORE_NAMES.outbox,
+      PERSISTENCE_COLLECTION_IDS.outbox,
       legacyOutbox,
     );
     await putLegacyRecord(
       legacyDatabase,
-      FINANZAS_STORE_NAMES.syncState,
+      PERSISTENCE_COLLECTION_IDS.syncState,
       {
-        key: "cursor",
+        key: PERSISTENCE_SYNC_STATE_KEYS.cursor,
         value: "42",
       } satisfies SyncStateRecord,
     );
@@ -187,53 +187,55 @@ describe("openFinanzasIndexedDb", () => {
 
     expect(upgradedDatabase.version).toBe(FINANZAS_INDEXED_DB_VERSION);
     expect(
-      upgradedDatabase.objectStoreNames.contains(FINANZAS_STORE_NAMES.metadata),
+      upgradedDatabase.objectStoreNames.contains(
+        getIndexedDbStoreName(PERSISTENCE_COLLECTION_IDS.metadata),
+      ),
     ).toBe(true);
     expect(
       upgradedDatabase.objectStoreNames.contains(
-        FINANZAS_STORE_NAMES.schemaMigrations,
+        getIndexedDbStoreName(PERSISTENCE_COLLECTION_IDS.schemaMigrations),
       ),
     ).toBe(true);
 
     const storedLegacyAccount = await getRecord<SeededAccountRecord>(
       connection,
-      FINANZAS_STORE_NAMES.accounts,
+      PERSISTENCE_COLLECTION_IDS.accounts,
       legacyAccount.id,
     );
     const missingSeededAccount = await getRecord<SeededAccountRecord>(
       connection,
-      FINANZAS_STORE_NAMES.accounts,
+      PERSISTENCE_COLLECTION_IDS.accounts,
       seededAccount.id,
     );
     const storedOutbox = await getRecord<LegacyOutboxRecord>(
       connection,
-      FINANZAS_STORE_NAMES.outbox,
+      PERSISTENCE_COLLECTION_IDS.outbox,
       legacyOutbox.opId,
     );
     const cursor = await getRecord<SyncStateRecord>(
       connection,
-      FINANZAS_STORE_NAMES.syncState,
-      "cursor",
+      PERSISTENCE_COLLECTION_IDS.syncState,
+      PERSISTENCE_SYNC_STATE_KEYS.cursor,
     );
     const schemaVersion = await getRecord<IndexedDbMetadataRecord>(
       connection,
-      FINANZAS_STORE_NAMES.metadata,
-      "schemaVersion",
+      PERSISTENCE_COLLECTION_IDS.metadata,
+      PERSISTENCE_METADATA_KEYS.schemaVersion,
     );
     const migrations = await getAllRecords<IndexedDbMigrationRecord>(
       connection,
-      FINANZAS_STORE_NAMES.schemaMigrations,
+      PERSISTENCE_COLLECTION_IDS.schemaMigrations,
     );
 
     expect(storedLegacyAccount).toEqual(legacyAccount);
     expect(missingSeededAccount).toBeNull();
     expect(storedOutbox).toEqual(legacyOutbox);
     expect(cursor).toEqual({
-      key: "cursor",
+      key: PERSISTENCE_SYNC_STATE_KEYS.cursor,
       value: "42",
     });
     expect(schemaVersion).toEqual({
-      key: "schemaVersion",
+      key: PERSISTENCE_METADATA_KEYS.schemaVersion,
       value: String(FINANZAS_INDEXED_DB_VERSION),
     });
     expect(
@@ -241,16 +243,7 @@ describe("openFinanzasIndexedDb", () => {
         version: migration.version,
         name: migration.name,
       })),
-    ).toEqual([
-      {
-        version: 1,
-        name: "create-core-stores",
-      },
-      {
-        version: 2,
-        name: "add-migration-metadata-stores",
-      },
-    ]);
+    ).toEqual(expectedMigrationSummaries);
 
     upgradedDatabase.close();
   });
@@ -259,23 +252,31 @@ describe("openFinanzasIndexedDb", () => {
 const createDatabaseName = (): string =>
   `finanzas-indexeddb-${Date.now()}-${Math.random().toString(16).slice(2)}`;
 
+const expectedMigrationSummaries = PERSISTENCE_MIGRATIONS.map((migration) => ({
+  version: migration.version,
+  name: migration.name,
+}));
+
 const openLegacyIndexedDb = async (databaseName: string): Promise<IDBDatabase> =>
   await awaitOpenRequest(fakeIndexedDb.open(databaseName, 1), (database) => {
-    database.createObjectStore(FINANZAS_STORE_NAMES.accounts, {
+    database.createObjectStore(getIndexedDbStoreName(PERSISTENCE_COLLECTION_IDS.accounts), {
       keyPath: "id",
     });
-    database.createObjectStore(FINANZAS_STORE_NAMES.budgets, {
+    database.createObjectStore(getIndexedDbStoreName(PERSISTENCE_COLLECTION_IDS.budgets), {
       keyPath: "id",
     });
-    database.createObjectStore(FINANZAS_STORE_NAMES.categories, {
+    database.createObjectStore(getIndexedDbStoreName(PERSISTENCE_COLLECTION_IDS.categories), {
       keyPath: "id",
     });
-    database.createObjectStore(FINANZAS_STORE_NAMES.recurringRules, {
-      keyPath: "id",
-    });
+    database.createObjectStore(
+      getIndexedDbStoreName(PERSISTENCE_COLLECTION_IDS.recurringRules),
+      {
+        keyPath: "id",
+      },
+    );
 
     const transactionsStore = database.createObjectStore(
-      FINANZAS_STORE_NAMES.transactions,
+      getIndexedDbStoreName(PERSISTENCE_COLLECTION_IDS.transactions),
       {
         keyPath: "id",
       },
@@ -285,22 +286,26 @@ const openLegacyIndexedDb = async (databaseName: string): Promise<IDBDatabase> =
       unique: false,
     });
 
-    database.createObjectStore(FINANZAS_STORE_NAMES.transactionTemplates, {
-      keyPath: "id",
-    });
-    database.createObjectStore(FINANZAS_STORE_NAMES.outbox, {
+    database.createObjectStore(
+      getIndexedDbStoreName(PERSISTENCE_COLLECTION_IDS.transactionTemplates),
+      {
+        keyPath: "id",
+      },
+    );
+    database.createObjectStore(getIndexedDbStoreName(PERSISTENCE_COLLECTION_IDS.outbox), {
       keyPath: "opId",
     });
-    database.createObjectStore(FINANZAS_STORE_NAMES.syncState, {
+    database.createObjectStore(getIndexedDbStoreName(PERSISTENCE_COLLECTION_IDS.syncState), {
       keyPath: "key",
     });
   });
 
 const putLegacyRecord = async (
   database: IDBDatabase,
-  storeName: string,
+  collectionId: PersistenceCollectionId,
   value: unknown,
 ): Promise<void> => {
+  const storeName = getIndexedDbStoreName(collectionId);
   await new Promise((resolve, reject) => {
     const transaction = database.transaction(storeName, "readwrite");
     const request = transaction.objectStore(storeName).put(value);

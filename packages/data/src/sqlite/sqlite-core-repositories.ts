@@ -15,13 +15,16 @@ import type {
   TransactionTemplateRepository,
 } from "@finanzas/application";
 import type { DatabaseSync } from "node:sqlite";
+import {
+  PERSISTENCE_COLLECTION_IDS,
+  PERSISTENCE_INDEX_IDS,
+} from "../persistence/persistence-schema.js";
 
 import {
-  FINANZAS_SQLITE_TABLES,
   clearTable,
   getPayloadByKey,
   listPayloads,
-  listPayloadsByColumn,
+  listPayloadsByIndex,
   putPayload,
 } from "./finanzas-sqlite.js";
 
@@ -35,28 +38,26 @@ export class SqliteAccountRepository implements AccountRepository {
   async findById(id: string): Promise<Account | null> {
     return getPayloadByKey<Account>(
       this.database,
-      FINANZAS_SQLITE_TABLES.accounts,
-      "id",
+      PERSISTENCE_COLLECTION_IDS.accounts,
       id,
     );
   }
 
   async listAll(): Promise<Account[]> {
-    return listPayloads<Account>(this.database, FINANZAS_SQLITE_TABLES.accounts);
+    return listPayloads<Account>(this.database, PERSISTENCE_COLLECTION_IDS.accounts);
   }
 
   async save(account: Account): Promise<void> {
     putPayload(
       this.database,
-      FINANZAS_SQLITE_TABLES.accounts,
-      "id",
+      PERSISTENCE_COLLECTION_IDS.accounts,
       account.id,
       account,
     );
   }
 
   async replaceAll(accounts: Account[]): Promise<void> {
-    clearTable(this.database, FINANZAS_SQLITE_TABLES.accounts);
+    clearTable(this.database, PERSISTENCE_COLLECTION_IDS.accounts);
 
     for (const account of accounts) {
       await this.save(account);
@@ -74,8 +75,7 @@ export class SqliteBudgetRepository implements BudgetRepository {
   async findById(id: string): Promise<Budget | null> {
     return getPayloadByKey<Budget>(
       this.database,
-      FINANZAS_SQLITE_TABLES.budgets,
-      "id",
+      PERSISTENCE_COLLECTION_IDS.budgets,
       id,
     );
   }
@@ -97,21 +97,20 @@ export class SqliteBudgetRepository implements BudgetRepository {
   }
 
   async listAll(): Promise<Budget[]> {
-    return listPayloads<Budget>(this.database, FINANZAS_SQLITE_TABLES.budgets);
+    return listPayloads<Budget>(this.database, PERSISTENCE_COLLECTION_IDS.budgets);
   }
 
   async save(budget: Budget): Promise<void> {
     putPayload(
       this.database,
-      FINANZAS_SQLITE_TABLES.budgets,
-      "id",
+      PERSISTENCE_COLLECTION_IDS.budgets,
       budget.id,
       budget,
     );
   }
 
   async replaceAll(budgets: Budget[]): Promise<void> {
-    clearTable(this.database, FINANZAS_SQLITE_TABLES.budgets);
+    clearTable(this.database, PERSISTENCE_COLLECTION_IDS.budgets);
 
     for (const budget of budgets) {
       await this.save(budget);
@@ -129,28 +128,26 @@ export class SqliteCategoryRepository implements CategoryRepository {
   async findById(id: string): Promise<Category | null> {
     return getPayloadByKey<Category>(
       this.database,
-      FINANZAS_SQLITE_TABLES.categories,
-      "id",
+      PERSISTENCE_COLLECTION_IDS.categories,
       id,
     );
   }
 
   async listAll(): Promise<Category[]> {
-    return listPayloads<Category>(this.database, FINANZAS_SQLITE_TABLES.categories);
+    return listPayloads<Category>(this.database, PERSISTENCE_COLLECTION_IDS.categories);
   }
 
   async save(category: Category): Promise<void> {
     putPayload(
       this.database,
-      FINANZAS_SQLITE_TABLES.categories,
-      "id",
+      PERSISTENCE_COLLECTION_IDS.categories,
       category.id,
       category,
     );
   }
 
   async replaceAll(categories: Category[]): Promise<void> {
-    clearTable(this.database, FINANZAS_SQLITE_TABLES.categories);
+    clearTable(this.database, PERSISTENCE_COLLECTION_IDS.categories);
 
     for (const category of categories) {
       await this.save(category);
@@ -168,8 +165,7 @@ export class SqliteRecurringRuleRepository implements RecurringRuleRepository {
   async findById(id: string): Promise<RecurringRule | null> {
     return getPayloadByKey<RecurringRule>(
       this.database,
-      FINANZAS_SQLITE_TABLES.recurringRules,
-      "id",
+      PERSISTENCE_COLLECTION_IDS.recurringRules,
       id,
     );
   }
@@ -190,22 +186,21 @@ export class SqliteRecurringRuleRepository implements RecurringRuleRepository {
   async listAll(): Promise<RecurringRule[]> {
     return listPayloads<RecurringRule>(
       this.database,
-      FINANZAS_SQLITE_TABLES.recurringRules,
+      PERSISTENCE_COLLECTION_IDS.recurringRules,
     );
   }
 
   async save(rule: RecurringRule): Promise<void> {
     putPayload(
       this.database,
-      FINANZAS_SQLITE_TABLES.recurringRules,
-      "id",
+      PERSISTENCE_COLLECTION_IDS.recurringRules,
       rule.id,
       rule,
     );
   }
 
   async replaceAll(rules: RecurringRule[]): Promise<void> {
-    clearTable(this.database, FINANZAS_SQLITE_TABLES.recurringRules);
+    clearTable(this.database, PERSISTENCE_COLLECTION_IDS.recurringRules);
 
     for (const rule of rules) {
       await this.save(rule);
@@ -223,30 +218,25 @@ export class SqliteTransactionRepository implements TransactionRepository {
   async save(transaction: Transaction): Promise<void> {
     putPayload(
       this.database,
-      FINANZAS_SQLITE_TABLES.transactions,
-      "id",
+      PERSISTENCE_COLLECTION_IDS.transactions,
       transaction.id,
       transaction,
-      {
-        account_id: transaction.accountId,
-      },
     );
   }
 
   async findById(id: string): Promise<Transaction | null> {
     return getPayloadByKey<Transaction>(
       this.database,
-      FINANZAS_SQLITE_TABLES.transactions,
-      "id",
+      PERSISTENCE_COLLECTION_IDS.transactions,
       id,
     );
   }
 
   async listByAccountId(accountId: string): Promise<Transaction[]> {
-    return listPayloadsByColumn<Transaction>(
+    return listPayloadsByIndex<Transaction>(
       this.database,
-      FINANZAS_SQLITE_TABLES.transactions,
-      "account_id",
+      PERSISTENCE_COLLECTION_IDS.transactions,
+      PERSISTENCE_INDEX_IDS.byAccountId,
       accountId,
     );
   }
@@ -254,12 +244,12 @@ export class SqliteTransactionRepository implements TransactionRepository {
   async listAll(): Promise<Transaction[]> {
     return listPayloads<Transaction>(
       this.database,
-      FINANZAS_SQLITE_TABLES.transactions,
+      PERSISTENCE_COLLECTION_IDS.transactions,
     );
   }
 
   async replaceAll(transactions: Transaction[]): Promise<void> {
-    clearTable(this.database, FINANZAS_SQLITE_TABLES.transactions);
+    clearTable(this.database, PERSISTENCE_COLLECTION_IDS.transactions);
 
     for (const transaction of transactions) {
       await this.save(transaction);
@@ -278,8 +268,7 @@ implements TransactionTemplateRepository {
   async findById(id: string): Promise<TransactionTemplate | null> {
     return getPayloadByKey<TransactionTemplate>(
       this.database,
-      FINANZAS_SQLITE_TABLES.transactionTemplates,
-      "id",
+      PERSISTENCE_COLLECTION_IDS.transactionTemplates,
       id,
     );
   }
@@ -287,22 +276,21 @@ implements TransactionTemplateRepository {
   async listAll(): Promise<TransactionTemplate[]> {
     return listPayloads<TransactionTemplate>(
       this.database,
-      FINANZAS_SQLITE_TABLES.transactionTemplates,
+      PERSISTENCE_COLLECTION_IDS.transactionTemplates,
     );
   }
 
   async save(template: TransactionTemplate): Promise<void> {
     putPayload(
       this.database,
-      FINANZAS_SQLITE_TABLES.transactionTemplates,
-      "id",
+      PERSISTENCE_COLLECTION_IDS.transactionTemplates,
       template.id,
       template,
     );
   }
 
   async replaceAll(templates: TransactionTemplate[]): Promise<void> {
-    clearTable(this.database, FINANZAS_SQLITE_TABLES.transactionTemplates);
+    clearTable(this.database, PERSISTENCE_COLLECTION_IDS.transactionTemplates);
 
     for (const template of templates) {
       await this.save(template);

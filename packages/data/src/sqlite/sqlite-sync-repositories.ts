@@ -2,9 +2,9 @@ import type { DatabaseSync } from "node:sqlite";
 
 import type { OutboxOp, OutboxRepository } from "@finanzas/application";
 import type { SyncStateRepository, SyncStatusOutboxRepository } from "@finanzas/sync";
+import { PERSISTENCE_COLLECTION_IDS } from "../persistence/persistence-schema.js";
 
 import {
-  FINANZAS_SQLITE_TABLES,
   clearTable,
   getCursorValue,
   listPayloads,
@@ -23,8 +23,7 @@ implements OutboxRepository, SyncStatusOutboxRepository {
   async append(op: OutboxOp): Promise<void> {
     putPayload(
       this.database,
-      FINANZAS_SQLITE_TABLES.outbox,
-      "op_id",
+      PERSISTENCE_COLLECTION_IDS.outbox,
       op.opId,
       op,
     );
@@ -88,7 +87,7 @@ implements OutboxRepository, SyncStatusOutboxRepository {
   }
 
   async replaceAll(ops: OutboxOp[]): Promise<void> {
-    clearTable(this.database, FINANZAS_SQLITE_TABLES.outbox);
+    clearTable(this.database, PERSISTENCE_COLLECTION_IDS.outbox);
 
     for (const operation of ops) {
       await this.saveOperation(operation);
@@ -96,14 +95,13 @@ implements OutboxRepository, SyncStatusOutboxRepository {
   }
 
   async listAll(): Promise<OutboxOp[]> {
-    return listPayloads<OutboxOp>(this.database, FINANZAS_SQLITE_TABLES.outbox);
+    return listPayloads<OutboxOp>(this.database, PERSISTENCE_COLLECTION_IDS.outbox);
   }
 
   private async saveOperation(operation: OutboxOp): Promise<void> {
     putPayload(
       this.database,
-      FINANZAS_SQLITE_TABLES.outbox,
-      "op_id",
+      PERSISTENCE_COLLECTION_IDS.outbox,
       operation.opId,
       operation,
     );

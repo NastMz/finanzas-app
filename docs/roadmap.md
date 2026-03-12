@@ -76,7 +76,7 @@ Pasar de un flujo validado en memoria a una base robusta de persistencia local y
 - `[x]` Cliente de sync in-memory para pruebas
 - `[x]` Persistencia web real sobre IndexedDB
 - `[x]` Persistencia mobile y desktop real sobre SQLite
-- `[x]` Mecanismo de migraciones versionadas para IndexedDB y SQLite
+- `[x]` Mecanismo de migraciones versionadas para IndexedDB y SQLite desde un manifiesto de esquema compartido
 
 ### Pendiente
 

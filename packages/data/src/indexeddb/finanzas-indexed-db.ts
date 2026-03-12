@@ -1,24 +1,30 @@
 import type { AccountType } from "@finanzas/domain";
+import {
+  PERSISTENCE_COLLECTION_IDS,
+  PERSISTENCE_INDEX_IDS,
+  PERSISTENCE_METADATA_KEYS,
+  PERSISTENCE_MIGRATIONS,
+  PERSISTENCE_SCHEMA_VERSION,
+  PERSISTENCE_SYNC_STATE_KEYS,
+  buildIndexedDbStoreNames,
+  getIndexedDbIndexName,
+  getIndexedDbStoreName,
+  getPersistenceCollectionDefinition,
+  getPersistencePrimaryKeyPath,
+  type PersistenceCollectionId,
+  type PersistenceIndexId,
+} from "../persistence/persistence-schema.js";
 
 export const FINANZAS_INDEXED_DB_NAME = "finanzas-app";
-export const FINANZAS_INDEXED_DB_VERSION = 2;
-export const TRANSACTION_ACCOUNT_ID_INDEX = "by-account-id";
+export const FINANZAS_INDEXED_DB_VERSION = PERSISTENCE_SCHEMA_VERSION;
+export const TRANSACTION_ACCOUNT_ID_INDEX = getIndexedDbIndexName(
+  PERSISTENCE_COLLECTION_IDS.transactions,
+  PERSISTENCE_INDEX_IDS.byAccountId,
+);
 
-export const FINANZAS_STORE_NAMES = {
-  accounts: "accounts",
-  budgets: "budgets",
-  categories: "categories",
-  recurringRules: "recurringRules",
-  transactions: "transactions",
-  transactionTemplates: "transactionTemplates",
-  outbox: "outbox",
-  syncState: "syncState",
-  metadata: "metadata",
-  schemaMigrations: "schemaMigrations",
-} as const;
+export const FINANZAS_STORE_NAMES = buildIndexedDbStoreNames();
 
-export type FinanzasStoreName =
-  (typeof FINANZAS_STORE_NAMES)[keyof typeof FINANZAS_STORE_NAMES];
+export type FinanzasStoreName = PersistenceCollectionId;
 
 export type IndexedDbConnection = Promise<IDBDatabase>;
 
@@ -56,59 +62,6 @@ interface IndexedDbMigrationRecord {
   appliedAt: string;
 }
 
-interface IndexedDbMigration {
-  version: number;
-  name: string;
-  up(database: IDBDatabase, transaction: IDBTransaction | null): void;
-}
-
-const INDEXED_DB_MIGRATIONS: IndexedDbMigration[] = [
-  {
-    version: 1,
-    name: "create-core-stores",
-    up: (database, transaction) => {
-      ensureStore(database, transaction, FINANZAS_STORE_NAMES.accounts, "id");
-      ensureStore(database, transaction, FINANZAS_STORE_NAMES.budgets, "id");
-      ensureStore(database, transaction, FINANZAS_STORE_NAMES.categories, "id");
-      ensureStore(database, transaction, FINANZAS_STORE_NAMES.recurringRules, "id");
-      ensureStore(
-        database,
-        transaction,
-        FINANZAS_STORE_NAMES.transactionTemplates,
-        "id",
-      );
-      ensureStore(database, transaction, FINANZAS_STORE_NAMES.outbox, "opId");
-      ensureStore(database, transaction, FINANZAS_STORE_NAMES.syncState, "key");
-
-      const transactionsStore = ensureStore(
-        database,
-        transaction,
-        FINANZAS_STORE_NAMES.transactions,
-        "id",
-      );
-
-      if (!transactionsStore.indexNames.contains(TRANSACTION_ACCOUNT_ID_INDEX)) {
-        transactionsStore.createIndex(TRANSACTION_ACCOUNT_ID_INDEX, "accountId", {
-          unique: false,
-        });
-      }
-    },
-  },
-  {
-    version: 2,
-    name: "add-migration-metadata-stores",
-    up: (database, transaction) => {
-      ensureStore(database, transaction, FINANZAS_STORE_NAMES.metadata, "key");
-      ensureStore(
-        database,
-        transaction,
-        FINANZAS_STORE_NAMES.schemaMigrations,
-        "version",
-      );
-    },
-  },
-];
-
 export const openFinanzasIndexedDb = (
   options: OpenFinanzasIndexedDbOptions = {},
 ): IndexedDbConnection => {
@@ -139,12 +92,12 @@ export const openFinanzasIndexedDb = (
 
 export const getRecord = async <T>(
   connection: IndexedDbConnection,
-  storeName: FinanzasStoreName,
+  collectionId: FinanzasStoreName,
   key: IDBValidKey,
 ): Promise<T | null> => {
   const value = await executeStoreRequest<T | undefined>(
     connection,
-    storeName,
+    collectionId,
     "readonly",
     (store) => store.get(key),
   );
@@ -154,30 +107,30 @@ export const getRecord = async <T>(
 
 export const getAllRecords = <T>(
   connection: IndexedDbConnection,
-  storeName: FinanzasStoreName,
+  collectionId: FinanzasStoreName,
 ): Promise<T[]> =>
-    executeStoreRequest<T[]>(connection, storeName, "readonly", (store) =>
+    executeStoreRequest<T[]>(connection, collectionId, "readonly", (store) =>
       store.getAll(),
     );
 
 export const getAllRecordsByIndex = <T>(
   connection: IndexedDbConnection,
-  storeName: FinanzasStoreName,
-  indexName: string,
+  collectionId: FinanzasStoreName,
+  indexId: PersistenceIndexId,
   key: IDBValidKey,
 ): Promise<T[]> =>
-    executeStoreRequest<T[]>(connection, storeName, "readonly", (store) =>
-      store.index(indexName).getAll(key),
+    executeStoreRequest<T[]>(connection, collectionId, "readonly", (store) =>
+      store.index(getIndexedDbIndexName(collectionId, indexId)).getAll(key),
     );
 
 export const putRecord = async <T>(
   connection: IndexedDbConnection,
-  storeName: FinanzasStoreName,
+  collectionId: FinanzasStoreName,
   value: T,
 ): Promise<void> => {
   await executeStoreRequest<IDBValidKey>(
     connection,
-    storeName,
+    collectionId,
     "readwrite",
     (store) => store.put(value),
   );
@@ -185,11 +138,11 @@ export const putRecord = async <T>(
 
 export const clearStore = async (
   connection: IndexedDbConnection,
-  storeName: FinanzasStoreName,
+  collectionId: FinanzasStoreName,
 ): Promise<void> => {
   await executeStoreRequest<undefined>(
     connection,
-    storeName,
+    collectionId,
     "readwrite",
     (store) => store.clear(),
   );
@@ -201,11 +154,13 @@ const seedInitialState = (
   initialCursor: string,
 ): void => {
   if (seedAccount !== undefined) {
-    transaction.objectStore(FINANZAS_STORE_NAMES.accounts).put(seedAccount);
+    transaction.objectStore(getIndexedDbStoreName(PERSISTENCE_COLLECTION_IDS.accounts)).put(
+      seedAccount,
+    );
   }
 
-  transaction.objectStore(FINANZAS_STORE_NAMES.syncState).put({
-    key: "cursor",
+  transaction.objectStore(getIndexedDbStoreName(PERSISTENCE_COLLECTION_IDS.syncState)).put({
+    key: PERSISTENCE_SYNC_STATE_KEYS.cursor,
     value: initialCursor,
   } satisfies SyncStateSeedRecord);
 };
@@ -215,12 +170,14 @@ const applyIndexedDbMigrations = (
   transaction: IDBTransaction | null,
   previousVersion: number,
 ): void => {
-  for (const migration of INDEXED_DB_MIGRATIONS) {
+  for (const migration of PERSISTENCE_MIGRATIONS) {
     if (migration.version <= previousVersion) {
       continue;
     }
 
-    migration.up(database, transaction);
+    for (const collectionId of migration.collectionIds) {
+      ensureStore(database, transaction, collectionId);
+    }
   }
 };
 
@@ -230,28 +187,34 @@ const backfillMigrationState = (
 ): void => {
   if (
     transaction === null ||
-    !database.objectStoreNames.contains(FINANZAS_STORE_NAMES.metadata) ||
-    !database.objectStoreNames.contains(FINANZAS_STORE_NAMES.schemaMigrations)
+    !database.objectStoreNames.contains(
+      getIndexedDbStoreName(PERSISTENCE_COLLECTION_IDS.metadata),
+    ) ||
+    !database.objectStoreNames.contains(
+      getIndexedDbStoreName(PERSISTENCE_COLLECTION_IDS.schemaMigrations),
+    )
   ) {
     return;
   }
 
   const appliedAt = new Date().toISOString();
-  const metadataStore = transaction.objectStore(FINANZAS_STORE_NAMES.metadata);
+  const metadataStore = transaction.objectStore(
+    getIndexedDbStoreName(PERSISTENCE_COLLECTION_IDS.metadata),
+  );
   const migrationsStore = transaction.objectStore(
-    FINANZAS_STORE_NAMES.schemaMigrations,
+    getIndexedDbStoreName(PERSISTENCE_COLLECTION_IDS.schemaMigrations),
   );
 
   metadataStore.put({
-    key: "schemaVersion",
+    key: PERSISTENCE_METADATA_KEYS.schemaVersion,
     value: String(FINANZAS_INDEXED_DB_VERSION),
   } satisfies IndexedDbMetadataRecord);
   metadataStore.put({
-    key: "lastMigratedAt",
+    key: PERSISTENCE_METADATA_KEYS.lastMigratedAt,
     value: appliedAt,
   } satisfies IndexedDbMetadataRecord);
 
-  for (const migration of INDEXED_DB_MIGRATIONS) {
+  for (const migration of PERSISTENCE_MIGRATIONS) {
     migrationsStore.put({
       version: migration.version,
       name: migration.name,
@@ -263,20 +226,35 @@ const backfillMigrationState = (
 const ensureStore = (
   database: IDBDatabase,
   transaction: IDBTransaction | null,
-  storeName: FinanzasStoreName,
-  keyPath: string,
+  collectionId: FinanzasStoreName,
 ): IDBObjectStore => {
+  const storeName = getIndexedDbStoreName(collectionId);
+  const keyPath = getPersistencePrimaryKeyPath(collectionId);
+  const definition = getPersistenceCollectionDefinition(collectionId);
+
   if (database.objectStoreNames.contains(storeName)) {
     if (transaction === null) {
       throw new Error("IndexedDB upgrade transaction is required to access stores.");
     }
 
-    return transaction.objectStore(storeName);
+    const store = transaction.objectStore(storeName);
+
+    if (definition.kind === "payload" && definition.indexes !== undefined) {
+      ensureStoreIndexes(store, definition.indexes);
+    }
+
+    return store;
   }
 
-  return database.createObjectStore(storeName, {
+  const store = database.createObjectStore(storeName, {
     keyPath,
   });
+
+  if (definition.kind === "payload" && definition.indexes !== undefined) {
+    ensureStoreIndexes(store, definition.indexes);
+  }
+
+  return store;
 };
 
 const awaitOpenRequest = (
@@ -307,11 +285,12 @@ const awaitOpenRequest = (
 
 const executeStoreRequest = async <T>(
   connection: IndexedDbConnection,
-  storeName: FinanzasStoreName,
+  collectionId: FinanzasStoreName,
   mode: IDBTransactionMode,
   createRequest: (store: IDBObjectStore) => IDBRequest<T>,
 ): Promise<T> => {
   const database = await connection;
+  const storeName = getIndexedDbStoreName(collectionId);
 
   return await new Promise<T>((resolve, reject) => {
     const transaction = database.transaction(storeName, mode);
@@ -363,4 +342,28 @@ const executeStoreRequest = async <T>(
       rejectOnce(transaction.error ?? new Error("IndexedDB transaction was aborted."));
     };
   });
+};
+
+const ensureStoreIndexes = (
+  store: IDBObjectStore,
+  indexes:
+  | ReadonlyArray<{
+    indexedDbName: string;
+    propertyPath: string;
+  }>
+  | undefined,
+): void => {
+  if (indexes === undefined) {
+    return;
+  }
+
+  for (const index of indexes) {
+    if (store.indexNames.contains(index.indexedDbName)) {
+      continue;
+    }
+
+    store.createIndex(index.indexedDbName, index.propertyPath, {
+      unique: false,
+    });
+  }
 };

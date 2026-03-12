@@ -4,29 +4,36 @@ import { dirname, resolve } from "node:path";
 import type * as NodeSqliteModule from "node:sqlite";
 
 import type { AccountType } from "@finanzas/domain";
+import {
+  PERSISTENCE_COLLECTION_IDS,
+  PERSISTENCE_METADATA_KEYS,
+  PERSISTENCE_MIGRATIONS,
+  PERSISTENCE_SCHEMA_VERSION,
+  PERSISTENCE_SYNC_STATE_KEYS,
+  buildSqliteTableNames,
+  getPersistenceCollectionDefinition,
+  getSqliteExtraColumnDefinitions,
+  getSqliteExtraColumnValues,
+  getSqliteIndexColumnName,
+  getSqliteMigrationColumns,
+  getSqlitePayloadColumn,
+  getSqlitePrimaryKeyColumn,
+  getSqliteTableName,
+  getSqliteValueColumn,
+  type PersistenceCollectionId,
+  type PersistenceIndexId,
+} from "../persistence/persistence-schema.js";
 
 const require = createRequire(import.meta.url);
 const { DatabaseSync } = require("node:sqlite") as typeof NodeSqliteModule;
 type NodeSqliteDatabaseSync = NodeSqliteModule.DatabaseSync;
 
 export const FINANZAS_SQLITE_DIRECTORY = ".finanzas";
-export const FINANZAS_SQLITE_SCHEMA_VERSION = 2;
+export const FINANZAS_SQLITE_SCHEMA_VERSION = PERSISTENCE_SCHEMA_VERSION;
 
-export const FINANZAS_SQLITE_TABLES = {
-  accounts: "accounts",
-  budgets: "budgets",
-  categories: "categories",
-  recurringRules: "recurring_rules",
-  transactions: "transactions",
-  transactionTemplates: "transaction_templates",
-  outbox: "outbox_ops",
-  syncState: "sync_state",
-  metadata: "app_metadata",
-  schemaMigrations: "schema_migrations",
-} as const;
+export const FINANZAS_SQLITE_TABLES = buildSqliteTableNames();
 
-export type FinanzasSqliteTableName =
-  (typeof FINANZAS_SQLITE_TABLES)[keyof typeof FINANZAS_SQLITE_TABLES];
+export type FinanzasSqliteTableName = PersistenceCollectionId;
 
 export interface SeededAccountRecord {
   id: string;
@@ -61,12 +68,6 @@ interface SqliteTableCountRow {
   count: number;
 }
 
-interface SqliteMigration {
-  version: number;
-  name: string;
-  up(database: NodeSqliteDatabaseSync): void;
-}
-
 type EncodedValue =
   | null
   | boolean
@@ -76,23 +77,6 @@ type EncodedValue =
   | {
     [key: string]: EncodedValue;
   };
-
-const SQLITE_MIGRATIONS: SqliteMigration[] = [
-  {
-    version: 1,
-    name: "create-core-tables",
-    up: (database) => {
-      createCoreTables(database);
-    },
-  },
-  {
-    version: 2,
-    name: "add-migration-metadata-tables",
-    up: (database) => {
-      createMigrationTables(database);
-    },
-  },
-];
 
 export const openFinanzasSqlite = (
   options: OpenFinanzasSqliteOptions,
@@ -119,14 +103,15 @@ export const openFinanzasSqlite = (
 
   if (options.seedAccount !== undefined) {
     const accountsCount = database
-      .prepare(`SELECT COUNT(*) AS count FROM ${FINANZAS_SQLITE_TABLES.accounts}`)
+      .prepare(
+        `SELECT COUNT(*) AS count FROM ${getSqliteTableName(PERSISTENCE_COLLECTION_IDS.accounts)}`,
+      )
       .get() as { count: number };
 
     if (accountsCount.count === 0) {
       putPayload(
         database,
-        FINANZAS_SQLITE_TABLES.accounts,
-        "id",
+        PERSISTENCE_COLLECTION_IDS.accounts,
         options.seedAccount.id,
         options.seedAccount,
       );
@@ -134,11 +119,12 @@ export const openFinanzasSqlite = (
   }
 
   const cursorValue = options.initialCursor ?? "0";
-  database
-    .prepare(
-      `INSERT OR IGNORE INTO ${FINANZAS_SQLITE_TABLES.syncState}(key, value) VALUES (?, ?)`,
-    )
-    .run("cursor", cursorValue);
+  insertKeyValueIfMissing(
+    database,
+    PERSISTENCE_COLLECTION_IDS.syncState,
+    PERSISTENCE_SYNC_STATE_KEYS.cursor,
+    cursorValue,
+  );
 
   return database;
 };
@@ -148,12 +134,14 @@ export const resolveFinanzasSqlitePath = (hostName: string): string =>
 
 export const getPayloadByKey = <T>(
   database: NodeSqliteDatabaseSync,
-  tableName: FinanzasSqliteTableName,
-  keyColumn: string,
+  collectionId: FinanzasSqliteTableName,
   key: string,
 ): T | null => {
+  const tableName = getSqliteTableName(collectionId);
+  const keyColumn = getSqlitePrimaryKeyColumn(collectionId);
+  const payloadColumn = getSqlitePayloadColumn(collectionId);
   const row = database
-    .prepare(`SELECT payload FROM ${tableName} WHERE ${keyColumn} = ?`)
+    .prepare(`SELECT ${payloadColumn} AS payload FROM ${tableName} WHERE ${keyColumn} = ?`)
     .get(key) as PayloadRow | undefined;
 
   return row ? deserializePayload<T>(row.payload) : null;
@@ -161,23 +149,28 @@ export const getPayloadByKey = <T>(
 
 export const listPayloads = <T>(
   database: NodeSqliteDatabaseSync,
-  tableName: FinanzasSqliteTableName,
+  collectionId: FinanzasSqliteTableName,
 ): T[] => {
+  const tableName = getSqliteTableName(collectionId);
+  const payloadColumn = getSqlitePayloadColumn(collectionId);
   const rows = database
-    .prepare(`SELECT payload FROM ${tableName}`)
+    .prepare(`SELECT ${payloadColumn} AS payload FROM ${tableName}`)
     .all() as unknown as PayloadRow[];
 
   return rows.map((row) => deserializePayload<T>(row.payload));
 };
 
-export const listPayloadsByColumn = <T>(
+export const listPayloadsByIndex = <T>(
   database: NodeSqliteDatabaseSync,
-  tableName: FinanzasSqliteTableName,
-  columnName: string,
+  collectionId: FinanzasSqliteTableName,
+  indexId: PersistenceIndexId,
   value: string,
 ): T[] => {
+  const tableName = getSqliteTableName(collectionId);
+  const payloadColumn = getSqlitePayloadColumn(collectionId);
+  const columnName = getSqliteIndexColumnName(collectionId, indexId);
   const rows = database
-    .prepare(`SELECT payload FROM ${tableName} WHERE ${columnName} = ?`)
+    .prepare(`SELECT ${payloadColumn} AS payload FROM ${tableName} WHERE ${columnName} = ?`)
     .all(value) as unknown as PayloadRow[];
 
   return rows.map((row) => deserializePayload<T>(row.payload));
@@ -185,13 +178,18 @@ export const listPayloadsByColumn = <T>(
 
 export const putPayload = (
   database: NodeSqliteDatabaseSync,
-  tableName: FinanzasSqliteTableName,
-  keyColumn: string,
+  collectionId: FinanzasSqliteTableName,
   key: string,
   payload: unknown,
-  extraColumns: Record<string, string> = {},
 ): void => {
-  const columns = [keyColumn, ...Object.keys(extraColumns), "payload"];
+  const tableName = getSqliteTableName(collectionId);
+  const keyColumn = getSqlitePrimaryKeyColumn(collectionId);
+  const payloadColumn = getSqlitePayloadColumn(collectionId);
+  const extraColumns =
+    getSqliteExtraColumnDefinitions(collectionId).length === 0
+      ? {}
+      : getSqliteExtraColumnValues(collectionId, toRecordPayload(payload));
+  const columns = [keyColumn, ...Object.keys(extraColumns), payloadColumn];
   const values = [key, ...Object.values(extraColumns), serializePayload(payload)];
   const placeholders = columns.map(() => "?").join(", ");
 
@@ -204,8 +202,9 @@ export const putPayload = (
 
 export const clearTable = (
   database: NodeSqliteDatabaseSync,
-  tableName: FinanzasSqliteTableName,
+  collectionId: FinanzasSqliteTableName,
 ): void => {
+  const tableName = getSqliteTableName(collectionId);
   database.prepare(`DELETE FROM ${tableName}`).run();
 };
 
@@ -213,81 +212,54 @@ export const getCursorValue = (
   database: NodeSqliteDatabaseSync,
   defaultCursor: string,
 ): string => {
-  const row = database
-    .prepare(
-      `SELECT value FROM ${FINANZAS_SQLITE_TABLES.syncState} WHERE key = ?`,
-    )
-    .get("cursor") as SyncStateRow | undefined;
+  const row = readKeyValue(
+    database,
+    PERSISTENCE_COLLECTION_IDS.syncState,
+    PERSISTENCE_SYNC_STATE_KEYS.cursor,
+  );
 
-  return row?.value ?? defaultCursor;
+  return row ?? defaultCursor;
 };
 
 export const setCursorValue = (
   database: NodeSqliteDatabaseSync,
   cursor: string,
 ): void => {
-  database
-    .prepare(
-      `INSERT OR REPLACE INTO ${FINANZAS_SQLITE_TABLES.syncState}(key, value) VALUES (?, ?)`,
-    )
-    .run("cursor", cursor);
+  upsertKeyValue(
+    database,
+    PERSISTENCE_COLLECTION_IDS.syncState,
+    PERSISTENCE_SYNC_STATE_KEYS.cursor,
+    cursor,
+  );
 };
 
 const normalizeDatabasePath = (databasePath: string): string =>
   databasePath === ":memory:" ? databasePath : resolve(databasePath);
 
 const createCoreTables = (database: NodeSqliteDatabaseSync): void => {
-  database.exec(`
-    CREATE TABLE IF NOT EXISTS ${FINANZAS_SQLITE_TABLES.accounts} (
-      id TEXT PRIMARY KEY NOT NULL,
-      payload TEXT NOT NULL
-    );
-    CREATE TABLE IF NOT EXISTS ${FINANZAS_SQLITE_TABLES.budgets} (
-      id TEXT PRIMARY KEY NOT NULL,
-      payload TEXT NOT NULL
-    );
-    CREATE TABLE IF NOT EXISTS ${FINANZAS_SQLITE_TABLES.categories} (
-      id TEXT PRIMARY KEY NOT NULL,
-      payload TEXT NOT NULL
-    );
-    CREATE TABLE IF NOT EXISTS ${FINANZAS_SQLITE_TABLES.recurringRules} (
-      id TEXT PRIMARY KEY NOT NULL,
-      payload TEXT NOT NULL
-    );
-    CREATE TABLE IF NOT EXISTS ${FINANZAS_SQLITE_TABLES.transactions} (
-      id TEXT PRIMARY KEY NOT NULL,
-      account_id TEXT NOT NULL,
-      payload TEXT NOT NULL
-    );
-    CREATE INDEX IF NOT EXISTS transactions_by_account_id
-      ON ${FINANZAS_SQLITE_TABLES.transactions}(account_id);
-    CREATE TABLE IF NOT EXISTS ${FINANZAS_SQLITE_TABLES.transactionTemplates} (
-      id TEXT PRIMARY KEY NOT NULL,
-      payload TEXT NOT NULL
-    );
-    CREATE TABLE IF NOT EXISTS ${FINANZAS_SQLITE_TABLES.outbox} (
-      op_id TEXT PRIMARY KEY NOT NULL,
-      payload TEXT NOT NULL
-    );
-    CREATE TABLE IF NOT EXISTS ${FINANZAS_SQLITE_TABLES.syncState} (
-      key TEXT PRIMARY KEY NOT NULL,
-      value TEXT NOT NULL
-    );
-  `);
+  const coreMigration = PERSISTENCE_MIGRATIONS.find((migration) => migration.version === 1);
+
+  if (coreMigration === undefined) {
+    throw new Error("Core persistence migration is not defined.");
+  }
+
+  for (const collectionId of coreMigration.collectionIds) {
+    createSqliteCollectionTable(database, collectionId);
+  }
 };
 
 const createMigrationTables = (database: NodeSqliteDatabaseSync): void => {
-  database.exec(`
-    CREATE TABLE IF NOT EXISTS ${FINANZAS_SQLITE_TABLES.metadata} (
-      key TEXT PRIMARY KEY NOT NULL,
-      value TEXT NOT NULL
-    );
-    CREATE TABLE IF NOT EXISTS ${FINANZAS_SQLITE_TABLES.schemaMigrations} (
-      version INTEGER PRIMARY KEY NOT NULL,
-      name TEXT NOT NULL,
-      applied_at TEXT NOT NULL
-    );
-  `);
+  const migrationTracking = PERSISTENCE_MIGRATIONS.find(
+    (migration) => migration.version === 2,
+  );
+
+  if (migrationTracking === undefined) {
+    throw new Error("Schema tracking migration is not defined.");
+  }
+
+  for (const collectionId of migrationTracking.collectionIds) {
+    createSqliteCollectionTable(database, collectionId);
+  }
 };
 
 const detectCurrentSqliteSchemaVersion = (
@@ -301,16 +273,15 @@ const detectCurrentSqliteSchemaVersion = (
     return versionRow.user_version;
   }
 
-  const legacyTables = [
-    FINANZAS_SQLITE_TABLES.accounts,
-    FINANZAS_SQLITE_TABLES.budgets,
-    FINANZAS_SQLITE_TABLES.categories,
-    FINANZAS_SQLITE_TABLES.recurringRules,
-    FINANZAS_SQLITE_TABLES.transactions,
-    FINANZAS_SQLITE_TABLES.transactionTemplates,
-    FINANZAS_SQLITE_TABLES.outbox,
-    FINANZAS_SQLITE_TABLES.syncState,
-  ];
+  const coreMigration = PERSISTENCE_MIGRATIONS.find((migration) => migration.version === 1);
+
+  if (coreMigration === undefined) {
+    throw new Error("Core persistence migration is not defined.");
+  }
+
+  const legacyTables = coreMigration.collectionIds.map((collectionId) =>
+    getSqliteTableName(collectionId),
+  );
   const placeholders = legacyTables.map(() => "?").join(", ");
   const legacyCount = database
     .prepare(
@@ -325,12 +296,24 @@ const applySqliteMigrations = (
   database: NodeSqliteDatabaseSync,
   currentSchemaVersion: number,
 ): void => {
-  for (const migration of SQLITE_MIGRATIONS) {
+  for (const migration of PERSISTENCE_MIGRATIONS) {
     if (migration.version <= currentSchemaVersion) {
       continue;
     }
 
-    migration.up(database);
+    if (migration.version === 1) {
+      createCoreTables(database);
+      continue;
+    }
+
+    if (migration.version === 2) {
+      createMigrationTables(database);
+      continue;
+    }
+
+    for (const collectionId of migration.collectionIds) {
+      createSqliteCollectionTable(database, collectionId);
+    }
   }
 
   if (FINANZAS_SQLITE_SCHEMA_VERSION >= 2) {
@@ -343,24 +326,144 @@ const applySqliteMigrations = (
 const backfillSqliteMigrationState = (database: NodeSqliteDatabaseSync): void => {
   const appliedAt = new Date().toISOString();
 
-  database
-    .prepare(
-      `INSERT OR REPLACE INTO ${FINANZAS_SQLITE_TABLES.metadata}(key, value) VALUES (?, ?)`,
-    )
-    .run("schemaVersion", String(FINANZAS_SQLITE_SCHEMA_VERSION));
-  database
-    .prepare(
-      `INSERT OR REPLACE INTO ${FINANZAS_SQLITE_TABLES.metadata}(key, value) VALUES (?, ?)`,
-    )
-    .run("lastMigratedAt", appliedAt);
+  upsertKeyValue(
+    database,
+    PERSISTENCE_COLLECTION_IDS.metadata,
+    PERSISTENCE_METADATA_KEYS.schemaVersion,
+    String(FINANZAS_SQLITE_SCHEMA_VERSION),
+  );
+  upsertKeyValue(
+    database,
+    PERSISTENCE_COLLECTION_IDS.metadata,
+    PERSISTENCE_METADATA_KEYS.lastMigratedAt,
+    appliedAt,
+  );
 
-  for (const migration of SQLITE_MIGRATIONS) {
+  for (const migration of PERSISTENCE_MIGRATIONS) {
+    const tableName = getSqliteTableName(PERSISTENCE_COLLECTION_IDS.schemaMigrations);
+    const primaryKeyColumn = getSqlitePrimaryKeyColumn(
+      PERSISTENCE_COLLECTION_IDS.schemaMigrations,
+    );
+    const migrationColumns = getSqliteMigrationColumns(
+      PERSISTENCE_COLLECTION_IDS.schemaMigrations,
+    );
     database
       .prepare(
-        `INSERT OR IGNORE INTO ${FINANZAS_SQLITE_TABLES.schemaMigrations}(version, name, applied_at) VALUES (?, ?, ?)`,
+        `INSERT OR IGNORE INTO ${tableName}(${primaryKeyColumn}, ${migrationColumns.name}, ${migrationColumns.appliedAt}) VALUES (?, ?, ?)`,
       )
       .run(migration.version, migration.name, appliedAt);
   }
+};
+
+const createSqliteCollectionTable = (
+  database: NodeSqliteDatabaseSync,
+  collectionId: PersistenceCollectionId,
+): void => {
+  const collection = getPersistenceCollectionDefinition(collectionId);
+  const tableName = getSqliteTableName(collectionId);
+  const primaryKeyColumn = getSqlitePrimaryKeyColumn(collectionId);
+
+  if (collection.kind === "payload") {
+    const columns = [
+      `${primaryKeyColumn} TEXT PRIMARY KEY NOT NULL`,
+      ...collection.extraSqliteColumns?.map(
+        (column) => `${column.columnName} ${column.type} NOT NULL`,
+      ) ?? [],
+      `${collection.payloadColumn} TEXT NOT NULL`,
+    ];
+
+    database.exec(`
+      CREATE TABLE IF NOT EXISTS ${tableName} (
+        ${columns.join(",\n        ")}
+      );
+    `);
+
+    for (const index of collection.indexes ?? []) {
+      database.exec(`
+        CREATE INDEX IF NOT EXISTS ${index.sqlite.indexName}
+          ON ${tableName}(${index.sqlite.columnName});
+      `);
+    }
+
+    return;
+  }
+
+  if (collection.kind === "key-value") {
+    database.exec(`
+      CREATE TABLE IF NOT EXISTS ${tableName} (
+        ${primaryKeyColumn} TEXT PRIMARY KEY NOT NULL,
+        ${collection.valueColumn} TEXT NOT NULL
+      );
+    `);
+    return;
+  }
+
+  database.exec(`
+    CREATE TABLE IF NOT EXISTS ${tableName} (
+      ${primaryKeyColumn} INTEGER PRIMARY KEY NOT NULL,
+      ${collection.columns.name} TEXT NOT NULL,
+      ${collection.columns.appliedAt} TEXT NOT NULL
+    );
+  `);
+};
+
+const readKeyValue = (
+  database: NodeSqliteDatabaseSync,
+  collectionId: PersistenceCollectionId,
+  key: string,
+): string | null => {
+  const tableName = getSqliteTableName(collectionId);
+  const primaryKeyColumn = getSqlitePrimaryKeyColumn(collectionId);
+  const valueColumn = getSqliteValueColumn(collectionId);
+  const row = database
+    .prepare(
+      `SELECT ${valueColumn} AS value FROM ${tableName} WHERE ${primaryKeyColumn} = ?`,
+    )
+    .get(key) as SyncStateRow | undefined;
+
+  return row?.value ?? null;
+};
+
+const upsertKeyValue = (
+  database: NodeSqliteDatabaseSync,
+  collectionId: PersistenceCollectionId,
+  key: string,
+  value: string,
+): void => {
+  const tableName = getSqliteTableName(collectionId);
+  const primaryKeyColumn = getSqlitePrimaryKeyColumn(collectionId);
+  const valueColumn = getSqliteValueColumn(collectionId);
+
+  database
+    .prepare(
+      `INSERT OR REPLACE INTO ${tableName}(${primaryKeyColumn}, ${valueColumn}) VALUES (?, ?)`,
+    )
+    .run(key, value);
+};
+
+const insertKeyValueIfMissing = (
+  database: NodeSqliteDatabaseSync,
+  collectionId: PersistenceCollectionId,
+  key: string,
+  value: string,
+): void => {
+  const tableName = getSqliteTableName(collectionId);
+  const primaryKeyColumn = getSqlitePrimaryKeyColumn(collectionId);
+  const valueColumn = getSqliteValueColumn(collectionId);
+
+  database
+    .prepare(
+      `INSERT OR IGNORE INTO ${tableName}(${primaryKeyColumn}, ${valueColumn}) VALUES (?, ?)`,
+    )
+    .run(key, value);
+};
+
+const toRecordPayload = (payload: unknown): Record<string, unknown> => {
+  if (payload !== null && typeof payload === "object") {
+    return payload as Record<string, unknown>;
+  }
+
+  throw new Error("Expected an object payload for SQLite persistence.");
 };
 
 const serializePayload = (payload: unknown): string =>

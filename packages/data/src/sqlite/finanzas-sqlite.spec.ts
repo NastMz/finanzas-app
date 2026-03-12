@@ -7,6 +7,12 @@ import type * as NodeSqliteModule from "node:sqlite";
 import { afterEach, describe, expect, it } from "vitest";
 
 import {
+  PERSISTENCE_COLLECTION_IDS,
+  PERSISTENCE_MIGRATIONS,
+  PERSISTENCE_METADATA_KEYS,
+  PERSISTENCE_SYNC_STATE_KEYS,
+} from "@finanzas/data";
+import {
   FINANZAS_SQLITE_SCHEMA_VERSION,
   FINANZAS_SQLITE_TABLES,
   getCursorValue,
@@ -48,6 +54,11 @@ interface LegacyOutboxRecord {
 }
 
 const tempDirectories: string[] = [];
+
+const expectedMigrationRows = PERSISTENCE_MIGRATIONS.map((migration) => ({
+  version: migration.version,
+  name: migration.name,
+}));
 
 const seededAccount: SeededAccountRecord = {
   id: "acc-main",
@@ -93,8 +104,7 @@ describe("openFinanzasSqlite", () => {
       .all() as unknown as SqliteMigrationRow[];
     const storedAccount = getPayloadByKey<SeededAccountRecord>(
       database,
-      FINANZAS_SQLITE_TABLES.accounts,
-      "id",
+      PERSISTENCE_COLLECTION_IDS.accounts,
       seededAccount.id,
     );
     const storedCursor = getCursorValue(database, "0");
@@ -102,27 +112,21 @@ describe("openFinanzasSqlite", () => {
     expect(schemaVersion.user_version).toBe(FINANZAS_SQLITE_SCHEMA_VERSION);
     expect(metadataRows).toEqual([
       {
-        key: "lastMigratedAt",
+        key: PERSISTENCE_METADATA_KEYS.lastMigratedAt,
         value: metadataRows[0]?.value ?? "",
       },
       {
-        key: "schemaVersion",
+        key: PERSISTENCE_METADATA_KEYS.schemaVersion,
         value: String(FINANZAS_SQLITE_SCHEMA_VERSION),
       },
     ]);
     expect(metadataRows[0]?.value).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/);
-    expect(migrationRows).toEqual([
-      {
-        version: 1,
-        name: "create-core-tables",
-        applied_at: migrationRows[0]?.applied_at ?? "",
-      },
-      {
-        version: 2,
-        name: "add-migration-metadata-tables",
-        applied_at: migrationRows[1]?.applied_at ?? "",
-      },
-    ]);
+    expect(migrationRows).toEqual(
+      expectedMigrationRows.map((migration, index) => ({
+        ...migration,
+        applied_at: migrationRows[index]?.applied_at ?? "",
+      })),
+    );
     expect(migrationRows.every((row) => row.applied_at.length > 0)).toBe(true);
     expect(storedAccount).toEqual(seededAccount);
     expect(storedCursor).toBe("17");
@@ -178,46 +182,35 @@ describe("openFinanzasSqlite", () => {
       .all() as unknown as SqliteMigrationRow[];
     const storedLegacyAccount = getPayloadByKey<SeededAccountRecord>(
       database,
-      FINANZAS_SQLITE_TABLES.accounts,
-      "id",
+      PERSISTENCE_COLLECTION_IDS.accounts,
       legacyAccount.id,
     );
     const missingSeededAccount = getPayloadByKey<SeededAccountRecord>(
       database,
-      FINANZAS_SQLITE_TABLES.accounts,
-      "id",
+      PERSISTENCE_COLLECTION_IDS.accounts,
       seededAccount.id,
     );
     const storedOutbox = listPayloads<LegacyOutboxRecord>(
       database,
-      FINANZAS_SQLITE_TABLES.outbox,
+      PERSISTENCE_COLLECTION_IDS.outbox,
     );
     const storedCursor = getCursorValue(database, "0");
 
     expect(schemaVersion.user_version).toBe(FINANZAS_SQLITE_SCHEMA_VERSION);
     expect(metadataRows).toEqual([
       {
-        key: "lastMigratedAt",
+        key: PERSISTENCE_METADATA_KEYS.lastMigratedAt,
         value: metadataRows[0]?.value ?? "",
       },
       {
-        key: "schemaVersion",
+        key: PERSISTENCE_METADATA_KEYS.schemaVersion,
         value: String(FINANZAS_SQLITE_SCHEMA_VERSION),
       },
     ]);
     expect(migrationRows.map((row) => ({
       version: row.version,
       name: row.name,
-    }))).toEqual([
-      {
-        version: 1,
-        name: "create-core-tables",
-      },
-      {
-        version: 2,
-        name: "add-migration-metadata-tables",
-      },
-    ]);
+    }))).toEqual(expectedMigrationRows);
     expect(storedLegacyAccount).toEqual(legacyAccount);
     expect(missingSeededAccount).toBeNull();
     expect(storedOutbox).toEqual([legacyOutbox]);
@@ -294,7 +287,7 @@ const seedLegacySqliteDatabase = (
     .prepare(
       `INSERT INTO ${FINANZAS_SQLITE_TABLES.syncState}(key, value) VALUES (?, ?)`,
     )
-    .run("cursor", "42");
+    .run(PERSISTENCE_SYNC_STATE_KEYS.cursor, "42");
 
   database.close();
 };
