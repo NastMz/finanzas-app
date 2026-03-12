@@ -1,6 +1,5 @@
 import {
-  createInMemoryBootstrapContext,
-  type InMemoryBootstrapContext,
+  InMemoryBootstrapContext,
 } from "@finanzas/platform-shared";
 
 import {
@@ -18,4 +17,5 @@ export type WebContext = InMemoryBootstrapContext;
  */
 export const createWebContext = (
   options: CreateWebBootstrapOptions = {},
-): WebContext => createInMemoryBootstrapContext(createWebBootstrap(options));
+): WebContext =>
+  new InMemoryBootstrapContext(createWebBootstrap(options));

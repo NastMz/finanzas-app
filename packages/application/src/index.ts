@@ -1,5 +1,6 @@
 export * from "./errors.js";
 export * from "./ports.js";
+export * from "./finanzas-application-service.js";
 export * from "./use-cases/add-account.js";
 export * from "./use-cases/add-budget.js";
 export * from "./use-cases/add-category.js";

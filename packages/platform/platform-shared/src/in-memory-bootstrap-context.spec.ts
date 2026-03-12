@@ -1,7 +1,10 @@
 import { describe, expect, it } from "vitest";
 
 import { createInMemoryBootstrap } from "./in-memory-bootstrap.js";
-import { createInMemoryBootstrapContext } from "./in-memory-bootstrap-context.js";
+import {
+  InMemoryBootstrapContext,
+  createInMemoryBootstrapContext,
+} from "./in-memory-bootstrap-context.js";
 
 describe("createInMemoryBootstrapContext", () => {
   it("exposes command and query facades over the same bootstrap", async () => {
@@ -9,6 +12,10 @@ describe("createInMemoryBootstrapContext", () => {
       defaultDeviceId: "platform-context-device",
     });
     const context = createInMemoryBootstrapContext(bootstrap);
+
+    expect(context).toBeInstanceOf(InMemoryBootstrapContext);
+    expect(context.commands).toBe(bootstrap);
+    expect(context.queries).toBe(bootstrap);
 
     const accountResult = await context.commands.addAccount({
       name: "Cuenta contexto",

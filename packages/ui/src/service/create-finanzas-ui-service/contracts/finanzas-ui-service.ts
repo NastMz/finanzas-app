@@ -14,7 +14,7 @@ import type { SyncNowActionResult } from "./sync-now-action-result.js";
 /**
  * Headless UI orchestrator for app tabs.
  */
-export interface FinanzasUiService {
+export interface FinanzasUiServiceContract {
   loadHomeTab(input?: LoadHomeTabInput): Promise<FinanzasHomeTabViewModel>;
   loadMovementsTab(
     input?: LoadMovementsTabInput,

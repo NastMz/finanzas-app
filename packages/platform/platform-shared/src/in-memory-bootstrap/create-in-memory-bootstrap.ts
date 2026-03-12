@@ -2,8 +2,7 @@ import { createUlidIdGenerator } from "@finanzas/data";
 import { createInMemorySyncApiClient } from "@finanzas/sync";
 
 import { createInMemoryAppContext } from "../in-memory-context.js";
-import { createInMemoryBootstrapCommands } from "./commands.js";
-import { createInMemoryBootstrapQueries } from "./queries.js";
+import { InMemoryBootstrapFacade } from "./in-memory-bootstrap-facade.js";
 import type { InMemoryBootstrapRuntime } from "./runtime.js";
 import type { CreateInMemoryBootstrapOptions, InMemoryBootstrap } from "./types.js";
 
@@ -26,8 +25,5 @@ export const createInMemoryBootstrap = (
     syncApi,
   };
 
-  return {
-    ...createInMemoryBootstrapCommands(runtime),
-    ...createInMemoryBootstrapQueries(runtime),
-  };
+  return new InMemoryBootstrapFacade(runtime);
 };

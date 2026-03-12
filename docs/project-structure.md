@@ -16,6 +16,7 @@ Este documento cierra la Fase 1 del roadmap y sirve como referencia para cualqui
 - Los imports entre paquetes usan aliases `@finanzas/*`.
 - Los imports relativos se usan solo dentro del mismo paquete o app.
 - Si una carpeta empieza a mezclar responsabilidades, se subdivide antes de seguir creciendo.
+- Los modulos de orquestacion con dependencias compartidas se encapsulan en clases o facades; las funciones libres quedan para transformaciones puras y locales.
 
 ## 3. Estructura actual esperada
 
@@ -183,6 +184,7 @@ Casos de uso y puertos del sistema.
 Aqui van:
 
 - `use-cases/`
+- servicios de aplicacion que agrupen casos de uso por contexto cuando un modulo necesite una API orientada a objetos
 - `ports.ts`
 - errores de aplicacion
 
@@ -209,6 +211,7 @@ Aqui van:
 
 - adaptadores de sync
 - change appliers
+- servicios de sync que encapsulen estado local y colaboracion con APIs remotas
 - use cases de sync
 - contratos de sync
 
@@ -229,6 +232,7 @@ Orquestacion headless de la UI compartida.
 Aqui van:
 
 - `createFinanzasUiService`
+- facades de servicio que agrupen comandos, queries y estado de runtime compartido
 - mapeos de queries/commands a view models
 
 ### `packages/ui/src/design-system`
@@ -256,6 +260,7 @@ Tokens, primitives y activos base del sistema visual compartido.
 - Un modulo debe tener una responsabilidad principal.
 - Los `index.ts` se usan solo en bordes de carpeta, no para esconder estructuras confusas.
 - Si un export solo se usa en una carpeta, mantenerlo local y no subirlo al barrel global.
+- Los `create-*` se reservan para composition roots o fabricas; la logica orquestadora vive dentro de la clase o facade que esas fabricas instancian.
 
 ## 6. Reglas de importacion entre capas
 

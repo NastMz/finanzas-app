@@ -1,6 +1,5 @@
 import {
-  createFinanzasUiService,
-  type FinanzasUiService,
+  FinanzasUiService,
 } from "@finanzas/ui";
 
 import type { WebContext } from "./create-web-context.js";
@@ -14,4 +13,4 @@ export type WebUi = FinanzasUiService;
  * Creates the web UI facade over the shared app context.
  */
 export const createWebUi = (context: WebContext): WebUi =>
-  createFinanzasUiService(context);
+  new FinanzasUiService(context);

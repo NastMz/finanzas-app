@@ -1,6 +1,5 @@
 import {
-  createInMemoryBootstrapContext,
-  type InMemoryBootstrapContext,
+  InMemoryBootstrapContext,
 } from "@finanzas/platform-shared";
 
 import {
@@ -19,4 +18,4 @@ export type DesktopContext = InMemoryBootstrapContext;
 export const createDesktopContext = (
   options: CreateDesktopBootstrapOptions = {},
 ): DesktopContext =>
-  createInMemoryBootstrapContext(createDesktopBootstrap(options));
+  new InMemoryBootstrapContext(createDesktopBootstrap(options));

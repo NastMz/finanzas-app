@@ -1,7 +1,6 @@
 import type { MobileContext } from "./create-mobile-context.js";
 import {
-  createFinanzasUiService,
-  type FinanzasUiService,
+  FinanzasUiService,
 } from "@finanzas/ui";
 
 /**
@@ -13,4 +12,4 @@ export type MobileUi = FinanzasUiService;
  * Creates the mobile UI facade over the shared app context.
  */
 export const createMobileUi = (context: MobileContext): MobileUi =>
-  createFinanzasUiService(context);
+  new FinanzasUiService(context);
