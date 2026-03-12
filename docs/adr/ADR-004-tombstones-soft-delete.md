@@ -1,41 +1,41 @@
-# ADR-004: Tombstones para deletes en sincronizacion
+# ADR-004: Tombstones for Deletes in Synchronization
 
-Estado: Aceptado  
-Fecha: 2026-03-02
+Status: Accepted  
+Date: 2026-03-02
 
-## Contexto
+## Context
 
-En un esquema multi-dispositivo con sincronizacion eventual, borrar fisicamente un registro puede causar resurrecciones de datos cuando otro dispositivo aun conserva una version antigua.
+In a multi-device, eventually consistent setup, physically deleting a record can resurrect stale data when another device still holds an older version.
 
 ## Decision
 
-Se adopta borrado logico con tombstones:
+Adopt logical deletion with tombstones:
 
-- Las entidades incluyen `deletedAt`.
-- Una operacion `delete` marca el registro, no lo elimina fisicamente de inmediato.
-- El estado de borrado se sincroniza como cambio normal via outbox/change log.
-- La eliminacion fisica (GC) se realiza por politica de retencion.
+- Entities include `deletedAt`.
+- A `delete` operation marks the record instead of physically removing it immediately.
+- The deleted state is synchronized as a normal change through the outbox/change log.
+- Physical deletion (GC) is handled by a retention policy.
 
-## Consecuencias
+## Consequences
 
-Positivas:
+Positive:
 
-- Evita resurrecciones de datos al sincronizar.
-- Mantiene trazabilidad de cambios para auditoria y debug.
-- Facilita resolucion de conflictos delete vs update.
+- Prevents data resurrection during synchronization.
+- Preserves change traceability for audit and debugging.
+- Simplifies delete-vs-update conflict handling.
 
 Trade-offs:
 
-- Incremento de complejidad en consultas (filtrar `deletedAt`).
-- Crecimiento de datos hasta ejecutar GC.
+- More complex queries (`deletedAt` filtering).
+- Data growth until GC runs.
 
-## Alternativas consideradas
+## Alternatives Considered
 
-1. Hard delete inmediato: rechazada por riesgo de inconsistencia en sync.
-2. Tabla separada de eliminados: descartada por complejidad adicional para MVP.
+1. Immediate hard delete: rejected because it risks sync inconsistency.
+2. Separate deleted-records table: discarded due to extra MVP complexity.
 
-## Criterios de aceptacion
+## Acceptance Criteria
 
-- Todas las entidades sincronizables soportan `deletedAt`.
-- Pull/push propaga deletes como eventos de cambio.
-- Existe politica de compactacion y retencion definida.
+- All synchronizable entities support `deletedAt`.
+- Pull/push propagates deletes as change events.
+- A compaction and retention policy exists.

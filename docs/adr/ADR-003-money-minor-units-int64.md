@@ -1,41 +1,41 @@
-# ADR-003: Representacion de Money en minor units int64
+# ADR-003: `Money` Representation in Minor Units as int64
 
-Estado: Aceptado  
-Fecha: 2026-03-02
+Status: Accepted  
+Date: 2026-03-02
 
-## Contexto
+## Context
 
-El sistema maneja montos financieros para balances, presupuestos y transacciones. El uso de `float` introduce errores de precision y redondeo incompatibles con contabilidad confiable.
+The system handles financial amounts for balances, budgets, and transactions. Using `float` introduces precision and rounding issues that are incompatible with reliable accounting.
 
 ## Decision
 
-Se representa `Money` con unidades menores enteras:
+Represent `Money` with integer minor units:
 
 - `amountMinor: int64`
-- `currency: string` (ejemplo: COP, USD)
+- `currency: string` (for example: COP, USD)
 
-Toda operacion aritmetica se hace sobre enteros. La conversion a formato decimal se limita a presentacion.
+All arithmetic is performed on integers. Decimal conversion is limited to presentation.
 
-## Consecuencias
+## Consequences
 
-Positivas:
+Positive:
 
-- Precision deterministica en operaciones financieras.
-- Reglas de negocio mas simples y auditables.
-- Menor riesgo de discrepancias entre plataformas.
+- Deterministic precision in financial operations.
+- Simpler, more auditable business rules.
+- Lower risk of cross-platform discrepancies.
 
 Trade-offs:
 
-- Necesidad de utilidades de formato/parsing por moneda.
-- Cuidado adicional en conversiones con tasas o prorrateos.
+- Need for formatting/parsing utilities per currency.
+- Extra care in conversions involving rates or prorations.
 
-## Alternativas consideradas
+## Alternatives Considered
 
-1. `float`/`double`: rechazada por imprecision binaria.
-2. Decimal arbitrario en todas las capas: pospuesta por costo de librerias y serializacion para MVP.
+1. `float` / `double`: rejected due to binary imprecision.
+2. Arbitrary-precision decimal everywhere: postponed due to library and serialization cost for the MVP.
 
-## Criterios de aceptacion
+## Acceptance Criteria
 
-- Ninguna entidad financiera usa `float` para persistencia o logica.
-- Validacion de moneda consistente por cuenta.
-- Formateo de montos desacoplado de reglas de dominio.
+- No financial entity uses `float` for persistence or logic.
+- Currency validation is consistent per account.
+- Amount formatting is decoupled from domain rules.

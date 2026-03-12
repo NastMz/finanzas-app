@@ -1,10 +1,8 @@
 # Platform Shared Adapter
 
-Utilidades compartidas entre hosts (`web`, `desktop`, `mobile`) para evitar
-duplicacion en wiring local-first:
+Shared utilities across hosts (`web`, `desktop`, `mobile`) to avoid duplication in local-first wiring:
 
 - `createInMemoryAppContext`
 - `createInMemoryBootstrap`
 
-Incluye bootstrap in-memory con CRUD + sync y soporte de inyeccion para pruebas
-(`SyncApiClient`, `IdGenerator`, `deviceId`).
+Includes in-memory bootstrap with CRUD + sync and dependency injection support for tests (`SyncApiClient`, `IdGenerator`, `deviceId`).

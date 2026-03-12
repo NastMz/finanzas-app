@@ -1,10 +1,9 @@
-# App Desktop
+# Desktop App
 
-Bootstrap inicial de la app desktop (Electron/Tauri) con las mismas
-capacidades base que web para validar la logica compartida:
+Initial desktop app bootstrap (Electron/Tauri) with the same base capabilities as web in order to validate shared logic:
 
-- `createDesktopBootstrap` con CRUD de cuentas/categorias/transacciones.
-- `main.ts` expone `desktopApp`, `desktopCommands` y `desktopQueries` sin wrappers de contexto adicionales.
-- `syncNow` sobre backend in-memory para pruebas locales.
-- Estrategia de IDs por proposito con ULID por defecto.
-- Inyeccion opcional de `IdGenerator` y `SyncApiClient` para pruebas.
+- `createDesktopBootstrap` with CRUD for accounts, categories, and transactions.
+- `main.ts` exposes `desktopApp`, `desktopCommands`, and `desktopQueries` without extra context wrappers.
+- `syncNow` against an in-memory backend for local tests.
+- Purpose-specific ID strategy with ULID by default.
+- Optional injection of `IdGenerator` and `SyncApiClient` for tests.

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Finanzas Repo Checks"
+  short_description: "Run repo checks with minimal guesswork"
+  default_prompt: "Use $finanzas-repo-checks to validate a change in this monorepo."

@@ -1,3 +1,3 @@
 # Platform Mobile Adapter
 
-Adaptadores de capacidades de plataforma para mobile.
+Platform-capability adapters for the mobile host.

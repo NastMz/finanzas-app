@@ -1,30 +1,30 @@
 # Finanzas App
 
-Bootstrap inicial del proyecto basado en `ARCHITECTURE.md` y los ADR aprobados.
+Initial project bootstrap based on `ARCHITECTURE.md` and the approved ADRs.
 
-## Avance inicial
+## Current Snapshot
 
-- Monorepo con workspaces para apps y paquetes compartidos.
-- Paquetes implementados: `domain`, `application`, `data`, `sync`, `ui` y `platform-shared`.
-- Casos de uso actuales:
-  - Cuentas: `AddAccount`, `UpdateAccount`, `DeleteAccount` (tombstones), `ListAccounts`.
-  - Categorias: `AddCategory`, `UpdateCategory`, `DeleteCategory` (tombstones), `ListCategories`.
-  - Transacciones: `AddTransaction`, `UpdateTransaction`, `DeleteTransaction` (tombstones), `ListTransactions`, `GetAccountSummary` (totales + top categorias + recientes por rango).
-- Motor inicial `SyncNow` con flujo `push/pull`, estados de outbox, cursor incremental y aplicacion de cambios remotos en cuentas/categorias/transacciones.
-- Query de sincronizacion `GetSyncStatus` para estado UI (`synced`, `pending`, `error`) con conteos por estado de outbox y cursor actual.
-- Adaptadores in-memory para validar flujo offline-first en desarrollo y pruebas.
-- Persistencia web real sobre IndexedDB para conservar entidades, outbox y cursor entre sesiones del navegador.
-- Persistencia mobile y desktop real sobre SQLite con rutas configurables por host.
-- Migraciones versionadas de persistencia para IndexedDB y SQLite desde un manifiesto de esquema compartido, incluyendo upgrade de esquemas legacy con metadatos de version e historial aplicado.
-- Estrategia de IDs por proposito para evitar strings genericos (`account`, `category`, `transaction`, `outbox-op`), con generacion ULID para ejecucion normal y secuencial deterministica para pruebas.
-- Utilidades compartidas para evitar duplicacion entre hosts: `createUlidIdGenerator` en `@finanzas/data` y `createInMemorySyncApiClient` en `@finanzas/sync`.
-- Bootstrap/context in-memory compartidos en `@finanzas/platform-shared` para `web`, `desktop` y `mobile`.
-- Los puntos de entrada por host exponen `app`, `commands` y `queries` de forma declarativa desde `main.ts`, sin wrappers de contexto adicionales.
-- Capa UI headless compartida en `@finanzas/ui` (`createFinanzasUiService`) con seleccion explicita de dependencias minimas en cada host para materializar tabs v1 de forma web-first y reutilizable.
-- Sistema de diseño inicial compartido (tokens de color/espaciado/tipografia en `@finanzas/ui`) + reset global web, y Home en React refactorizada con componentes atómicos/reutilizables para un dashboard financiero consistente entre hosts.
-- Pruebas unitarias iniciales con Vitest.
+- Monorepo with shared apps and packages.
+- Implemented packages: `domain`, `application`, `data`, `sync`, `ui`, and `platform-shared`.
+- Current use cases:
+  - Accounts: `AddAccount`, `UpdateAccount`, `DeleteAccount` (tombstones), `ListAccounts`.
+  - Categories: `AddCategory`, `UpdateCategory`, `DeleteCategory` (tombstones), `ListCategories`.
+  - Transactions: `AddTransaction`, `UpdateTransaction`, `DeleteTransaction` (tombstones), `ListTransactions`, `GetAccountSummary` (totals + top categories + recent items by range).
+- Initial `SyncNow` engine with push/pull flow, outbox states, incremental cursor handling, and remote change application for accounts, categories, and transactions.
+- `GetSyncStatus` query for UI state (`synced`, `pending`, `error`) with outbox counts by status and the current cursor.
+- In-memory adapters to validate the offline-first flow during development and tests.
+- Real web persistence on IndexedDB to preserve entities, outbox state, and cursor data across browser sessions.
+- Real mobile and desktop persistence on SQLite with host-configurable paths.
+- Versioned persistence migrations for IndexedDB and SQLite from a shared schema manifest, including legacy schema upgrades with version metadata and applied-history tracking.
+- Purpose-specific ID strategy to avoid generic strings (`account`, `category`, `transaction`, `outbox-op`), with ULID generation for normal runtime and deterministic sequence generation for tests.
+- Shared utilities to avoid host duplication: `createUlidIdGenerator` in `@finanzas/data` and `createInMemorySyncApiClient` in `@finanzas/sync`.
+- Shared in-memory bootstrap/context in `@finanzas/platform-shared` for `web`, `desktop`, and `mobile`.
+- Host entry points expose `app`, `commands`, and `queries` declaratively from `main.ts`, without extra context wrapper layers.
+- Shared headless UI layer in `@finanzas/ui` (`createFinanzasUiService`) with explicit dependency selection per host to materialize the v1 tabs in a web-first, reusable way.
+- Initial shared design system (color/spacing/typography tokens in `@finanzas/ui`) plus the web global reset, and a refactored React home screen with atomic, reusable components for a consistent financial dashboard across hosts.
+- Initial unit test suite with Vitest.
 
-## Comandos
+## Commands
 
 ```bash
 npm install
@@ -34,14 +34,19 @@ npm run test
 npm run web:dev
 ```
 
-## Git hooks
+## Git Hooks
 
-- El hook `pre-commit` ejecuta `npm run lint:staged`.
-- El hook `pre-push` ejecuta `npm run typecheck && npm run test`.
-- `lint-staged` corre ESLint sobre archivos `*.ts` staged antes del commit.
+- The `pre-commit` hook runs `npm run lint:staged`.
+- The `pre-push` hook runs `npm run typecheck && npm run test`.
+- `lint-staged` runs ESLint on staged `*.ts` files before commit.
 
-## UX v1
+## Working Docs
 
-- Flujos y lineamientos UI mobile-first: `docs/ui-v1-flows.md`.
-- Roadmap de fases, avance y pendientes: `docs/roadmap.md`.
-- Estructura del monorepo, convenciones e imports: `docs/project-structure.md`.
+- Mobile-first UI flows and guidelines: `docs/ui-v1-flows.md`
+- Phase roadmap, progress, and pending work: `docs/roadmap.md`
+- Monorepo structure, conventions, and import rules: `docs/project-structure.md`
+
+## Documentation Policy
+
+- Keep repository documentation in English.
+- When a task changes architecture, workflow, or reusable conventions, update the relevant docs in the same change.

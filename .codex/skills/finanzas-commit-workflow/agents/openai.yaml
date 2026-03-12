@@ -1,0 +1,4 @@
+interface:
+  display_name: "Finanzas Commit Workflow"
+  short_description: "Prepare commits that satisfy repo hooks"
+  default_prompt: "Use $finanzas-commit-workflow to prepare and validate a commit in this repo."

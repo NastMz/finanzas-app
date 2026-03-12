@@ -1,3 +1,3 @@
 # Platform Web Adapter
 
-Adaptadores de capacidades de plataforma para navegador.
+Platform-capability adapters for the browser host.

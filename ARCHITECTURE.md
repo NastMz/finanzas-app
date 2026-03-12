@@ -1,56 +1,56 @@
-# Arquitectura de la App de Finanzas Personales
+# Personal Finance App Architecture
 
-Estado: Aprobado  
+Status: Approved  
 Version: 1.0  
-Fecha: 2026-03-02
+Date: 2026-03-02
 
-## 1. Proposito y alcance
+## 1. Purpose and Scope
 
-Este documento define la arquitectura objetivo para una app de finanzas personales con enfoque web-core, local-first y sincronizacion cloud.
+This document defines the target architecture for a personal finance app with a web-core, local-first approach, and cloud synchronization.
 
-Objetivos del sistema:
+System goals:
 
-- Multiplataforma: Web, Mobile y Desktop con una sola base de codigo.
-- Offline-first: operaciones CRUD completas sin conectividad.
-- Sincronizacion multi-dispositivo con convergencia eventual.
-- Seguridad por plataforma (lock de app y secretos en almacenes seguros).
-- Evolucion sin lock-in del host (Capacitor, Electron o Tauri intercambiables).
+- Multi-platform: Web, Mobile, and Desktop from a single codebase.
+- Offline-first: full CRUD operations without connectivity.
+- Multi-device synchronization with eventual convergence.
+- Platform-specific security (app lock and secrets in secure stores).
+- Host evolution without lock-in (Capacitor, Electron, or Tauri can be swapped).
 
-Fuera de alcance en esta fase:
+Out of scope for this phase:
 
-- Integracion bancaria automatica (open banking).
-- Presupuestos colaborativos multiusuario avanzados.
-- Cifrado E2EE completo (se deja punto de extension futuro).
+- Automated banking integration (open banking).
+- Advanced collaborative multi-user budgeting.
+- Full E2EE encryption (left as a future extension point).
 
-## 2. Requerimientos no funcionales
+## 2. Non-Functional Requirements
 
-| ID | Requerimiento | Criterio objetivo |
+| ID | Requirement | Target criterion |
 | --- | --- | --- |
-| NFR-01 | Rendimiento de apertura | Primer render util menor a 2s en dispositivo gama media, con skeleton inmediato |
-| NFR-02 | Offline | CRUD financiero disponible sin red |
-| NFR-03 | Sync | Convergencia eventual, conflictos detectables y resolubles |
-| NFR-04 | Seguridad | Lock opcional, secretos en store seguro, sin tokens en texto plano |
-| NFR-05 | Observabilidad | Logging estructurado y trazas de sync/errores en todas las plataformas |
+| NFR-01 | Startup performance | First meaningful render under 2s on a mid-range device, with an immediate skeleton |
+| NFR-02 | Offline support | Financial CRUD available without network |
+| NFR-03 | Sync | Eventual convergence, with detectable and resolvable conflicts |
+| NFR-04 | Security | Optional lock, secrets in secure storage, no plaintext tokens |
+| NFR-05 | Observability | Structured logging and sync/error traces across all platforms |
 
-## 3. Arquitectura de alto nivel
+## 3. High-Level Architecture
 
-### 3.1 Estilo arquitectonico
+### 3.1 Architectural style
 
-Se adopta arquitectura Hexagonal/Clean aplicada al frontend:
+Hexagonal / Clean architecture is applied to the frontend:
 
-- **Domain**: entidades y reglas puras (Money, Transaction, Budget, invariantes).
-- **Application**: casos de uso (AddTransaction, SetBudget, SyncNow, UnlockApp).
-- **Ports**: interfaces requeridas por la aplicacion (repositorios, secretos, red, clock, notificaciones).
-- **Adapters**: implementaciones concretas para persistencia, sync remoto y servicios de plataforma.
+- **Domain**: pure entities and rules (`Money`, `Transaction`, `Budget`, invariants).
+- **Application**: use cases (`AddTransaction`, `SetBudget`, `SyncNow`, `UnlockApp`).
+- **Ports**: interfaces required by the application (repositories, secrets, network, clock, notifications).
+- **Adapters**: concrete implementations for persistence, remote sync, and platform services.
 
-Regla principal: la UI consume Application; no habla directo con plugins, HTTP ni SDKs de host.
+Main rule: the UI consumes `Application`; it does not talk directly to plugins, HTTP clients, or host SDKs.
 
-### 3.2 Vista logica de capas
+### 3.2 Logical layer view
 
 ```text
 UI
  -> Application (use cases)
-    -> Domain (reglas)
+    -> Domain (rules)
     -> Ports (interfaces)
        -> Adapters
           -> Local DB (IndexedDB/SQLite)
@@ -58,17 +58,17 @@ UI
           -> Platform services (web/mobile/desktop)
 ```
 
-### 3.3 Hosts multiplataforma
+### 3.3 Multi-platform hosts
 
-| Plataforma | Host | Rol |
+| Platform | Host | Role |
 | --- | --- | --- |
-| Web | SPA/PWA | Entrega web y APIs browser |
-| Mobile | Capacitor | WebView + plugins nativos |
-| Desktop | Electron o Tauri | Shell desktop + integraciones OS |
+| Web | SPA/PWA | Web delivery and browser APIs |
+| Mobile | Capacitor | WebView + native plugins |
+| Desktop | Electron or Tauri | Desktop shell + OS integrations |
 
-El host se considera infraestructura. La logica de negocio vive en paquetes compartidos.
+The host is treated as infrastructure. Business logic lives in shared packages.
 
-## 4. Estructura de repositorio (monorepo)
+## 4. Repository Structure (Monorepo)
 
 ```text
 apps/
@@ -81,6 +81,7 @@ packages/
   data/
   sync/
   platform/
+    platform-shared/
     platform-web/
     platform-mobile/
     platform-desktop/
@@ -90,13 +91,13 @@ docs/
   adr/
 ```
 
-Regla: `apps/*` solo compone dependencias, configura adaptadores y bootstrap de plataforma.
+Rule: `apps/*` should only compose dependencies, configure adapters, and bootstrap the platform.
 
-Convenciones de ubicacion, naming e imports: `docs/project-structure.md`.
+See `docs/project-structure.md` for location, naming, and import conventions.
 
-## 5. Modelo de dominio y datos
+## 5. Domain and Data Model
 
-### 5.1 Entidades principales
+### 5.1 Main entities
 
 ```text
 Money {
@@ -125,21 +126,21 @@ RecurringRule {
 }
 ```
 
-### 5.2 Invariantes
+### 5.2 Invariants
 
 - `amount != 0`.
-- Toda transaccion referencia una cuenta existente.
-- Moneda consistente con la cuenta (o conversion explicita).
-- Presupuesto unico por `(month, categoryId)`.
+- Every transaction references an existing account.
+- Currency must match the account (or require explicit conversion).
+- A budget is unique per `(month, categoryId)`.
 
-## 6. Persistencia local (source of truth)
+## 6. Local Persistence (Source of Truth)
 
-### 6.1 Motor por plataforma
+### 6.1 Engine per platform
 
 - Web: IndexedDB.
 - Mobile/Desktop: SQLite.
 
-### 6.2 Esquema conceptual minimo
+### 6.2 Minimum conceptual schema
 
 - `accounts`
 - `transactions`
@@ -149,32 +150,32 @@ RecurringRule {
 - `outbox_ops`
 - `sync_state`
 
-Campos base por entidad:
+Base fields per entity:
 
 - `id`
 - `createdAt`, `updatedAt`
-- `deletedAt` (tombstone recomendado)
-- `version` (version de servidor cuando exista)
+- `deletedAt` (tombstone recommended)
+- `version` (server version when available)
 
-## 7. Sincronizacion cloud
+## 7. Cloud Synchronization
 
-### 7.1 Principios
+### 7.1 Principles
 
-- Local-first con convergencia eventual.
-- Toda accion del usuario persiste local y genera outbox.
-- El motor de sync intenta `push` al detectar red.
-- El cliente ejecuta `pull` incremental por cursor.
+- Local-first with eventual convergence.
+- Every user action persists locally and produces an outbox operation.
+- The sync engine attempts `push` when connectivity is available.
+- The client performs incremental `pull` by cursor.
 
-### 7.2 Modelo
+### 7.2 Model
 
-Modelo recomendado: change log por usuario en servidor + cursores opacos.
+Recommended model: per-user server-side change log with opaque cursors.
 
-Flujo:
+Flow:
 
-1. Cliente envia operaciones idempotentes (`push`).
-2. Servidor valida, aplica y escribe cambios en log.
-3. Cliente consulta cambios desde `cursor` (`pull`).
-4. Cliente aplica cambios y actualiza `nextCursor`.
+1. The client sends idempotent operations (`push`).
+2. The server validates, applies them, and writes changes to the log.
+3. The client requests changes since `cursor` (`pull`).
+4. The client applies the changes and updates `nextCursor`.
 
 ### 7.3 Outbox operation
 
@@ -194,7 +195,7 @@ OutboxOp {
 }
 ```
 
-### 7.4 API de sincronizacion
+### 7.4 Synchronization API
 
 `POST /sync/push`
 
@@ -229,7 +230,7 @@ OutboxOp {
 }
 ```
 
-Change DTO tipico:
+Typical change DTO:
 
 ```text
 ChangeDTO {
@@ -243,78 +244,78 @@ ChangeDTO {
 }
 ```
 
-### 7.5 Conflictos
+### 7.5 Conflicts
 
-Politica base:
+Baseline policy:
 
-- Transaction: conflicto si `baseVersion != currentVersion`.
-- Metadata (categorias, notas): LWW con desempate por `(serverTimestamp, deviceId)`.
+- `Transaction`: conflict when `baseVersion != currentVersion`.
+- Metadata (categories, notes): LWW with tie-breaker `(serverTimestamp, deviceId)`.
 
-Resolucion UX:
+UX resolution:
 
-- Notificacion de conflicto detectado.
-- Diff simple: version local vs remota.
-- Acciones: usar local, usar remota o duplicar como nueva.
+- Notify the user when a conflict is detected.
+- Show a simple local-vs-remote diff.
+- Offer: keep local, keep remote, or duplicate as new.
 
-## 8. Seguridad
+## 8. Security
 
-### 8.1 Autenticacion
+### 8.1 Authentication
 
-- JWT access/refresh o sesiones server-side.
-- Mobile: secretos en Keychain/Keystore.
-- Desktop: vault del OS o capa de cifrado equivalente.
-- Web: preferir cookies httpOnly cuando el backend lo permita.
+- JWT access/refresh or server-side sessions.
+- Mobile: secrets in Keychain/Keystore.
+- Desktop: OS vault or equivalent encryption layer.
+- Web: prefer httpOnly cookies when the backend allows it.
 
-### 8.2 Lock de aplicacion
+### 8.2 App lock
 
-Casos de uso:
+Use cases:
 
 - `EnableLock(PIN|Biometric)`
 - `Unlock(challenge)`
 - `AutoLockAfter(duration)`
 
-Politica:
+Policy:
 
-- PIN nunca en texto plano.
-- Almacenar hash derivado (KDF) + salt.
-- Material sensible solo en secret store por plataforma.
+- Never store the PIN in plaintext.
+- Store a derived hash (KDF) + salt.
+- Keep sensitive material only in the platform secret store.
 
-## 9. Experiencia de usuario y rendimiento
+## 9. User Experience and Performance
 
 ### 9.1 Cold start
 
-- Splash nativo del host.
-- Skeleton inmediato en UI.
-- Home minimalista inicial: balance total y ultimos 10-20 movimientos.
-- Features pesadas lazy: reportes, ajustes, import/export.
+- Native host splash.
+- Immediate UI skeleton.
+- Minimal initial home: total balance and last 10-20 transactions.
+- Lazy-load heavier features: reports, settings, import/export.
 
-### 9.2 Escalamiento visual
+### 9.2 Visual scaling
 
-- Virtualizacion en listas grandes de transacciones.
-- Code splitting por ruta para evitar bundles gigantes.
-- Evitar efectos CSS costosos en mobile.
+- Virtualization for large transaction lists.
+- Route-based code splitting to avoid oversized bundles.
+- Avoid expensive CSS effects on mobile.
 
-## 10. Observabilidad
+## 10. Observability
 
-Paquete `telemetry` transversal:
+Cross-cutting `telemetry` package:
 
-- Logging estructurado en todas las capas.
-- Metricas de sync: duracion push/pull, retries, conflictos.
-- Error boundary en UI y trazabilidad por correlation id.
-- Integracion de logs JS + nativos en mobile/desktop.
+- Structured logging across all layers.
+- Sync metrics: push/pull duration, retries, conflicts.
+- UI error boundary and correlation-id-based tracing.
+- Combined JS + native logs on mobile/desktop.
 
-## 11. Riesgos y mitigaciones
+## 11. Risks and Mitigations
 
-| Riesgo | Impacto | Mitigacion |
+| Risk | Impact | Mitigation |
 | --- | --- | --- |
-| Conflictos frecuentes | Mala UX, perdida de confianza | Reducir edicion concurrente y UI de resolucion clara |
-| Crecimiento de complejidad en sync | Deuda tecnica y bugs | Empezar con LWW + conflicto fuerte en Transaction; iterar por fases |
-| Exposicion de tokens en web SPA | Riesgo de seguridad | Priorizar cookies httpOnly y reducir superficie de tokens |
-| Rendimiento en mobile | Lentitud y abandono | Disciplina de bundle, skeleton temprano y virtualizacion |
+| Frequent conflicts | Poor UX, loss of trust | Reduce concurrent editing and provide a clear conflict-resolution UI |
+| Sync complexity growth | Technical debt and bugs | Start with LWW + strong `Transaction` conflict handling; iterate in phases |
+| Token exposure in web SPA | Security risk | Prefer httpOnly cookies and reduce token surface area |
+| Mobile performance issues | Slowness and churn | Enforce bundle discipline, early skeletons, and virtualization |
 
-## 12. Registro de decisiones (ADR)
+## 12. Decision Record (ADR)
 
-Este documento se complementa con ADRs formales:
+This document is complemented by formal ADRs:
 
 - `docs/adr/ADR-001-local-first-outbox-sync.md`
 - `docs/adr/ADR-002-ports-adapters-platform-abstraction.md`

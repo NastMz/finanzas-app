@@ -1,3 +1,3 @@
 # Platform Desktop Adapter
 
-Adaptadores de capacidades de plataforma para desktop.
+Platform-capability adapters for the desktop host.

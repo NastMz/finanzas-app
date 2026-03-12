@@ -1,0 +1,4 @@
+interface:
+  display_name: "Finanzas Sync Persistence"
+  short_description: "Work on offline-first sync and storage"
+  default_prompt: "Use $finanzas-sync-persistence to change sync, outbox, IndexedDB, or SQLite behavior."

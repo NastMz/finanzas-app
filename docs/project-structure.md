@@ -1,24 +1,24 @@
-# Estructura y Convenciones del Proyecto
+# Project Structure and Conventions
 
-Estado: Activo  
-Alcance: Monorepo completo
+Status: Active  
+Scope: Entire monorepo
 
-## 1. Objetivo
+## 1. Goal
 
-Definir una estructura estable para el monorepo, evitar carpetas planas, reducir imports ambiguos y facilitar onboarding.
+Define a stable monorepo structure, avoid flat folders, reduce ambiguous imports, and simplify onboarding.
 
-Este documento cierra la Fase 1 del roadmap y sirve como referencia para cualquier modulo nuevo.
+This document closes Phase 1 of the roadmap and serves as the default reference for any new module.
 
-## 2. Principios
+## 2. Principles
 
-- Cada carpeta representa una responsabilidad concreta.
-- La logica compartida vive en `packages/`; los hosts solo componen y adaptan.
-- Los imports entre paquetes usan aliases `@finanzas/*`.
-- Los imports relativos se usan solo dentro del mismo paquete o app.
-- Si una carpeta empieza a mezclar responsabilidades, se subdivide antes de seguir creciendo.
-- Los modulos de orquestacion con dependencias compartidas se encapsulan en clases o facades; las funciones libres quedan para transformaciones puras y locales.
+- Every folder should represent a concrete responsibility.
+- Shared logic belongs in `packages/`; hosts only compose and adapt.
+- Cross-package imports use `@finanzas/*` aliases.
+- Relative imports are only used inside the same package or app.
+- If a folder starts mixing responsibilities, split it before it grows further.
+- Orchestration modules with shared dependencies should live in classes or facades; free functions should remain for pure, local transformations.
 
-## 3. Estructura actual esperada
+## 3. Current Expected Structure
 
 ```text
 apps/
@@ -26,7 +26,6 @@ apps/
     src/
       app/
       dev/
-      screens/
       features/
       ui/
   mobile/
@@ -54,61 +53,45 @@ docs/
   adr/
 ```
 
-## 4. Donde va cada cosa
+## 4. What Goes Where
 
 ### `apps/web/src/app`
 
-Puntos de entrada, bootstrap del host web, contexto y wiring del host.
+Web host entry points, bootstrap, context, and wiring.
 
-Aqui van:
+Put here:
 
 - `main.ts`
 - `bootstrap.ts`
-- `create-web-context.ts`
-- `create-web-ui.ts`
+- `bootstrap.spec.ts`
 
-No va aqui:
+Do not put here:
 
-- UI de pantallas
-- componentes visuales
-- logica de negocio de dominio
+- screen UI implementation
+- visual components
+- domain business logic
 
 ### `apps/web/src/dev`
 
-Solo herramientas de preview local y desarrollo visual.
+Local preview and visual-development-only tooling.
 
-Aqui van:
+Put here:
 
 - `dev-main.tsx`
-- shells de preview
-- estilos exclusivos del preview
+- preview shells
+- preview-only styles
 
-No va aqui:
+Do not put here:
 
-- entrypoints productivos
-- casos de uso
-- componentes compartidos de negocio
-
-### `apps/web/src/screens`
-
-Wrappers de pantalla y adaptadores de render entre `app` y `features`.
-
-Aqui van:
-
-- loaders de pantalla
-- exports de `render*Screen`
-- specs de las pantallas
-
-No va aqui:
-
-- componentes internos de feature
-- design system
+- production entry points
+- use cases
+- shared business-facing components
 
 ### `apps/web/src/features/<feature>`
 
-Implementacion concreta de cada feature visual.
+Concrete implementation of each visual feature.
 
-Estructura recomendada:
+Recommended structure:
 
 ```text
 features/<feature>/
@@ -116,60 +99,61 @@ features/<feature>/
   lib/
   <feature>-screen.tsx
   <feature>-screen.module.css
+  <feature>-screen.spec.ts
 ```
 
-Aqui van:
+Put here:
 
-- componentes de la feature
-- helpers locales de la feature
-- estilos de la feature
+- screen components and feature-level render/load helpers
+- feature-specific components
+- feature-local helpers
+- feature styles
 
-No va aqui:
+Do not put here:
 
-- bootstrap del host
-- tokens globales
+- host bootstrap
+- global tokens
 
 ### `apps/web/src/ui`
 
-Base visual compartida del host web.
+Shared visual foundation for the web host.
 
-Aqui van:
+Put here:
 
-- componentes genericos
-- foundations globales
-- utilidades UI puras
+- generic components
+- global foundations
+- pure UI utilities
 
-No va aqui:
+Do not put here:
 
-- componentes atados a una feature de negocio
+- components tightly bound to a business feature
 
-### `apps/mobile/src/app` y `apps/desktop/src/app`
+### `apps/mobile/src/app` and `apps/desktop/src/app`
 
-Bootstrap y composicion del host.
+Host bootstrap and composition.
 
-Aqui van:
+Put here:
 
 - `main.ts`
 - `bootstrap.ts`
-- `create-*-context.ts`
-- `create-*-ui.ts` cuando aplique
+- `bootstrap.spec.ts`
 
-No va aqui:
+Do not put here:
 
-- features de negocio concretas
-- reglas de dominio
+- concrete business features
+- domain rules
 
 ### `packages/domain/src`
 
-Modelo de dominio puro y reglas invariantes.
+Pure domain model and invariants.
 
-Aqui van:
+Put here:
 
-- entidades
+- entities
 - value objects
-- errores de dominio
+- domain errors
 
-No debe importar:
+It must not import:
 
 - `application`
 - `data`
@@ -179,208 +163,208 @@ No debe importar:
 
 ### `packages/application/src`
 
-Casos de uso y puertos del sistema.
+Use cases and system ports.
 
-Aqui van:
+Put here:
 
 - `use-cases/`
-- servicios de aplicacion que agrupen casos de uso por contexto cuando un modulo necesite una API orientada a objetos
+- application services that group use cases by context when a module needs an object-oriented API
 - `ports.ts`
-- errores de aplicacion
+- application errors
 
-No va aqui:
+Do not put here:
 
-- adaptadores concretos
-- componentes visuales
+- concrete adapters
+- visual components
 
 ### `packages/data/src`
 
-Implementaciones de persistencia y utilidades de infraestructura de datos.
+Persistence implementations and data infrastructure utilities.
 
-Aqui van:
+Put here:
 
-- repositorios
-- generadores de ids
-- adaptadores in-memory o persistentes
+- repositories
+- ID generators
+- in-memory or persistent adapters
 
 ### `packages/sync/src`
 
-Todo lo relacionado con sincronizacion.
+Everything related to synchronization.
 
-Aqui van:
+Put here:
 
-- adaptadores de sync
+- sync adapters
 - change appliers
-- servicios de sync que encapsulen estado local y colaboracion con APIs remotas
-- use cases de sync
-- contratos de sync
+- sync services that encapsulate local state and collaboration with remote APIs
+- sync use cases
+- sync contracts
 
 ### `packages/ui/src/models`
 
-Contratos y view models compartidos por la capa UI headless.
+Shared contracts and view models for the headless UI layer.
 
-Aqui van:
+Put here:
 
-- tipos de tabs
+- tab types
 - view models
-- tipos de interaccion UI
+- UI interaction types
 
 ### `packages/ui/src/service`
 
-Orquestacion headless de la UI compartida.
+Headless shared UI orchestration.
 
-Aqui van:
+Put here:
 
 - `createFinanzasUiService`
-- facades de servicio que agrupen comandos, queries y estado de runtime compartido
-- mapeos de queries/commands a view models
+- service facades that group commands, queries, and shared runtime state
+- mappings from queries/commands to view models
 
 ### `packages/ui/src/design-system`
 
-Tokens, primitives y activos base del sistema visual compartido.
+Tokens, primitives, and base assets for the shared visual system.
 
-## 5. Convenciones de nombres
+## 5. Naming Conventions
 
-### Archivos
+### Files
 
-- Usar `kebab-case` para archivos TypeScript y CSS Modules.
-- El nombre del archivo debe describir el modulo exportado o la responsabilidad principal.
-- Los tests van junto al modulo con sufijo `.spec.ts` o `.spec.tsx`.
-- Los estilos de un componente React usan el mismo basename: `component.tsx` + `component.module.css`.
-- Los barrels solo se nombran `index.ts`.
+- Use `kebab-case` for TypeScript files and CSS Modules.
+- File names should describe the exported module or primary responsibility.
+- Keep tests next to the module with `.spec.ts` or `.spec.tsx`.
+- React component styles should use the same basename: `component.tsx` + `component.module.css`.
+- Barrels should only be named `index.ts`.
 
-### Carpetas
+### Folders
 
-- Usar nombres cortos y por responsabilidad: `app`, `dev`, `screens`, `components`, `lib`, `models`, `service`.
-- Crear una carpeta nueva cuando un grupo tenga identidad clara y mas de un archivo relacionado.
-- No crear carpetas “misc”, “utils” o “shared” sin alcance definido.
+- Use short, responsibility-based names: `app`, `dev`, `features`, `ui`, `components`, `lib`, `models`, `service`.
+- Create a new folder when a group has a clear identity and more than one related file.
+- Do not create `misc`, `utils`, or `shared` folders without a clear scope.
 
 ### Exports
 
-- Un modulo debe tener una responsabilidad principal.
-- Los `index.ts` se usan solo en bordes de carpeta, no para esconder estructuras confusas.
-- Si un export solo se usa en una carpeta, mantenerlo local y no subirlo al barrel global.
-- Los `create-*` se reservan para composition roots o fabricas; la logica orquestadora vive dentro de la clase o facade que esas fabricas instancian.
+- A module should have one primary responsibility.
+- Use `index.ts` only at clear folder boundaries, not to hide confusing structures.
+- If an export is only used inside one folder, keep it local instead of promoting it to a wider barrel.
+- Reserve `create-*` names for composition roots or factories; orchestration logic should live inside the class or facade instantiated by those factories.
 
-## 6. Reglas de importacion entre capas
+## 6. Import Rules Between Layers
 
-### Regla general
+### General rule
 
-Se importa hacia adentro de la arquitectura, no hacia afuera.
+Imports should point inward in the architecture, not outward.
 
-### Permitido
+### Allowed
 
 - `apps/*` -> `packages/*`
-- `apps/web/src/screens` -> `apps/web/src/features` y `apps/web/src/app`
+- `apps/web/src/app` -> `apps/web/src/features` and `apps/web/src/ui`
 - `apps/web/src/features` -> `apps/web/src/ui`
 - `packages/application` -> `packages/domain`
-- `packages/data` -> `packages/application` y `packages/domain`
-- `packages/sync` -> `packages/application` y `packages/domain`
-- `packages/ui/service` -> `packages/application`, `packages/domain`, `packages/sync`
+- `packages/data` -> `packages/application` and `packages/domain`
+- `packages/sync` -> `packages/application` and `packages/domain`
+- `packages/ui/src/service` -> `packages/application`, `packages/domain`, `packages/sync`
 
-### No permitido
+### Not allowed
 
-- `packages/domain` importando cualquier capa superior
-- `packages/application` importando `data`, `sync`, `ui` visual o `apps/*`
-- `packages/ui` importando `apps/*`
-- un host importando codigo de otro host
-- imports relativos cruzando entre `apps/` y `packages/`
+- `packages/domain` importing any upper layer
+- `packages/application` importing `data`, `sync`, visual `ui`, or `apps/*`
+- `packages/ui` importing `apps/*`
+- one host importing code from another host
+- relative imports crossing between `apps/` and `packages/`
 
-### Regla practica
+### Practical rule
 
-- Dentro del mismo paquete o app: imports relativos.
-- Entre paquetes: imports por alias `@finanzas/*`.
-- Entre carpetas del mismo host: imports relativos cortos y directos.
+- Inside the same package or app: use relative imports.
+- Across packages: use `@finanzas/*` aliases.
+- Between folders in the same host: use short, direct relative imports.
 
-## 7. Guia rapida para crear modulos nuevos
+## 7. Quick Guide for New Modules
 
-### Si agregas un caso de uso
+### If you add a use case
 
-Ubicacion:
+Location:
 
 `packages/application/src/use-cases`
 
 Checklist:
 
-- crear archivo del caso de uso
-- crear spec junto al caso de uso
-- exportarlo desde el `index.ts` del paquete si corresponde
+- create the use case file
+- create a colocated spec
+- export it from the package `index.ts` when appropriate
 
-### Si agregas un nuevo adaptador de datos
+### If you add a new data adapter
 
-Ubicacion:
+Location:
 
-`packages/data/src/<grupo>`
-
-Checklist:
-
-- mantener dependencia hacia `application` y `domain`
-- no filtrar detalles de infraestructura hacia arriba
-
-### Si agregas una nueva capacidad de sync
-
-Ubicacion:
-
-`packages/sync/src/<grupo>`
+`packages/data/src/<group>`
 
 Checklist:
 
-- separar `use-cases`, `adapters` y `change-appliers` si aplica
-- agregar pruebas de flujo feliz y error
+- keep dependencies pointing toward `application` and `domain`
+- do not leak infrastructure details upward
 
-### Si agregas una nueva pantalla web
+### If you add a new sync capability
 
-Ubicacion:
+Location:
 
-- wrapper: `apps/web/src/screens`
-- implementacion: `apps/web/src/features/<feature>`
+`packages/sync/src/<group>`
 
 Checklist:
 
-- crear `*-screen.tsx`
-- crear `*.module.css` asociado
-- crear spec del wrapper en `screens`
-- conectar el loader desde `app/main.ts` si aplica
+- separate `use-cases`, `adapters`, and `change-appliers` when appropriate
+- add happy-path and error-path tests
 
-### Si agregas componentes visuales compartidos
+### If you add a new web screen
 
-Ubicacion:
+Location:
 
-- `apps/web/src/ui` si son compartidos solo en web
-- `packages/ui` si son contratos o sistema visual headless/shared
+- full implementation: `apps/web/src/features/<feature>`
 
-## 8. Guia rapida por carpeta para onboarding
+Checklist:
 
-| Ruta | Rol |
+- create `*-screen.tsx`
+- create the matching `*.module.css`
+- create a colocated `*.spec.ts`
+- define `render*Screen` and/or `load*ScreenHtml` in the same feature when the tab needs it
+- wire the loader from `app/main.ts` when applicable
+
+### If you add shared visual components
+
+Location:
+
+- `apps/web/src/ui` if they are shared only in web
+- `packages/ui` if they are shared headless contracts or design-system assets
+
+## 8. Quick Folder Guide for Onboarding
+
+| Path | Role |
 | --- | --- |
-| `apps/web/src/app` | bootstrap y wiring del host web |
-| `apps/web/src/dev` | preview local y herramientas de desarrollo visual |
-| `apps/web/src/screens` | adaptadores de pantallas y loaders |
-| `apps/web/src/features` | implementacion por feature |
-| `apps/web/src/ui` | base visual compartida del host web |
-| `apps/mobile/src/app` | bootstrap del host mobile |
-| `apps/desktop/src/app` | bootstrap del host desktop |
-| `packages/domain/src` | reglas puras del dominio |
-| `packages/application/src` | casos de uso y puertos |
-| `packages/data/src` | persistencia y utilidades de datos |
-| `packages/sync/src` | sincronizacion y outbox |
-| `packages/ui/src/models` | tipos y view models de UI |
-| `packages/ui/src/service` | servicio headless de UI |
-| `packages/ui/src/design-system` | tokens y sistema visual |
-| `docs/adr` | decisiones de arquitectura |
+| `apps/web/src/app` | bootstrap and wiring for the web host |
+| `apps/web/src/dev` | local preview and visual development tooling |
+| `apps/web/src/features` | feature implementation, screen renderers, and loaders |
+| `apps/web/src/ui` | shared visual base for the web host |
+| `apps/mobile/src/app` | bootstrap for the mobile host |
+| `apps/desktop/src/app` | bootstrap for the desktop host |
+| `packages/domain/src` | pure domain rules |
+| `packages/application/src` | use cases and ports |
+| `packages/data/src` | persistence and data utilities |
+| `packages/sync/src` | synchronization and outbox |
+| `packages/ui/src/models` | UI types and view models |
+| `packages/ui/src/service` | headless UI service |
+| `packages/ui/src/design-system` | tokens and visual system |
+| `docs/adr` | architecture decisions |
 
-## 9. Checklist de revision estructural
+## 9. Structural Review Checklist
 
-Antes de agregar una carpeta o archivo nuevo, revisar:
+Before adding a new folder or file, check:
 
-- si ya existe una carpeta con esa responsabilidad
-- si el nombre describe bien su rol
-- si el modulo depende solo de las capas permitidas
-- si necesita test al lado
-- si debe exponerse por `index.ts` o quedar local
+- whether a folder with that responsibility already exists
+- whether the name clearly describes its role
+- whether the module depends only on allowed layers
+- whether it needs a colocated test
+- whether it should be exported through `index.ts` or remain local
 
-## 10. Mantenimiento
+## 10. Maintenance
 
-- Este documento debe actualizarse cuando cambie la estructura base del repo.
-- Si una nueva convención se vuelve recurrente, se agrega aqui antes de replicarla en varios lugares.
-- Si una regla estructural necesita enforcement automatico, el siguiente paso es moverla a ESLint.
+- Update this document whenever the base repository structure changes.
+- If a new convention becomes recurring, add it here before copying it elsewhere.
+- If a structural rule needs automatic enforcement, the next step is to encode it in ESLint or another repository-level guard.
+- Keep this document in English.

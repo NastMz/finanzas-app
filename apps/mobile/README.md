@@ -1,10 +1,9 @@
-# App Mobile
+# Mobile App
 
-Bootstrap inicial de la app mobile (Capacitor) con las mismas
-capacidades base que web/desktop para validar la logica compartida:
+Initial mobile app bootstrap (Capacitor) with the same base capabilities as web/desktop in order to validate shared logic:
 
-- `createMobileBootstrap` con CRUD de cuentas/categorias/transacciones.
-- `main.ts` expone `mobileApp`, `mobileCommands`, `mobileQueries` y `mobileUi` con composicion explicita sobre `@finanzas/ui`.
-- `syncNow` sobre backend in-memory para pruebas locales.
-- Estrategia de IDs por proposito con ULID por defecto.
-- Inyeccion opcional de `IdGenerator` y `SyncApiClient` para pruebas.
+- `createMobileBootstrap` with CRUD for accounts, categories, and transactions.
+- `main.ts` exposes `mobileApp`, `mobileCommands`, `mobileQueries`, and `mobileUi` with explicit composition on top of `@finanzas/ui`.
+- `syncNow` against an in-memory backend for local tests.
+- Purpose-specific ID strategy with ULID by default.
+- Optional injection of `IdGenerator` and `SyncApiClient` for tests.

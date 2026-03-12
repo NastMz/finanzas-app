@@ -1,238 +1,238 @@
-# Roadmap de Implementacion
+# Implementation Roadmap
 
-Documento vivo para llevar control de lo implementado y lo pendiente en el proyecto.
+Living document used to track what is implemented and what remains pending in the project.
 
-## Convencion de estado
+## Status Convention
 
-- `[x]` Implementado
-- `[~]` En progreso o parcial
-- `[ ]` Pendiente
+- `[x]` Implemented
+- `[~]` In progress or partial
+- `[ ]` Pending
 
-## Fase 1. Fundaciones del monorepo
+## Phase 1. Monorepo Foundations
 
-### Objetivo
+### Goal
 
-Dejar lista la base tecnica del proyecto para crecer sin mezclar responsabilidades entre apps, paquetes y documentacion.
+Establish the technical base of the project so it can grow without mixing responsibilities between apps, packages, and documentation.
 
-### Estado general
+### Overall status
 
-`[x]` Completada
+`[x]` Completed
 
-### Implementado
+### Implemented
 
-- `[x]` Monorepo con workspaces para `apps/*`, `packages/*` y `packages/platform/*`
-- `[x]` Separacion inicial entre `domain`, `application`, `data`, `sync`, `ui` y `platform-shared`
-- `[x]` ADRs base de arquitectura, sync local-first, ports/adapters, minor units y tombstones
-- `[x]` Reorganizacion de estructura para reducir carpetas planas en `apps/web`, `apps/mobile`, `apps/desktop` y `packages/ui`
-- `[x]` Comandos base de desarrollo, pruebas y typecheck documentados
-- `[x]` Hooks de git para validacion antes de commit y push
-- `[x]` Convencion de nombres y ubicacion de modulos documentada
-- `[x]` Reglas de importacion entre capas documentadas
-- `[x]` Guia corta de estructura por carpeta para onboarding
+- `[x]` Monorepo with workspaces for `apps/*`, `packages/*`, and `packages/platform/*`
+- `[x]` Initial separation between `domain`, `application`, `data`, `sync`, `ui`, and `platform-shared`
+- `[x]` Base ADRs for architecture, local-first sync, ports/adapters, minor units, and tombstones
+- `[x]` Structure reorganization to reduce flat folders in `apps/web`, `apps/mobile`, `apps/desktop`, and `packages/ui`
+- `[x]` Base development, test, and typecheck commands documented
+- `[x]` Git hooks for pre-commit and pre-push validation
+- `[x]` Naming and module-location conventions documented
+- `[x]` Import rules between layers documented
+- `[x]` Short folder-structure onboarding guide documented
 
-## Fase 2. Core financiero local-first
+## Phase 2. Local-First Finance Core
 
-### Objetivo
+### Goal
 
-Cubrir el dominio base y los casos de uso operativos del manejo diario del dinero.
+Cover the core domain and the operational use cases for daily money management.
 
-### Estado general
+### Overall status
 
-`[x]` Completada
+`[x]` Completed
 
-### Implementado
+### Implemented
 
-- `[x]` Entidades base de dominio para cuentas, categorias, transacciones y dinero
-- `[x]` Casos de uso CRUD para cuentas
-- `[x]` Presupuestos por categoria y periodo
-- `[x]` Casos de uso CRUD para categorias
-- `[x]` Reglas recurrentes y plantillas de movimientos
-- `[x]` Casos de uso CRUD para transacciones
-- `[x]` Casos de uso de edicion masiva o acciones rapidas sobre movimientos
-- `[x]` Importacion y exportacion de datos
-- `[x]` Resumen de cuenta por periodo con totales, top categorias y recientes
-- `[x]` Validaciones adicionales para escenarios multi-moneda
-- `[x]` Soft delete con tombstones
-- `[x]` IDs tipados por proposito y generadores para runtime y pruebas
-- `[x]` Adaptadores in-memory para desarrollo y testing
+- `[x]` Core domain entities for accounts, categories, transactions, and money
+- `[x]` Account CRUD use cases
+- `[x]` Category/period budgets
+- `[x]` Category CRUD use cases
+- `[x]` Recurring rules and transaction templates
+- `[x]` Transaction CRUD use cases
+- `[x]` Bulk-edit or quick-action use cases for transactions
+- `[x]` Data import and export
+- `[x]` Account summary by period with totals, top categories, and recent items
+- `[x]` Additional validation for multi-currency scenarios
+- `[x]` Soft delete with tombstones
+- `[x]` Purpose-specific typed IDs and generators for runtime and tests
+- `[x]` In-memory adapters for development and testing
 
-## Fase 3. Sync y persistencia real
+## Phase 3. Sync and Real Persistence
 
-### Objetivo
+### Goal
 
-Pasar de un flujo validado en memoria a una base robusta de persistencia local y sincronizacion utilizable en escenarios reales.
+Move from a flow validated in memory to a robust local persistence and synchronization base that is useful in real scenarios.
 
-### Estado general
+### Overall status
 
-`[~]` Nucleo inicial implementado
+`[~]` Initial core implemented
 
-### Implementado
+### Implemented
 
-- `[x]` Outbox local con estados `pending`, `sent`, `acked` y `failed`
-- `[x]` Caso de uso `SyncNow`
-- `[x]` `GetSyncStatus` para UI
-- `[x]` Push/pull incremental con cursor
-- `[x]` Aplicacion de cambios remotos para cuentas, categorias, presupuestos, plantillas, reglas recurrentes y transacciones
-- `[x]` Cliente de sync in-memory para pruebas
-- `[x]` Persistencia web real sobre IndexedDB
-- `[x]` Persistencia mobile y desktop real sobre SQLite
-- `[x]` Mecanismo de migraciones versionadas para IndexedDB y SQLite desde un manifiesto de esquema compartido
+- `[x]` Local outbox with `pending`, `sent`, `acked`, and `failed` states
+- `[x]` `SyncNow` use case
+- `[x]` `GetSyncStatus` for UI
+- `[x]` Incremental push/pull with cursor
+- `[x]` Remote change application for accounts, categories, budgets, templates, recurring rules, and transactions
+- `[x]` In-memory sync client for tests
+- `[x]` Real web persistence on IndexedDB
+- `[x]` Real mobile and desktop persistence on SQLite
+- `[x]` Versioned migration mechanism for IndexedDB and SQLite from a shared schema manifest
 
-### Pendiente
+### Pending
 
-- `[ ]` Backend inicial de sync desplegable junto al host web en Vercel
-- `[ ]` Politica de reintentos y backoff mas completa para sync
-- `[ ]` Manejo explicito de conflictos con estrategia por entidad
-- `[ ]` UI de resolucion de conflictos
-- `[ ]` Sincronizacion automatica al recuperar conectividad
-- `[ ]` Trazabilidad por operacion de sync y depuracion de errores
+- `[ ]` Initial deployable sync backend shipped alongside the web host on Vercel
+- `[ ]` More complete retry and backoff policy for sync
+- `[ ]` Explicit conflict handling strategy per entity
+- `[ ]` Conflict-resolution UI
+- `[ ]` Automatic synchronization when connectivity returns
+- `[ ]` Per-operation tracing and debugging for sync failures
 
-## Fase 4. Capa UI compartida
+## Phase 4. Shared UI Layer
 
-### Objetivo
+### Goal
 
-Consolidar una capa UI headless reusable entre hosts y una base de design system coherente.
+Consolidate a reusable headless UI layer across hosts and a coherent design-system base.
 
-### Estado general
+### Overall status
 
-`[~]` Base implementada
+`[~]` Base implemented
 
-### Implementado
+### Implemented
 
-- `[x]` `createFinanzasUiService` en `@finanzas/ui`
-- `[x]` View models para `Inicio`, `Movimientos`, `Registrar` y `Cuenta`
-- `[x]` Wrappers por host para consumir la UI headless
-- `[x]` Design tokens compartidos
-- `[x]` Sistema visual web inicial y refactor de layout principal
-- `[x]` Pantallas web v1 en React para dashboard, movimientos, registro y cuenta
+- `[x]` `createFinanzasUiService` in `@finanzas/ui`
+- `[x]` View models for `Home`, `Movements`, `Register`, and `Account`
+- `[x]` Host wrappers consuming the headless UI
+- `[x]` Shared design tokens
+- `[x]` Initial web visual system and main layout refactor
+- `[x]` Web v1 screens in React for dashboard, movements, register, and account
 
-### Pendiente
+### Pending
 
-- `[ ]` Consolidar componentes compartidos reutilizables entre vistas
-- `[ ]` Documentar el design system y sus decisiones base
-- `[ ]` Definir estados vacios, loading y error de forma consistente
-- `[ ]` Incorporar accesibilidad como checklist explicito por componente
-- `[ ]` Agregar historias o un entorno de preview aislado para componentes
+- `[ ]` Consolidate reusable shared components across views
+- `[ ]` Document the design system and its core decisions
+- `[ ]` Define empty, loading, and error states consistently
+- `[ ]` Add accessibility as an explicit checklist per component
+- `[ ]` Add stories or an isolated preview environment for components
 
-## Fase 5. Experiencia de producto web
+## Phase 5. Web Product Experience
 
-### Objetivo
+### Goal
 
-Llevar la experiencia web de preview a una aplicacion operable de punta a punta.
+Take the web experience from preview mode to an operable end-to-end application.
 
-### Estado general
+### Overall status
 
-`[~]` En progreso
+`[~]` In progress
 
-### Implementado
+### Implemented
 
-- `[x]` Shell de navegacion principal del preview
-- `[x]` Jerarquia visual mas clara para uso diario del dinero
-- `[x]` Vista responsive desktop y mobile del preview web
-- `[x]` Render de pantallas HTML desde la capa UI
+- `[x]` Main navigation shell for the preview
+- `[x]` Clearer visual hierarchy for daily money management
+- `[x]` Responsive desktop and mobile preview views
+- `[x]` HTML screen rendering from the UI layer
 
-### Pendiente
+### Pending
 
-- `[ ]` Migrar `apps/web` de Vite a Next.js manteniendo la aplicacion financiera como SPA client-side
-- `[ ]` Exponer endpoints iniciales de backend desde el host web para despliegue monolitico en Vercel
-- `[ ]` Mantener el host web como capa de entrega/transporte sin mover dominio ni casos de uso fuera de `packages/*`
-- `[ ]` Formularios reales de captura y edicion de movimientos
-- `[ ]` Filtros reales en movimientos
-- `[ ]` Busqueda, orden y segmentacion por cuenta/categoria/fecha
-- `[ ]` Acciones de sync desde la UI
-- `[ ]` Feedback de loading, guardado y error para acciones del usuario
-- `[ ]` Navegacion de aplicacion mas alla del preview de desarrollo
-- `[ ]` Soporte de PWA
+- `[ ]` Migrate `apps/web` from Vite to Next.js while keeping the finance app as a client-side SPA
+- `[ ]` Expose initial backend endpoints from the web host for monolithic deployment on Vercel
+- `[ ]` Keep the web host as a transport/delivery layer without moving domain logic or use cases out of `packages/*`
+- `[ ]` Real transaction capture and edit forms
+- `[ ]` Real filters in `Movements`
+- `[ ]` Search, sorting, and segmentation by account/category/date
+- `[ ]` Sync actions from the UI
+- `[ ]` Loading, saving, and error feedback for user actions
+- `[ ]` Real application navigation beyond the development preview
+- `[ ]` PWA support
 
-## Fase 6. Hosts mobile y desktop
+## Phase 6. Mobile and Desktop Hosts
 
-### Objetivo
+### Goal
 
-Extender el core compartido a experiencias reales por plataforma sin duplicar logica.
+Extend the shared core to real per-platform experiences without duplicating logic.
 
-### Estado general
+### Overall status
 
-`[~]` Bootstrap base implementado
+`[~]` Base bootstrap implemented
 
-### Implementado
+### Implemented
 
-- `[x]` Bootstrap/context compartido sobre `platform-shared`
-- `[x]` Wrappers base para web, mobile y desktop
-- `[x]` Pruebas smoke de bootstrap por host
+- `[x]` Shared bootstrap/context on top of `platform-shared`
+- `[x]` Base wrappers for web, mobile, and desktop
+- `[x]` Host bootstrap smoke tests
 
-### Pendiente
+### Pending
 
-- `[ ]` UI real para mobile
-- `[ ]` UI real para desktop
-- `[ ]` Integracion de almacenamiento seguro por plataforma
-- `[ ]` Integracion de capacidades nativas relevantes
-- `[ ]` Estrategia de empaquetado y distribucion por host
+- `[ ]` Real mobile UI
+- `[ ]` Real desktop UI
+- `[ ]` Secure storage integration per platform
+- `[ ]` Integration of relevant native capabilities
+- `[ ]` Packaging and distribution strategy per host
 
-## Fase 7. Seguridad y cuenta de usuario
+## Phase 7. Security and User Account
 
-### Objetivo
+### Goal
 
-Cerrar los aspectos necesarios para operar con datos financieros de forma responsable.
+Close the remaining pieces needed to handle financial data responsibly.
 
-### Estado general
+### Overall status
 
-`[ ]` Pendiente
+`[ ]` Pending
 
-### Pendiente
+### Pending
 
-- `[ ]` Modelo de autenticacion
-- `[ ]` Manejo de tokens o sesiones seguras segun host
-- `[ ]` Lock de aplicacion con PIN o biometria
-- `[ ]` Politicas de secretos por plataforma
-- `[ ]` Endurecimiento de sync y validaciones de seguridad
+- `[ ]` Authentication model
+- `[ ]` Secure token/session handling per host
+- `[ ]` App lock with PIN or biometrics
+- `[ ]` Secret policies per platform
+- `[ ]` Hardening of sync and security validations
 
-## Fase 8. Observabilidad, calidad y operacion
+## Phase 8. Observability, Quality, and Operations
 
-### Objetivo
+### Goal
 
-Tener capacidad de diagnostico, monitoreo y control de calidad continua.
+Provide diagnostic, monitoring, and continuous quality control capabilities.
 
-### Estado general
+### Overall status
 
-`[~]` Base parcial
+`[~]` Partial base
 
-### Implementado
+### Implemented
 
-- `[x]` Suite de pruebas unitarias con Vitest
-- `[x]` Typecheck como validacion obligatoria
+- `[x]` Unit test suite with Vitest
+- `[x]` Typecheck as a required validation
 
-### Pendiente
+### Pending
 
-- `[ ]` Lint estable como parte del flujo de trabajo diario
-- `[ ]` Definir scripts por workspace (`build`, `dev`, `lint`, `test`, `typecheck`) como prerequisito de orquestacion
-- `[ ]` Adoptar `Turborepo` para ejecucion incremental y cache local/remota del monorepo
-- `[ ]` Telemetria estructurada transversal
-- `[ ]` Cobertura de pruebas para escenarios de sync complejos
-- `[ ]` Pruebas end-to-end de flujos criticos
-- `[ ]` Medicion de rendimiento en apertura y listas grandes
-- `[ ]` Checklist de regresion antes de releases
+- `[ ]` Stable lint as part of the daily workflow
+- `[ ]` Define per-workspace scripts (`build`, `dev`, `lint`, `test`, `typecheck`) as an orchestration prerequisite
+- `[ ]` Adopt `Turborepo` for incremental execution and local/remote cache in the monorepo
+- `[ ]` Cross-cutting structured telemetry
+- `[ ]` Test coverage for complex sync scenarios
+- `[ ]` End-to-end tests for critical flows
+- `[ ]` Performance measurement for startup and large lists
+- `[ ]` Regression checklist before releases
 
-## Fase 9. Capacidades de producto futuras
+## Phase 9. Future Product Capabilities
 
-### Objetivo
+### Goal
 
-Registrar lo que no es prioritario ahora pero conviene mantener visible.
+Track what is not a priority now but should remain visible.
 
-### Estado general
+### Overall status
 
-`[ ]` Pendiente
+`[ ]` Pending
 
-### Pendiente
+### Pending
 
-- `[ ]` Presupuestos visuales y alertas
-- `[ ]` Reportes y tendencias
-- `[ ]` Automatizaciones y reglas
-- `[ ]` Integraciones bancarias
-- `[ ]` Multiusuario o colaboracion
-- `[ ]` Cifrado E2EE como extension futura
+- `[ ]` Visual budgets and alerts
+- `[ ]` Reports and trends
+- `[ ]` Automations and rules
+- `[ ]` Banking integrations
+- `[ ]` Multi-user / collaboration
+- `[ ]` E2EE as a future extension
 
-## Reglas de mantenimiento del roadmap
+## Roadmap Maintenance Rules
 
-- Cada cambio relevante de arquitectura, dominio o UI debe actualizar este documento.
-- Cuando una fase avance, mover items de pendiente a implementado en el mismo PR.
-- Si aparece una nueva linea de trabajo, agregarla como fase o subfase en lugar de dejarla solo en conversaciones.
+- Every meaningful architecture, domain, or UI change should update this document.
+- When a phase advances, move items from pending to implemented in the same PR.
+- If a new workstream appears, add it as a phase or sub-phase instead of leaving it only in conversations.

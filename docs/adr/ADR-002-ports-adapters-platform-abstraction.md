@@ -1,43 +1,43 @@
-# ADR-002: Puertos y Adaptadores para abstraccion de plataforma
+# ADR-002: Ports and Adapters for Platform Abstraction
 
-Estado: Aceptado  
-Fecha: 2026-03-02
+Status: Accepted  
+Date: 2026-03-02
 
-## Contexto
+## Context
 
-La aplicacion debe ejecutarse en Web, Mobile y Desktop, con capacidad de cambiar host (Capacitor, Electron, Tauri) sin reescribir la logica de negocio.
+The application must run on Web, Mobile, and Desktop, while keeping the option to change the host (Capacitor, Electron, Tauri) without rewriting business logic.
 
-Acoplar UI o casos de uso a APIs concretas de host produce lock-in y dificulta pruebas, migraciones y mantenimiento.
+Coupling the UI or use cases to concrete host APIs creates lock-in and makes testing, migration, and maintenance harder.
 
 ## Decision
 
-Se define una arquitectura por puertos y adaptadores:
+Define a ports-and-adapters architecture:
 
-- `packages/domain` y `packages/application` no conocen detalles de plataforma.
-- Interfaces (ports) modelan capacidades requeridas: secretos, red, notificaciones, reloj, almacenamiento.
-- Implementaciones concretas (adapters) se ubican por plataforma: web/mobile/desktop.
-- `apps/*` solo compone adaptadores y configura bootstrap.
+- `packages/domain` and `packages/application` do not know platform details.
+- Interfaces (ports) model required capabilities: secrets, network, notifications, clock, storage.
+- Concrete implementations (adapters) are organized per platform: web/mobile/desktop.
+- `apps/*` only composes adapters and configures bootstrap.
 
-## Consecuencias
+## Consequences
 
-Positivas:
+Positive:
 
-- Menor lock-in de host.
-- Testabilidad superior (mocks/fakes por port).
-- Evolucion incremental de capacidades nativas.
+- Lower host lock-in.
+- Better testability (mocks/fakes per port).
+- Incremental evolution of native capabilities.
 
 Trade-offs:
 
-- Mayor esfuerzo inicial de diseno de contratos.
-- Necesidad de gobernar consistencia entre adaptadores.
+- More upfront work to design contracts.
+- Need to keep adapters consistent.
 
-## Alternativas consideradas
+## Alternatives Considered
 
-1. Acceso directo a plugins desde UI: rechazada por acoplamiento alto.
-2. Service locator global sin contratos claros: rechazada por ambiguedad y deuda tecnica.
+1. Direct plugin access from the UI: rejected due to tight coupling.
+2. Global service locator without clear contracts: rejected due to ambiguity and technical debt.
 
-## Criterios de aceptacion
+## Acceptance Criteria
 
-- Ningun caso de uso importa SDKs de host.
-- Cada capacidad de plataforma tiene port definido.
-- Cambio de host no afecta dominio ni reglas de negocio.
+- No use case imports host SDKs.
+- Every platform capability has a defined port.
+- Host changes do not affect domain logic or business rules.

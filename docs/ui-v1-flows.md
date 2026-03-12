@@ -1,162 +1,168 @@
-# UI v1 - Flujos y experiencia (mobile-first)
+# UI v1 - Flows and Experience (Mobile-First)
 
-Estado: Propuesto  
-Fecha: 2026-03-03
+Status: Proposed  
+Date: 2026-03-03
 
-## 1. Objetivo
+## 1. Goal
 
-Definir la experiencia v1 evitando una app centrada en pantallas CRUD.
-La UI se diseña por **intenciones del usuario** y cada pantalla debe ayudar a tomar una decision.
+Define the v1 experience without turning the app into a collection of CRUD screens.
+The UI is designed around **user intentions**, and each screen should help the user make a decision.
 
-## 2. Principios de diseño
+## 2. Design Principles
 
-- Registrar un gasto en menos de 10 segundos.
-- Mostrar contexto (saldo, tendencia, categorias) antes de pedir edicion manual.
-- Minimizar formularios largos; usar defaults inteligentes y edicion progresiva.
-- Priorizar lectura y accion rapida en mobile.
-- Cada flujo debe contemplar estados: `loading`, `empty`, `error`, `offline`.
+- Record an expense in under 10 seconds.
+- Show context (balance, trend, categories) before asking for manual editing.
+- Minimize long forms; rely on smart defaults and progressive editing.
+- Prioritize quick reading and action on mobile.
+- Every flow should account for `loading`, `empty`, `error`, and `offline` states.
 
-## 3. Mapa de navegacion v1
+## 3. v1 Navigation Map
 
-Barra principal (4 tabs):
+Main tab bar (4 tabs):
 
-1. **Inicio**
-2. **Movimientos**
-3. **Registrar** (accion principal)
-4. **Cuenta** (ajustes, sync, datos)
+1. **Home**
+2. **Movements**
+3. **Register** (primary action)
+4. **Account** (settings, sync, data)
 
-## 4. Flujos prioritarios (jobs-to-be-done)
+## 4. Priority Flows (Jobs to Be Done)
 
-### F1. Registrar gasto rapido
+### F1. Quick expense entry
 
-**Intencion:** “Acabo de gastar y quiero registrarlo ya”.
+**Intent:** "I just spent money and I want to record it now."
 
-Pasos:
-1. Tap en `Registrar`.
-2. Ingreso monto (teclado numerico), categoria sugerida, nota opcional.
-3. Confirmar.
-4. Ver feedback inmediato + opcion “Deshacer”.
+Steps:
+1. Tap `Register`.
+2. Enter the amount (numeric keyboard), suggested category, optional note.
+3. Confirm.
+4. See immediate feedback plus an "Undo" option.
 
-No-negociables UX:
-- Cuenta por defecto preseleccionada.
-- Fecha por defecto = ahora.
-- Ultimas categorias usadas primero.
+Non-negotiable UX:
 
-### F2. Entender en que gaste
+- Default account is preselected.
+- Default date = now.
+- Most recently used categories appear first.
 
-**Intencion:** “Quiero saber a donde se fue mi dinero”.
+### F2. Understand where money went
 
-Pasos:
-1. Abrir `Inicio`.
-2. Ver resumen del mes (gasto total, ingresos, balance).
-3. Ver top categorias y acceso a lista filtrada.
+**Intent:** "I want to know where my money went."
 
-No-negociables UX:
-- Indicador visual de categoria dominante.
-- Filtro rapido por rango (semana/mes).
+Steps:
+1. Open `Home`.
+2. Review the monthly summary (total expenses, income, balance).
+3. Review top categories and drill into a filtered list.
 
-### F3. Revisar y corregir movimientos
+Non-negotiable UX:
 
-**Intencion:** “Necesito corregir un movimiento mal registrado”.
+- Visual indicator for the dominant category.
+- Quick range filter (week/month).
 
-Pasos:
-1. Abrir `Movimientos`.
-2. Buscar/filtrar (categoria, fecha, cuenta).
-3. Editar o eliminar.
-4. Reflejar cambios en resumen.
+### F3. Review and correct transactions
 
-No-negociables UX:
-- Lista virtualizable y orden por fecha descendente.
-- Confirmacion corta para eliminar.
+**Intent:** "I need to fix a transaction that was entered incorrectly."
 
-### F4. Confiar en el estado de sincronizacion
+Steps:
+1. Open `Movements`.
+2. Search/filter by category, date, or account.
+3. Edit or delete.
+4. Reflect the changes in the summary.
 
-**Intencion:** “Quiero saber si mis datos estan guardados y sincronizados”.
+Non-negotiable UX:
 
-Pasos:
-1. Abrir `Cuenta`.
-2. Ver estado de sync (ultimo intento, pendientes, errores).
-3. Accion manual “Sincronizar ahora” si aplica.
+- Virtualizable list ordered by descending date.
+- Short delete confirmation.
 
-No-negociables UX:
-- Estado claro: `Sincronizado`, `Pendiente`, `Error`.
-- Mensajes accionables en error (sin tecnicismos).
+### F4. Trust the synchronization state
 
-## 5. Pantallas v1 y contenido minimo
+**Intent:** "I want to know whether my data is saved and synchronized."
 
-### Inicio
+Steps:
+1. Open `Account`.
+2. Review sync status (last attempt, pending items, errors).
+3. Trigger manual sync if needed.
 
-- Balance actual.
-- Gasto del mes.
-- Top 3 categorias.
-- Ultimos 5 movimientos.
-- CTA principal: `Registrar movimiento`.
+Non-negotiable UX:
 
-### Movimientos
+- Clear states: `Synced`, `Pending`, `Error`.
+- Actionable error messages without technical jargon.
 
-- Lista de movimientos.
-- Filtros: fecha, cuenta, categoria.
-- Acciones por item: editar, eliminar.
+## 5. v1 Screens and Minimum Content
 
-### Registrar
+### Home
 
-- Monto (obligatorio).
-- Tipo (gasto/ingreso).
-- Categoria.
-- Cuenta.
-- Fecha.
-- Nota (opcional).
+- Current balance.
+- Current month expenses.
+- Top 3 categories.
+- Last 5 transactions.
+- Primary CTA: `Add transaction`.
 
-### Cuenta
+### Movements
 
-- Estado de sincronizacion.
-- Gestion de cuentas y categorias.
-- Preferencias basicas (moneda principal, exportar en futuras fases).
+- Transaction list.
+- Filters: date, account, category.
+- Per-item actions: edit, delete.
 
-## 6. Contratos de UI (preliminares)
+### Register
 
-Estos contratos son de capa UI; se mapean a `commands`/`queries` existentes.
+- Amount (required).
+- Type (expense/income).
+- Category.
+- Account.
+- Date.
+- Note (optional).
 
-- `queryHomeSummary(monthRange)` -> balance, totales, topCategorias, recientes.
-- `queryTransactionList(filters)` -> items paginados/listados.
-- `commandQuickAddTransaction(input)` -> crea movimiento rapido.
-- `commandEditTransaction(input)` -> actualiza.
-- `commandDeleteTransaction(id)` -> tombstone.
-- `querySyncStatus()` -> estado visual de sincronizacion.
-- `commandSyncNow()` -> disparo manual.
+### Account
 
-Nota: `queryHomeSummary` ya puede mapearse con `GetAccountSummary` (por cuenta/rango).
-`querySyncStatus` ya puede mapearse con `GetSyncStatus`.
-Existe implementacion headless compartida (`createFinanzasUiService` en `@finanzas/ui`) con wrappers por host; `web` es el primer consumidor visual objetivo.
-La primera pantalla visual de `Inicio` ya existe en `apps/web` como componentes React con CSS Modules (`HomeScreen` + `loadHomeScreenHtml`).
+- Sync status.
+- Account and category management.
+- Basic preferences (main currency, export in later phases).
 
-## 7. Anti-patrones a evitar
+## 6. UI Contracts (Preliminary)
 
-- Pantalla “Cuentas” o “Categorias” como formulario vacio sin contexto.
-- Forzar al usuario a completar campos no criticos para registrar rapido.
-- Duplicar los mismos filtros en todas las pantallas sin objetivo claro.
-- Mostrar estados tecnicos de sync sin traduccion funcional para el usuario.
+These contracts belong to the UI layer and map to existing `commands` / `queries`.
 
-## 8. Plan de implementacion por slices
+- `queryHomeSummary(monthRange)` -> balance, totals, top categories, recent items
+- `queryTransactionList(filters)` -> paginated/list items
+- `commandQuickAddTransaction(input)` -> creates a quick transaction
+- `commandEditTransaction(input)` -> updates a transaction
+- `commandDeleteTransaction(id)` -> tombstone delete
+- `querySyncStatus()` -> visual synchronization status
+- `commandSyncNow()` -> manual sync trigger
 
-### Slice 1 (MVP usable)
+Notes:
 
-- `Registrar` rapido + listado de `Movimientos`.
-- Edicion/eliminacion basica.
-- Resumen simple en `Inicio` (totales + recientes).
+- `queryHomeSummary` can already map to `GetAccountSummary` (by account/range).
+- `querySyncStatus` can already map to `GetSyncStatus`.
+- There is a shared headless implementation (`createFinanzasUiService` in `@finanzas/ui`) with per-host wrappers; `web` is the first visual consumer.
+- `apps/web` already materializes the 4 v1 tabs (`Home`, `Movements`, `Register`, `Account`) with React components, CSS Modules, and `load*ScreenHtml` helpers inside each feature.
+
+## 7. Anti-Patterns to Avoid
+
+- An `Accounts` or `Categories` screen that is only an empty form with no context.
+- Forcing the user to complete non-critical fields for quick entry.
+- Duplicating the same filters on every screen without a clear purpose.
+- Showing technical sync states without functional translation for the user.
+
+## 8. Slice-Based Implementation Plan
+
+### Slice 1 (usable MVP)
+
+- Quick `Register` flow + `Movements` list.
+- Basic edit/delete.
+- Simple `Home` summary (totals + recent items).
 
 ### Slice 2
 
-- Top categorias, filtros avanzados, busqueda.
-- Estado de sync mas detallado en `Cuenta`.
+- Top categories, advanced filters, search.
+- More detailed sync status in `Account`.
 
 ### Slice 3
 
-- Refinamientos UX: sugerencias, atajos, mejores empty states.
+- UX refinements: suggestions, shortcuts, better empty states.
 
-## 9. Criterios de aceptacion v1
+## 9. v1 Acceptance Criteria
 
-- Un usuario puede registrar, corregir y revisar gastos sin salir de los 4 tabs.
-- No hay bloqueos por conectividad para CRUD local.
-- Cada pantalla tiene estado `empty`, `error` y `loading` definido.
-- Los flujos F1-F4 pueden ejecutarse end-to-end en mobile.
+- A user can record, correct, and review expenses without leaving the 4 tabs.
+- No connectivity is required for local CRUD.
+- Every screen has defined `empty`, `error`, and `loading` states.
+- Flows F1-F4 can run end-to-end on mobile.

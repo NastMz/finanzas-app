@@ -1,0 +1,4 @@
+interface:
+  display_name: "Finanzas Feature Slice"
+  short_description: "Implement a feature across the repo layers"
+  default_prompt: "Use $finanzas-feature-slice to add or modify a product slice in this monorepo."

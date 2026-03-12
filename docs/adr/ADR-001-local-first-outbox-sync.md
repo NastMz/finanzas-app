@@ -1,47 +1,47 @@
-# ADR-001: Local-first con Outbox Sync
+# ADR-001: Local-First with Outbox Sync
 
-Estado: Aceptado  
-Fecha: 2026-03-02
+Status: Accepted  
+Date: 2026-03-02
 
-## Contexto
+## Context
 
-La app debe operar con experiencia completa sin red, soportar multiples dispositivos por usuario y mantener consistencia razonable sin bloquear la edicion local.
+The app must provide a full experience without connectivity, support multiple devices per user, and maintain reasonable consistency without blocking local editing.
 
-Modelos de sincronizacion basados en consulta directa al backend en cada accion no cumplen el requisito offline-first y degradan UX en escenarios de red inestable.
+Synchronization models based on direct backend queries on every action do not satisfy the offline-first requirement and degrade UX in unstable network scenarios.
 
 ## Decision
 
-Se adopta un modelo local-first con outbox y sincronizacion push/pull:
+Adopt a local-first model with an outbox and push/pull synchronization:
 
-- La base local es la fuente de verdad para la UI.
-- Cada accion persiste localmente y agrega una operacion a `outbox_ops`.
-- El cliente ejecuta `push` idempotente al servidor cuando hay conectividad.
-- El servidor aplica cambios y publica un change log por usuario.
-- El cliente ejecuta `pull` incremental por cursor para converger.
+- The local database is the source of truth for the UI.
+- Every action persists locally and appends an operation to `outbox_ops`.
+- The client performs idempotent `push` requests to the server when connectivity is available.
+- The server applies changes and publishes a per-user change log.
+- The client performs incremental `pull` by cursor to converge.
 
-## Consecuencias
+## Consequences
 
-Positivas:
+Positive:
 
-- UX consistente sin dependencia de conectividad.
-- Mejor tolerancia a latencia alta e intermitencia.
-- Escala bien para multi-dispositivo con convergencia eventual.
+- Consistent UX without connectivity dependency.
+- Better tolerance for high latency and intermittent connections.
+- Scales well for multi-device scenarios with eventual convergence.
 
 Trade-offs:
 
-- Mayor complejidad de sync engine y resolucion de conflictos.
-- Necesidad de trazabilidad fina de estados (`pending/sent/acked/failed`).
-- Requiere estrategia de reintentos y manejo de operaciones fallidas.
+- Higher sync-engine complexity and conflict-resolution complexity.
+- Need for fine-grained state tracking (`pending/sent/acked/failed`).
+- Requires retry strategy and failed-operation handling.
 
-## Alternativas consideradas
+## Alternatives Considered
 
-1. Online-first con cache local: rechazada por mala experiencia offline.
-2. Replicacion completa tipo CRDT: pospuesta por complejidad para MVP.
-3. Polling de snapshots completos: rechazada por costo y baja granularidad.
+1. Online-first with local cache: rejected due to poor offline experience.
+2. Full CRDT-style replication: postponed due to MVP complexity.
+3. Polling full snapshots: rejected due to cost and low granularity.
 
-## Criterios de aceptacion
+## Acceptance Criteria
 
-- CRUD funcional sin red.
-- Reintento automatico al recuperar conectividad.
-- Idempotencia por `opId`.
-- Convergencia eventual entre al menos dos dispositivos por usuario.
+- CRUD works without network.
+- Automatic retry when connectivity returns.
+- Idempotency by `opId`.
+- Eventual convergence between at least two devices per user.
