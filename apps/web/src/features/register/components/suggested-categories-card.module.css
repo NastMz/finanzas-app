@@ -34,6 +34,11 @@
   transform: translateY(-1px);
 }
 
+.chipSelected {
+  outline: 2px solid color-mix(in srgb, var(--fz-color-brand-500) 28%, white);
+  outline-offset: 2px;
+}
+
 .expense,
 .income {
   border: 1px solid color-mix(in srgb, var(--fz-color-border-subtle) 90%, white);

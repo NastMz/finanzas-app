@@ -10,6 +10,8 @@ import styles from "./suggested-categories-card.module.css";
 export interface SuggestedCategoriesCardProps {
   categories: FinanzasRegisterTabViewModel["categories"];
   suggestedCategoryIds: string[];
+  selectedCategoryId?: string | null;
+  onSelectCategory?: (categoryId: string) => void;
 }
 
 const resolveSuggestedCategories = (
@@ -24,6 +26,8 @@ const resolveSuggestedCategories = (
 export const SuggestedCategoriesCard = ({
   categories,
   suggestedCategoryIds,
+  selectedCategoryId = null,
+  onSelectCategory,
 }: SuggestedCategoriesCardProps): JSX.Element => {
   const suggestedCategories = resolveSuggestedCategories(
     categories,
@@ -48,7 +52,11 @@ export const SuggestedCategoriesCard = ({
                   className={classNames(
                     styles.chip,
                     category.type === "expense" ? styles.expense : styles.income,
+                    selectedCategoryId === category.id ? styles.chipSelected : undefined,
                   )}
+                  onClick={() => {
+                    onSelectCategory?.(category.id);
+                  }}
                 >
                   {category.name}
                 </button>

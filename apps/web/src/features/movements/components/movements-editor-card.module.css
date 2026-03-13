@@ -1,0 +1,114 @@
+.form {
+  display: grid;
+  gap: var(--fz-space-3);
+}
+
+.empty {
+  color: var(--fz-color-text-muted);
+  font-size: var(--fz-font-size-sm);
+}
+
+.modeSwitch {
+  display: inline-grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.35rem;
+  padding: 0.3rem;
+  border-radius: var(--fz-radius-pill);
+  background: rgba(255, 255, 255, 0.8);
+  border: 1px solid color-mix(in srgb, var(--fz-color-border-subtle) 92%, white);
+}
+
+.modeButton {
+  border: none;
+  border-radius: var(--fz-radius-pill);
+  padding: 0.45rem 0.75rem;
+  background: transparent;
+  color: var(--fz-color-text-muted);
+  font-size: var(--fz-font-size-xs);
+  font-weight: 700;
+}
+
+.modeButtonActive {
+  background: color-mix(in srgb, var(--fz-color-brand-400) 11%, white);
+  color: var(--fz-color-brand-500);
+}
+
+.field {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.label {
+  color: var(--fz-color-text-muted);
+  font-size: var(--fz-font-size-xs);
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.input {
+  border: 1px solid color-mix(in srgb, var(--fz-color-border-subtle) 88%, white);
+  border-radius: var(--fz-radius-md);
+  padding: 0.8rem 0.9rem;
+  background: rgba(255, 255, 255, 0.78);
+  color: var(--fz-color-text-primary);
+  font: inherit;
+}
+
+.actions {
+  display: flex;
+  gap: 0.7rem;
+}
+
+.primaryAction,
+.secondaryAction {
+  border-radius: var(--fz-radius-md);
+  padding: 0.75rem 0.95rem;
+  font-weight: 800;
+}
+
+.primaryAction {
+  border: none;
+  background: linear-gradient(180deg, #1f5eff 0%, var(--fz-color-brand-600) 100%);
+  color: white;
+}
+
+.secondaryAction {
+  border: 1px solid color-mix(in srgb, var(--fz-color-border-subtle) 88%, white);
+  background: rgba(255, 255, 255, 0.78);
+  color: var(--fz-color-text-primary);
+}
+
+.primaryAction:disabled,
+.secondaryAction:disabled {
+  cursor: wait;
+  opacity: 0.6;
+}
+
+.feedback {
+  border-radius: var(--fz-radius-lg);
+  padding: 0.8rem 0.95rem;
+  font-size: var(--fz-font-size-sm);
+  font-weight: 700;
+}
+
+.feedbackSuccess {
+  color: #166534;
+  background: #e9f9ef;
+}
+
+.feedbackError {
+  color: #b42318;
+  background: #fff1f2;
+}
+
+.feedbackOffline {
+  color: #9a3412;
+  background: #fff7ed;
+}
+
+@media (max-width: 640px) {
+  .actions {
+    flex-direction: column;
+  }
+}

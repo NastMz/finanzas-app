@@ -130,17 +130,18 @@ Take the web experience from preview mode to an operable end-to-end application.
 - `[x]` Clearer visual hierarchy for daily money management
 - `[x]` Responsive desktop and mobile preview views
 - `[x]` HTML screen rendering from the UI layer
+- `[x]` Real quick-add and basic edit/delete flows for `Register` and `Movements` in the web host, with local-first feedback states
 
 ### Pending
 
 - `[ ]` Migrate `apps/web` from Vite to Next.js while keeping the finance app as a client-side SPA
 - `[ ]` Expose initial backend endpoints from the web host for monolithic deployment on Vercel
 - `[ ]` Keep the web host as a transport/delivery layer without moving domain logic or use cases out of `packages/*`
-- `[ ]` Real transaction capture and edit forms
+- `[~]` Real transaction capture and edit forms
 - `[ ]` Real filters in `Movements`
 - `[ ]` Search, sorting, and segmentation by account/category/date
 - `[ ]` Sync actions from the UI
-- `[ ]` Loading, saving, and error feedback for user actions
+- `[~]` Loading, saving, and error feedback for user actions
 - `[ ]` Real application navigation beyond the development preview
 - `[ ]` PWA support
 

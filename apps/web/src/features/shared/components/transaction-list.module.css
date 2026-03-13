@@ -19,6 +19,11 @@
   box-shadow: 0 18px 28px rgba(15, 23, 42, 0.06);
 }
 
+.itemSelected {
+  border-color: color-mix(in srgb, var(--fz-color-brand-500) 34%, white);
+  box-shadow: 0 18px 28px rgba(31, 94, 255, 0.12);
+}
+
 .leading {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
@@ -116,6 +121,33 @@
   max-width: 52%;
 }
 
+.actionsRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+}
+
+.actionButton {
+  border: 1px solid color-mix(in srgb, var(--fz-color-border-subtle) 88%, white);
+  border-radius: var(--fz-radius-pill);
+  padding: 0.45rem 0.8rem;
+  background: rgba(255, 255, 255, 0.85);
+  color: var(--fz-color-text-primary);
+  font-size: var(--fz-font-size-xs);
+  font-weight: 700;
+}
+
+.actionButtonDanger {
+  border-color: color-mix(in srgb, var(--fz-color-status-danger) 24%, white);
+  color: var(--fz-color-status-danger);
+  background: color-mix(in srgb, var(--fz-color-status-danger) 8%, white);
+}
+
+.actionButton:disabled {
+  cursor: wait;
+  opacity: 0.55;
+}
+
 .empty {
   color: var(--fz-color-text-muted);
   font-size: var(--fz-font-size-sm);
@@ -134,6 +166,10 @@
   .metaRow {
     flex-direction: column;
     align-items: flex-start;
+  }
+
+  .actionsRow {
+    width: 100%;
   }
 
   .amount,

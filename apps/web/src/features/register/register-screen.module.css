@@ -3,6 +3,18 @@
   gap: var(--fz-space-4);
 }
 
+.notice {
+  border-radius: var(--fz-radius-lg);
+  padding: 0.85rem 1rem;
+  font-size: var(--fz-font-size-sm);
+  font-weight: 700;
+}
+
+.noticeOffline {
+  color: #9a3412;
+  background: #fff7ed;
+}
+
 .grid {
   display: grid;
   grid-template-columns: minmax(0, 1.18fr) minmax(18rem, 0.82fr);

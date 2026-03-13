@@ -3,6 +3,23 @@
   gap: var(--fz-space-4);
 }
 
+.notice {
+  border-radius: var(--fz-radius-lg);
+  padding: 0.85rem 1rem;
+  font-size: var(--fz-font-size-sm);
+  font-weight: 700;
+}
+
+.noticeOffline {
+  color: #9a3412;
+  background: #fff7ed;
+}
+
+.noticeInfo {
+  color: var(--fz-color-brand-600);
+  background: color-mix(in srgb, var(--fz-color-brand-400) 10%, white);
+}
+
 .grid {
   display: grid;
   grid-template-columns: minmax(18rem, 0.72fr) minmax(0, 1.28fr);
@@ -13,6 +30,11 @@
 .summaryColumn {
   position: sticky;
   top: var(--fz-space-4);
+}
+
+.summaryStack {
+  display: grid;
+  gap: var(--fz-space-4);
 }
 
 .listColumn {

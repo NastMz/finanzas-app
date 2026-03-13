@@ -9,6 +9,8 @@ import styles from "./register-categories-card.module.css";
  */
 export interface RegisterCategoriesCardProps {
   categories: FinanzasRegisterTabViewModel["categories"];
+  selectedCategoryId?: string | null;
+  onSelectCategory?: (categoryId: string) => void;
 }
 
 const splitCategories = (
@@ -23,6 +25,8 @@ const splitCategories = (
 
 export const RegisterCategoriesCard = ({
   categories,
+  selectedCategoryId = null,
+  onSelectCategory,
 }: RegisterCategoriesCardProps): JSX.Element => {
   const { expense, income } = splitCategories(categories);
 
@@ -45,7 +49,19 @@ export const RegisterCategoriesCard = ({
                 key={category.id}
                 className={classNames(styles.item, category.deleted ? styles.deleted : undefined)}
               >
-                {category.name}
+                <button
+                  type="button"
+                  className={classNames(
+                    styles.categoryButton,
+                    selectedCategoryId === category.id ? styles.categoryButtonSelected : undefined,
+                  )}
+                  disabled={category.deleted}
+                  onClick={() => {
+                    onSelectCategory?.(category.id);
+                  }}
+                >
+                  {category.name}
+                </button>
               </li>
             ))}
           </ul>
@@ -62,7 +78,19 @@ export const RegisterCategoriesCard = ({
                 key={category.id}
                 className={classNames(styles.item, category.deleted ? styles.deleted : undefined)}
               >
-                {category.name}
+                <button
+                  type="button"
+                  className={classNames(
+                    styles.categoryButton,
+                    selectedCategoryId === category.id ? styles.categoryButtonSelected : undefined,
+                  )}
+                  disabled={category.deleted}
+                  onClick={() => {
+                    onSelectCategory?.(category.id);
+                  }}
+                >
+                  {category.name}
+                </button>
               </li>
             ))}
           </ul>

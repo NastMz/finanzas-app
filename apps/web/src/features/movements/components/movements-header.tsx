@@ -13,7 +13,20 @@ export interface MovementsHeaderProps {
   sync: FinanzasMovementsTabViewModel["sync"];
   itemCount: number;
   deletedCount: number;
+  isRefreshing?: boolean;
+  onToggleIncludeDeleted?: () => void;
 }
+
+const resolveFilterLabel = (
+  includeDeleted: boolean,
+  isRefreshing: boolean,
+): string => {
+  if (isRefreshing) {
+    return "Actualizando...";
+  }
+
+  return includeDeleted ? "Ocultar eliminados" : "Mostrar eliminados";
+};
 
 export const MovementsHeader = ({
   account,
@@ -21,6 +34,8 @@ export const MovementsHeader = ({
   sync,
   itemCount,
   deletedCount,
+  isRefreshing = false,
+  onToggleIncludeDeleted,
 }: MovementsHeaderProps): JSX.Element => (
   <header className={styles.header}>
     <div className={styles.titleGroup}>
@@ -34,6 +49,16 @@ export const MovementsHeader = ({
           ? "Vista: activos + eliminados"
           : "Vista: solo movimientos activos"}
       </p>
+      <button
+        type="button"
+        className={styles.filterButton}
+        disabled={isRefreshing}
+        onClick={() => {
+          onToggleIncludeDeleted?.();
+        }}
+      >
+        {resolveFilterLabel(includeDeleted, isRefreshing)}
+      </button>
     </div>
 
     <div className={styles.sideBlock}>
