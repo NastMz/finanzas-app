@@ -1,3 +1,4 @@
+import type { FinanzasCategoryManagementState } from "./finanzas-category-management-state.js";
 import type { FinanzasSyncStatusViewModel } from "./finanzas-sync-status-view-model.js";
 
 /**
@@ -15,4 +16,5 @@ export interface FinanzasAccountTabViewModel {
     active: number;
     deleted: number;
   };
+  categoryManagement: FinanzasCategoryManagementState;
 }

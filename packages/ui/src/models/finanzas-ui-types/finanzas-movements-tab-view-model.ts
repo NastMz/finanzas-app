@@ -1,4 +1,5 @@
 import type { FinanzasAccountOption } from "./finanzas-account-option.js";
+import type { FinanzasCategoryManagementState } from "./finanzas-category-management-state.js";
 import type { FinanzasSyncStatusViewModel } from "./finanzas-sync-status-view-model.js";
 import type { FinanzasTransactionItemViewModel } from "./finanzas-transaction-item-view-model.js";
 
@@ -14,4 +15,5 @@ export interface FinanzasMovementsTabViewModel {
     expenseMinor: bigint;
   };
   sync: FinanzasSyncStatusViewModel;
+  categoryManagement: FinanzasCategoryManagementState;
 }

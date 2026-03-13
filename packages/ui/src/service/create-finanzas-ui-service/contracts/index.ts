@@ -1,4 +1,6 @@
 export * from "./create-finanzas-ui-service-options.js";
+export * from "./create-category-action-input.js";
+export * from "./create-category-action-result.js";
 export * from "./finanzas-ui-commands.js";
 export * from "./finanzas-ui-dependencies.js";
 export * from "./finanzas-ui-error.js";

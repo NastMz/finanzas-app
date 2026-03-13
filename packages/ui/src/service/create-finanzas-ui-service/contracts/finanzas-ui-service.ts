@@ -7,6 +7,8 @@ import type {
 import type { LoadHomeTabInput } from "./load-home-tab-input.js";
 import type { LoadMovementsTabInput } from "./load-movements-tab-input.js";
 import type { LoadRegisterTabInput } from "./load-register-tab-input.js";
+import type { CreateCategoryActionInput } from "./create-category-action-input.js";
+import type { CreateCategoryActionResult } from "./create-category-action-result.js";
 import type { QuickAddTransactionInput } from "./quick-add-transaction-input.js";
 import type { QuickAddTransactionResult } from "./quick-add-transaction-result.js";
 import type { SyncNowActionResult } from "./sync-now-action-result.js";
@@ -23,6 +25,9 @@ export interface FinanzasUiServiceContract {
     input?: LoadRegisterTabInput,
   ): Promise<FinanzasRegisterTabViewModel>;
   loadAccountTab(): Promise<FinanzasAccountTabViewModel>;
+  createCategory(
+    input: CreateCategoryActionInput,
+  ): Promise<CreateCategoryActionResult>;
   quickAddTransaction(
     input: QuickAddTransactionInput,
   ): Promise<QuickAddTransactionResult>;

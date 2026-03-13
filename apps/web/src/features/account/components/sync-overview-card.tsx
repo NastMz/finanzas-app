@@ -12,7 +12,7 @@ export interface SyncOverviewCardProps {
 }
 
 export const SyncOverviewCard = ({ sync }: SyncOverviewCardProps): JSX.Element => (
-  <SurfaceCard title="Sincronización" subtitle="Estado de outbox y cursor">
+  <SurfaceCard title="Sincronización" subtitle="Estado general de tus cambios">
     <div className={styles.metrics}>
       <div className={styles.metric}>
         <span className={styles.label}>Estado</span>
@@ -35,8 +35,8 @@ export const SyncOverviewCard = ({ sync }: SyncOverviewCardProps): JSX.Element =
         <strong className={styles.value}>{sync.failedOps}</strong>
       </div>
       <div className={styles.metric}>
-        <span className={styles.label}>Cursor</span>
-        <strong className={styles.value}>{sync.cursor ?? "sin cursor"}</strong>
+        <span className={styles.label}>Última actualización</span>
+        <strong className={styles.value}>{sync.cursor ?? "pendiente"}</strong>
       </div>
     </div>
 

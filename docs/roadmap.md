@@ -131,15 +131,14 @@ Take the web experience from preview mode to an operable end-to-end application,
 - `[x]` Responsive desktop and mobile preview views
 - `[x]` HTML screen rendering from the UI layer
 - `[x]` Real quick-add and basic edit/delete flows for `Register` and `Movements` in the web host, with local-first feedback states
+- `[x]` Canonical category management in `Account`, with explicit per-type coverage (`empty | partial | ready`) and creation for missing `expense` or `income` kinds
+- `[x]` Onboarding and guarded recovery in `Register` and `Movements`, so blocked flows can recover without pretending those tabs own category management
 
 ### Pending
 
 - `[ ]` Migrate `apps/web` from Vite to Next.js while keeping the finance app as a client-side SPA
 - `[ ]` Expose initial backend endpoints from the web host for monolithic deployment on Vercel
 - `[ ]` Keep the web host as a transport/delivery layer without moving domain logic or use cases out of `packages/*`
-- `[ ]` Add a non-blocking category onboarding path in the web host so `Register` remains usable even when the user has no categories yet
-- `[ ]` Expose real category management in the web UI as the root fix for operable end-to-end `Register` and `Movements` flows
-- `[ ]` Define safe initial categories or an equivalent fallback for first-run transaction capture until full web category management is available
 - `[~]` Real transaction capture and edit forms
 - `[ ]` Real filters in `Movements`
 - `[ ]` Search, sorting, and segmentation by account/category/date

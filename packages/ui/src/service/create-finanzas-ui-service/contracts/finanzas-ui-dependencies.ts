@@ -16,6 +16,7 @@ export const selectFinanzasUiDependencies = (
   dependencies: FinanzasUiDependencies,
 ): FinanzasUiDependencies => ({
   commands: {
+    addCategory: (input) => dependencies.commands.addCategory(input),
     addTransaction: (input) => dependencies.commands.addTransaction(input),
     syncNow: () => dependencies.commands.syncNow(),
   },

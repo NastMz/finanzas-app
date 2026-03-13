@@ -20,13 +20,13 @@ export const AccountHeader = ({
 }: AccountHeaderProps): JSX.Element => (
   <header className={styles.header}>
     <div className={styles.titleGroup}>
-      <p className={styles.kicker}>Control Center</p>
+      <p className={styles.kicker}>Vista general</p>
       <h1 className={styles.title}>Cuenta</h1>
       <p className={styles.subtitle}>
-        Configuracion local, salud de sincronizacion y estado del catalogo.
+        Revisa tus cuentas, categorias y el estado de sincronizacion.
       </p>
       <p className={styles.period}>
-        Cursor actual: {sync.cursor ?? "sin cursor"} · Pendientes: {sync.pendingOps}
+        Ultima actualizacion registrada: {sync.cursor ?? "pendiente"} · Cambios pendientes: {sync.pendingOps}
       </p>
     </div>
 

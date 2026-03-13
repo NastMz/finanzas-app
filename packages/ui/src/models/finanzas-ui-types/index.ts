@@ -1,5 +1,6 @@
 export * from "./finanzas-account-option.js";
 export * from "./finanzas-account-tab-view-model.js";
+export * from "./finanzas-category-management-state.js";
 export * from "./finanzas-category-option.js";
 export * from "./finanzas-home-tab-view-model.js";
 export * from "./finanzas-movements-tab-view-model.js";

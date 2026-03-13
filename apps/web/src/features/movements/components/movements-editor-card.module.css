@@ -8,6 +8,22 @@
   font-size: var(--fz-font-size-sm);
 }
 
+.guard {
+  display: grid;
+  gap: var(--fz-space-3);
+}
+
+.guardTitle {
+  font-size: var(--fz-font-size-lg);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+
+.guardCopy {
+  color: var(--fz-color-text-secondary);
+  line-height: 1.6;
+}
+
 .modeSwitch {
   display: inline-grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));

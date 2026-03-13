@@ -31,14 +31,56 @@ describe("accountScreen", () => {
         active: 6,
         deleted: 2,
       },
+      categoryManagement: {
+        status: "partial",
+        activeCount: 6,
+        coverageByKind: {
+          expense: {
+            available: true,
+            count: 4,
+          },
+          income: {
+            available: false,
+            count: 0,
+          },
+        },
+        availableTypes: ["expense"],
+        missingTypes: ["income"],
+        canonicalSurface: "account",
+        guardMessageByKind: {
+          expense: "Falta una categoria de gasto. Crea una ahora o hazlo desde Cuenta.",
+          income: "Falta una categoria de ingreso. Crea una ahora o hazlo desde Cuenta.",
+        },
+        createAction: {
+          enabled: true,
+          supportedTypes: ["income"],
+        },
+        recoveryActions: {
+          register: {
+            enabled: true,
+            canonicalSurface: "account",
+            surface: "register",
+            supportedTypes: ["income"],
+          },
+          movements: {
+            enabled: true,
+            canonicalSurface: "account",
+            surface: "movements",
+            supportedTypes: ["income"],
+          },
+        },
+      },
     };
 
     const html = renderAccountScreen(viewModel);
 
     expect(html).toContain(">Cuenta</h1>");
     expect(html).toContain("Sincronización");
-    expect(html).toContain("Cursor actual: 7");
+    expect(html).toContain("Ultima actualizacion registrada: 7");
     expect(html).toContain("Categorías");
+    expect(html).toContain("Categorias");
+    expect(html).toContain("Seccion principal: Cuenta");
+    expect(html).toContain("Crear categoria");
     expect(html).not.toContain("<script>alert('xss')</script>");
     expect(html).toMatch(
       /&lt;script&gt;alert\((&#x27;|&#39;)xss(&#x27;|&#39;)\)&lt;\/script&gt;/,
@@ -55,10 +97,12 @@ describe("accountScreen", () => {
 
     const html = await loadAccountScreenHtml(() => ui.loadAccountTab());
 
-    expect(html).toContain("Control Center");
+    expect(html).toContain("Vista general");
     expect(html).toContain("Sincronización");
     expect(html).toContain("Cuentas");
     expect(html).toContain("Categorías");
+    expect(html).toContain("Categorias");
+    expect(html).toContain("Estado general de tus cambios");
     expect(html).toContain("Sin errores recientes.");
   });
 });

@@ -40,6 +40,11 @@ interface RegisterFormState {
   kind: FinanzasTransactionKind;
 }
 
+interface CategoryCreateState {
+  nameInput: string;
+  type: FinanzasTransactionKind;
+}
+
 const tabConfig: Array<{
   id: PreviewTab;
   label: string;
@@ -58,12 +63,12 @@ const tabConfig: Array<{
   {
     id: "register",
     label: "Registrar",
-    description: "Entrada rapida para capturar dinero en segundos.",
+    description: "Entrada rapida para registrar dinero en segundos.",
   },
   {
     id: "account",
     label: "Cuenta",
-    description: "Salud de sincronizacion y control del catalogo.",
+    description: "Estado general de la cuenta y sus categorias.",
   },
 ];
 
@@ -129,10 +134,17 @@ const resolveCategoryForKind = (
 const createRegisterFormState = (
   register: FinanzasRegisterTabViewModel,
 ): RegisterFormState => {
+  const defaultKind: FinanzasTransactionKind = register.defaultCategoryId !== null
+    ? register.categories.find((category) => category.id === register.defaultCategoryId)?.type ?? "expense"
+    : register.categoryManagement.coverageByKind.expense.available
+      ? "expense"
+      : register.categoryManagement.coverageByKind.income.available
+        ? "income"
+        : "expense";
   const defaultCategory = register.categories.find(
     (category) => category.id === register.defaultCategoryId,
   );
-  const kind = defaultCategory?.type ?? "expense";
+  const kind = defaultCategory?.type ?? defaultKind;
 
   return {
     amountInput: "",
@@ -146,6 +158,13 @@ const createRegisterFormState = (
     kind,
   };
 };
+
+const createCategoryCreateState = (
+  type: FinanzasTransactionKind = "expense",
+): CategoryCreateState => ({
+  nameInput: "",
+  type,
+});
 
 const createMovementDraft = (
   transaction: FinanzasTransactionItemViewModel | null,
@@ -216,6 +235,21 @@ export const DevPreviewApp = ({
   const [busyTransactionId, setBusyTransactionId] = useState<string | null>(null);
   const [registerFeedback, setRegisterFeedback] = useState<InteractionNotice | null>(null);
   const [movementsFeedback, setMovementsFeedback] = useState<InteractionNotice | null>(null);
+  const [registerCategoryForm, setRegisterCategoryForm] = useState<CategoryCreateState>(() =>
+    createCategoryCreateState("expense"),
+  );
+  const [accountCategoryForm, setAccountCategoryForm] = useState<CategoryCreateState>(() =>
+    createCategoryCreateState("expense"),
+  );
+  const [movementCategoryForm, setMovementCategoryForm] = useState<CategoryCreateState>(() =>
+    createCategoryCreateState("expense"),
+  );
+  const [accountCategoryFeedback, setAccountCategoryFeedback] = useState<InteractionNotice | null>(null);
+  const [registerCategoryFeedback, setRegisterCategoryFeedback] = useState<InteractionNotice | null>(null);
+  const [movementCategoryFeedback, setMovementCategoryFeedback] = useState<InteractionNotice | null>(null);
+  const [isCreatingAccountCategory, setIsCreatingAccountCategory] = useState(false);
+  const [isCreatingRegisterCategory, setIsCreatingRegisterCategory] = useState(false);
+  const [isCreatingMovementCategory, setIsCreatingMovementCategory] = useState(false);
   const [isOffline, setIsOffline] = useState(getOfflineState());
 
   useEffect(() => {
@@ -247,6 +281,29 @@ export const DevPreviewApp = ({
   useEffect(() => {
     setMovementDraft(createMovementDraft(selectedTransaction));
   }, [selectedTransaction]);
+
+  useEffect(() => {
+    setMovementDraft((current) => {
+      if (current === null) {
+        return current;
+      }
+
+      const resolvedCategoryId = resolveCategoryForKind(
+        movementCategories,
+        current.kind,
+        current.categoryId,
+      );
+
+      if (resolvedCategoryId === null || resolvedCategoryId === current.categoryId) {
+        return current;
+      }
+
+      return {
+        ...current,
+        categoryId: resolvedCategoryId,
+      };
+    });
+  }, [movementCategories]);
 
   const reloadTabs = async (
     options: {
@@ -328,7 +385,7 @@ export const DevPreviewApp = ({
     if (registerForm.selectedCategoryId === null) {
       setRegisterFeedback({
         tone: "error",
-        message: "Elegi una categoria activa antes de guardar.",
+        message: "Elige una categoria activa antes de guardar.",
       });
       return;
     }
@@ -363,7 +420,7 @@ export const DevPreviewApp = ({
       setRegisterFeedback({
         tone: isOffline ? "offline" : "success",
         message: isOffline
-          ? "Movimiento guardado en local. Se sincroniza cuando vuelva la conexion."
+          ? "Movimiento guardado en este dispositivo. Se actualiza cuando vuelva la conexion."
           : "Movimiento registrado y reflejado en Movimientos.",
       });
     } catch (error) {
@@ -374,6 +431,87 @@ export const DevPreviewApp = ({
     } finally {
       setIsSavingRegister(false);
     }
+  };
+
+  const handleCreateCategory = async (
+    draft: CategoryCreateState,
+    setSaving: (value: boolean) => void,
+    setFeedback: (value: InteractionNotice | null) => void,
+    resetDraft: (value: CategoryCreateState) => void,
+    options: {
+      resetRegisterForm?: boolean;
+    } = {},
+  ): Promise<void> => {
+    const name = draft.nameInput.trim();
+
+    if (name.length === 0) {
+      setFeedback({
+        tone: "error",
+        message: "Ingresa un nombre para la categoria.",
+      });
+      return;
+    }
+
+    setSaving(true);
+    setFeedback(null);
+
+    try {
+      await webUi.createCategory({
+        name,
+        type: draft.type,
+      });
+      await reloadTabs({
+        preferredTransactionId: selectedTransactionId,
+        resetRegisterForm: options.resetRegisterForm ?? false,
+      });
+      resetDraft(createCategoryCreateState(draft.type));
+      setFeedback({
+        tone: isOffline ? "offline" : "success",
+        message: isOffline
+          ? "Categoria creada en este dispositivo. Se actualiza cuando vuelva la conexion."
+          : "Categoria creada. Ya puedes continuar desde esta pantalla.",
+      });
+    } catch (error) {
+      setFeedback({
+        tone: "error",
+        message: error instanceof Error ? error.message : "No se pudo crear la categoria.",
+      });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleRegisterCreateCategory = async (): Promise<void> => {
+    await handleCreateCategory(
+      registerCategoryForm,
+      setIsCreatingRegisterCategory,
+      setRegisterCategoryFeedback,
+      setRegisterCategoryForm,
+      {
+        resetRegisterForm: true,
+      },
+    );
+  };
+
+  const handleAccountCreateCategory = async (): Promise<void> => {
+    await handleCreateCategory(
+      accountCategoryForm,
+      setIsCreatingAccountCategory,
+      setAccountCategoryFeedback,
+      setAccountCategoryForm,
+      {
+        resetRegisterForm: true,
+      },
+    );
+  };
+
+  const handleMovementCreateCategory = async (): Promise<void> => {
+    await handleCreateCategory(
+      movementCategoryForm,
+      setIsCreatingMovementCategory,
+      setMovementCategoryFeedback,
+      setMovementCategoryForm,
+    );
   };
 
   const handleToggleIncludeDeleted = async (): Promise<void> => {
@@ -461,7 +599,7 @@ export const DevPreviewApp = ({
       setMovementsFeedback({
         tone: isOffline ? "offline" : "success",
         message: isOffline
-          ? "Cambio guardado en local. Falta sincronizarlo cuando vuelva la conexion."
+          ? "Cambio guardado en este dispositivo. Se actualiza cuando vuelva la conexion."
           : "Movimiento actualizado y resumen recalculado.",
       });
     } catch (error) {
@@ -493,7 +631,7 @@ export const DevPreviewApp = ({
       setMovementsFeedback({
         tone: isOffline ? "offline" : "success",
         message: isOffline
-          ? "Movimiento eliminado en local. Queda pendiente de sincronizacion."
+          ? "Movimiento eliminado en este dispositivo. Se actualiza cuando vuelva la conexion."
           : "Movimiento eliminado y lista actualizada.",
       });
     } catch (error) {
@@ -545,7 +683,11 @@ export const DevPreviewApp = ({
             isSavingEdit={isSavingMovement}
             busyTransactionId={busyTransactionId}
             feedback={movementsFeedback}
+            createCategoryFeedback={movementCategoryFeedback}
             offline={isOffline}
+            createCategoryNameInput={movementCategoryForm.nameInput}
+            createCategoryType={movementCategoryForm.type}
+            isCreatingCategory={isCreatingMovementCategory}
             onToggleIncludeDeleted={() => {
               void handleToggleIncludeDeleted();
             }}
@@ -560,6 +702,12 @@ export const DevPreviewApp = ({
             onEditCategoryChange={(value) => {
               setMovementDraft((current) => current === null ? current : { ...current, categoryId: value });
             }}
+            onCreateCategoryNameChange={(value) => {
+              setMovementCategoryForm((current) => ({ ...current, nameInput: value }));
+            }}
+            onCreateCategoryTypeChange={(value) => {
+              setMovementCategoryForm((current) => ({ ...current, type: value }));
+            }}
             onEditDateChange={(value) => {
               setMovementDraft((current) => current === null ? current : { ...current, dateInput: value });
             }}
@@ -572,6 +720,9 @@ export const DevPreviewApp = ({
             onCancelEdit={() => {
               setSelectedTransactionId(null);
               setMovementsFeedback(null);
+            }}
+            onCreateCategory={() => {
+              void handleMovementCreateCategory();
             }}
           />
         );
@@ -586,12 +737,22 @@ export const DevPreviewApp = ({
             kind={registerForm.kind}
             isSaving={isSavingRegister}
             feedback={registerFeedback}
+            categoryFeedback={registerCategoryFeedback}
             offline={isOffline}
+            categoryNameInput={registerCategoryForm.nameInput}
+            categoryType={registerCategoryForm.type}
+            isCreatingCategory={isCreatingRegisterCategory}
             onKindChange={handleRegisterKindChange}
             onAmountInputChange={(value) => {
               setRegisterForm((current) => ({ ...current, amountInput: value }));
             }}
             onCategoryChange={handleRegisterCategoryChange}
+            onCategoryNameChange={(value) => {
+              setRegisterCategoryForm((current) => ({ ...current, nameInput: value }));
+            }}
+            onCategoryTypeChange={(value) => {
+              setRegisterCategoryForm((current) => ({ ...current, type: value }));
+            }}
             onNoteChange={(value) => {
               setRegisterForm((current) => ({ ...current, noteInput: value }));
             }}
@@ -601,10 +762,30 @@ export const DevPreviewApp = ({
             onSubmit={() => {
               void handleRegisterSubmit();
             }}
+            onCreateCategory={() => {
+              void handleRegisterCreateCategory();
+            }}
           />
         );
       case "account":
-        return <AccountScreen viewModel={accountViewModel} />;
+        return (
+          <AccountScreen
+            viewModel={accountViewModel}
+            categoryFeedback={accountCategoryFeedback}
+            categoryNameInput={accountCategoryForm.nameInput}
+            categoryType={accountCategoryForm.type}
+            isCreatingCategory={isCreatingAccountCategory}
+            onCategoryNameChange={(value) => {
+              setAccountCategoryForm((current) => ({ ...current, nameInput: value }));
+            }}
+            onCategoryTypeChange={(value) => {
+              setAccountCategoryForm((current) => ({ ...current, type: value }));
+            }}
+            onCreateCategory={() => {
+              void handleAccountCreateCategory();
+            }}
+          />
+        );
       case "home":
         return <HomeScreen viewModel={homeViewModel} />;
     }

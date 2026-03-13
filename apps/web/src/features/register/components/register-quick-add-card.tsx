@@ -1,4 +1,5 @@
 import type {
+  FinanzasCategoryManagementState,
   FinanzasRegisterTabViewModel,
   FinanzasTransactionKind,
 } from "@finanzas/ui";
@@ -11,6 +12,7 @@ import styles from "./register-quick-add-card.module.css";
  */
 export interface RegisterQuickAddCardProps {
   account: FinanzasRegisterTabViewModel["account"];
+  categoryManagement: FinanzasCategoryManagementState;
   defaultDate: Date;
   defaultCategoryId: string | null;
   categories: FinanzasRegisterTabViewModel["categories"];
@@ -67,6 +69,7 @@ const resolveFeedbackToneClass = (
 
 export const RegisterQuickAddCard = ({
   account,
+  categoryManagement,
   defaultDate,
   defaultCategoryId,
   categories,
@@ -90,11 +93,17 @@ export const RegisterQuickAddCard = ({
     categories,
   );
   const selectableCategories = resolveSelectableCategories(categories, kind);
+  const hasSelectableCategories = selectableCategories.length > 0;
+  const footerCopy = hasSelectableCategories
+    ? defaultCategoryName === "Sin sugerencia automatica"
+      ? "Elige una categoria para guardar el movimiento."
+      : `Sugerencia activa: ${defaultCategoryName}.`
+    : categoryManagement.guardMessageByKind[kind];
 
   return (
     <SurfaceCard
       title="Registro rápido"
-      subtitle="Alta real sobre la cuenta activa"
+      subtitle="Carga un movimiento en la cuenta activa"
       className={styles.quickCard ?? ""}
       contentClassName={styles.quickContent ?? ""}
     >
@@ -146,7 +155,7 @@ export const RegisterQuickAddCard = ({
           </label>
 
           <p className={styles.amountHelper}>
-            Captura directa con persistencia local inmediata y cola de sync si aplica.
+            Se guarda al instante para que puedas seguir sin friccion.
           </p>
         </section>
 
@@ -199,15 +208,11 @@ export const RegisterQuickAddCard = ({
         </div>
 
         <div className={styles.footerBar}>
-          <p className={styles.footerCopy}>
-            {defaultCategoryName === "Sin sugerencia automatica"
-              ? "Elegi una categoria para guardar el movimiento."
-              : `Sugerencia activa: ${defaultCategoryName}.`}
-          </p>
+          <p className={styles.footerCopy}>{footerCopy}</p>
           <button
             type="submit"
             className={styles.primaryAction}
-            disabled={isSaving || selectableCategories.length === 0}
+            disabled={isSaving || !hasSelectableCategories}
           >
             {isSaving ? "Guardando..." : "Registrar movimiento"}
           </button>

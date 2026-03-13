@@ -1,4 +1,5 @@
 import type { FinanzasAccountOption } from "./finanzas-account-option.js";
+import type { FinanzasCategoryManagementState } from "./finanzas-category-management-state.js";
 import type { FinanzasCategoryOption } from "./finanzas-category-option.js";
 
 /**
@@ -10,4 +11,5 @@ export interface FinanzasRegisterTabViewModel {
   categories: FinanzasCategoryOption[];
   suggestedCategoryIds: string[];
   defaultCategoryId: string | null;
+  categoryManagement: FinanzasCategoryManagementState;
 }

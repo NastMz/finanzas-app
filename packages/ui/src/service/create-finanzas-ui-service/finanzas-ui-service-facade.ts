@@ -21,6 +21,9 @@ import type {
 } from "./contracts/index.js";
 import { FinanzasUiError } from "./contracts/index.js";
 import {
+  resolveCategoryManagementState,
+} from "./lib/categories.js";
+import {
   buildCategoryNameById,
   resolveActiveAccount,
   toAccountOption,
@@ -114,6 +117,7 @@ export class FinanzasUiService implements FinanzasUiServiceContract {
     const items = transactionsResult.transactions.map((transaction) =>
       toTransactionItemViewModel(transaction, categoryNameById),
     );
+    const categories = categoriesResult.categories.map(toCategoryOption);
 
     return {
       account: toAccountOption(account),
@@ -121,6 +125,7 @@ export class FinanzasUiService implements FinanzasUiServiceContract {
       items,
       totals: getTotalsFromTransactionItems(items),
       sync: toSyncStatusViewModel(syncStatus),
+      categoryManagement: resolveCategoryManagementState(categories),
     };
   };
 
@@ -149,6 +154,7 @@ export class FinanzasUiService implements FinanzasUiServiceContract {
       summary.topExpenseCategories.map((category) => category.categoryId),
       suggestedCategoryLimit,
     );
+    const categoryManagement = resolveCategoryManagementState(categories);
 
     return {
       account: toAccountOption(account),
@@ -156,6 +162,7 @@ export class FinanzasUiService implements FinanzasUiServiceContract {
       categories,
       suggestedCategoryIds,
       defaultCategoryId: suggestedCategoryIds[0] ?? null,
+      categoryManagement,
     };
   };
 
@@ -172,6 +179,7 @@ export class FinanzasUiService implements FinanzasUiServiceContract {
 
     const accounts = accountsResult.accounts;
     const categories = categoriesResult.categories;
+    const categoryOptions = categories.map(toCategoryOption);
 
     return {
       sync: toSyncStatusViewModel(syncStatus),
@@ -185,6 +193,21 @@ export class FinanzasUiService implements FinanzasUiServiceContract {
         active: categories.filter((category) => category.deletedAt === null).length,
         deleted: categories.filter((category) => category.deletedAt !== null).length,
       },
+      categoryManagement: resolveCategoryManagementState(categoryOptions),
+    };
+  };
+
+  public readonly createCategory: FinanzasUiServiceContract["createCategory"] = async (
+    input,
+  ) => {
+    const result = await this.dependencies.commands.addCategory({
+      name: input.name,
+      type: input.type,
+    });
+
+    return {
+      categoryId: result.category.id,
+      outboxOpId: result.outboxOpId,
     };
   };
 

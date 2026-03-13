@@ -8,6 +8,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 
 import { DashboardPage } from "../../ui/components/index.js";
 import {
+  RegisterCategoryOnboardingCard,
   RegisterCategoriesCard,
   RegisterHeader,
   RegisterQuickAddCard,
@@ -30,13 +31,23 @@ export interface RegisterScreenProps {
     tone: "success" | "error" | "offline";
     message: string;
   } | null;
+  categoryFeedback?: {
+    tone: "success" | "error" | "offline";
+    message: string;
+  } | null;
   offline?: boolean;
+  categoryNameInput?: string;
+  categoryType?: FinanzasTransactionKind;
+  isCreatingCategory?: boolean;
   onKindChange?: (kind: FinanzasTransactionKind) => void;
   onAmountInputChange?: (value: string) => void;
   onCategoryChange?: (categoryId: string) => void;
+  onCategoryNameChange?: (value: string) => void;
+  onCategoryTypeChange?: (kind: FinanzasTransactionKind) => void;
   onNoteChange?: (value: string) => void;
   onDateChange?: (value: string) => void;
   onSubmit?: () => void | Promise<void>;
+  onCreateCategory?: () => void | Promise<void>;
 }
 
 /**
@@ -51,68 +62,117 @@ export const RegisterScreen = ({
   kind,
   isSaving,
   feedback,
+  categoryFeedback,
   offline = false,
+  categoryNameInput,
+  categoryType,
+  isCreatingCategory,
   onKindChange,
   onAmountInputChange,
   onCategoryChange,
+  onCategoryNameChange,
+  onCategoryTypeChange,
   onNoteChange,
   onDateChange,
   onSubmit,
-}: RegisterScreenProps): JSX.Element => (
-  <DashboardPage
-    className={styles.page ?? ""}
-    containerClassName={styles.container ?? ""}
-  >
-    <section data-view="register" className={styles.content}>
-      {offline
-        ? <p className={`${styles.notice} ${styles.noticeOffline}`}>Sin conexion: los cambios quedan guardados en local y esperan sincronizacion.</p>
-        : null}
+  onCreateCategory,
+}: RegisterScreenProps): JSX.Element => {
+  const activeKind = kind ??
+    viewModel.categories.find((category) => category.id === viewModel.defaultCategoryId)?.type ??
+    (viewModel.categoryManagement.coverageByKind.expense.available ? "expense" : "income");
+  const requiresRecovery = !viewModel.categoryManagement.coverageByKind[activeKind].available;
 
-      <RegisterHeader
-        account={viewModel.account}
-        defaultDate={viewModel.defaultDate}
-        categoryCount={viewModel.categories.length}
-        suggestedCount={viewModel.suggestedCategoryIds.length}
-      />
+  return (
+    <DashboardPage
+      className={styles.page ?? ""}
+      containerClassName={styles.container ?? ""}
+    >
+      <section data-view="register" className={styles.content}>
+        {offline
+          ? <p className={`${styles.notice} ${styles.noticeOffline}`}>Sin conexion: los cambios quedan guardados en este dispositivo hasta que vuelva la conexion.</p>
+          : null}
 
-      <section className={styles.grid}>
-        <RegisterQuickAddCard
+        <RegisterHeader
           account={viewModel.account}
           defaultDate={viewModel.defaultDate}
-          defaultCategoryId={viewModel.defaultCategoryId}
-          categories={viewModel.categories}
-          {...(amountInput !== undefined ? { amountInput } : {})}
-          {...(noteInput !== undefined ? { noteInput } : {})}
-          {...(dateInput !== undefined ? { dateInput } : {})}
-          {...(selectedCategoryId !== undefined ? { selectedCategoryId } : {})}
-          {...(kind !== undefined ? { kind } : {})}
-          {...(isSaving !== undefined ? { isSaving } : {})}
-          {...(feedback !== undefined ? { feedback } : {})}
-          {...(onKindChange !== undefined ? { onKindChange } : {})}
-          {...(onAmountInputChange !== undefined ? { onAmountInputChange } : {})}
-          {...(onCategoryChange !== undefined ? { onCategoryChange } : {})}
-          {...(onNoteChange !== undefined ? { onNoteChange } : {})}
-          {...(onDateChange !== undefined ? { onDateChange } : {})}
-          {...(onSubmit !== undefined ? { onSubmit } : {})}
+          categoryCount={viewModel.categories.length}
+          suggestedCount={viewModel.suggestedCategoryIds.length}
         />
-        <SuggestedCategoriesCard
-          categories={viewModel.categories}
-          suggestedCategoryIds={viewModel.suggestedCategoryIds}
-          {...(selectedCategoryId !== undefined ? { selectedCategoryId } : {})}
-          {...(onCategoryChange !== undefined ? { onSelectCategory: onCategoryChange } : {})}
-        />
-      </section>
 
-      <div className={styles.catalogSection}>
-        <RegisterCategoriesCard
-          categories={viewModel.categories}
-          {...(selectedCategoryId !== undefined ? { selectedCategoryId } : {})}
-          {...(onCategoryChange !== undefined ? { onSelectCategory: onCategoryChange } : {})}
-        />
-      </div>
-    </section>
-  </DashboardPage>
-);
+        {viewModel.categoryManagement.status === "empty"
+          ? (
+            <RegisterCategoryOnboardingCard
+              categoryManagement={viewModel.categoryManagement}
+              surfaceMode="empty"
+              {...(categoryNameInput !== undefined ? { categoryNameInput } : {})}
+              {...(categoryType !== undefined ? { categoryType } : {})}
+              {...(isCreatingCategory !== undefined ? { isSaving: isCreatingCategory } : {})}
+              {...(categoryFeedback !== undefined ? { feedback: categoryFeedback } : {})}
+              {...(onCategoryNameChange !== undefined ? { onCategoryNameChange } : {})}
+              {...(onCategoryTypeChange !== undefined ? { onCategoryTypeChange } : {})}
+              {...(onCreateCategory !== undefined ? { onSubmit: onCreateCategory } : {})}
+            />
+            )
+          : (
+            <>
+              <section className={styles.grid}>
+                <RegisterQuickAddCard
+                  account={viewModel.account}
+                  categoryManagement={viewModel.categoryManagement}
+                  defaultDate={viewModel.defaultDate}
+                  defaultCategoryId={viewModel.defaultCategoryId}
+                  categories={viewModel.categories}
+                  {...(amountInput !== undefined ? { amountInput } : {})}
+                  {...(noteInput !== undefined ? { noteInput } : {})}
+                  {...(dateInput !== undefined ? { dateInput } : {})}
+                  {...(selectedCategoryId !== undefined ? { selectedCategoryId } : {})}
+                  {...(kind !== undefined ? { kind } : {})}
+                  {...(isSaving !== undefined ? { isSaving } : {})}
+                  {...(feedback !== undefined ? { feedback } : {})}
+                  {...(onKindChange !== undefined ? { onKindChange } : {})}
+                  {...(onAmountInputChange !== undefined ? { onAmountInputChange } : {})}
+                  {...(onCategoryChange !== undefined ? { onCategoryChange } : {})}
+                  {...(onNoteChange !== undefined ? { onNoteChange } : {})}
+                  {...(onDateChange !== undefined ? { onDateChange } : {})}
+                  {...(onSubmit !== undefined ? { onSubmit } : {})}
+                />
+                {requiresRecovery
+                  ? (
+                    <RegisterCategoryOnboardingCard
+                      categoryManagement={viewModel.categoryManagement}
+                      surfaceMode="partial"
+                      {...(categoryNameInput !== undefined ? { categoryNameInput } : {})}
+                      {...(categoryType !== undefined ? { categoryType } : {})}
+                      {...(isCreatingCategory !== undefined ? { isSaving: isCreatingCategory } : {})}
+                      {...(categoryFeedback !== undefined ? { feedback: categoryFeedback } : {})}
+                      {...(onCategoryNameChange !== undefined ? { onCategoryNameChange } : {})}
+                      {...(onCategoryTypeChange !== undefined ? { onCategoryTypeChange } : {})}
+                      {...(onCreateCategory !== undefined ? { onSubmit: onCreateCategory } : {})}
+                    />
+                    )
+                  : (
+                    <SuggestedCategoriesCard
+                      categories={viewModel.categories}
+                      suggestedCategoryIds={viewModel.suggestedCategoryIds}
+                      {...(selectedCategoryId !== undefined ? { selectedCategoryId } : {})}
+                      {...(onCategoryChange !== undefined ? { onSelectCategory: onCategoryChange } : {})}
+                    />
+                    )}
+              </section>
+
+              <div className={styles.catalogSection}>
+                <RegisterCategoriesCard
+                  categories={viewModel.categories}
+                  {...(selectedCategoryId !== undefined ? { selectedCategoryId } : {})}
+                  {...(onCategoryChange !== undefined ? { onSelectCategory: onCategoryChange } : {})}
+                />
+              </div>
+            </>
+            )}
+      </section>
+    </DashboardPage>
+  );
+};
 
 /**
  * Renders the Register tab (`Registrar`) as HTML.

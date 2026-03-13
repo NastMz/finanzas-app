@@ -129,6 +129,114 @@ describe("createFinanzasUiService", () => {
     ]);
     expect(register.defaultCategoryId).toBe(foodCategory.category.id);
     expect(register.categories.map((category) => category.type)).toContain("income");
+    expect(register.categoryManagement.status).toBe("ready");
+    expect(register.categoryManagement.coverageByKind.expense.count).toBe(2);
+    expect(register.categoryManagement.coverageByKind.income.count).toBe(1);
+  });
+
+  it("exposes onboarding state when no categories exist", async () => {
+    const { ui } = createUi();
+
+    const register = await ui.loadRegisterTab({
+      accountId: "acc-main",
+    });
+
+    expect(register.categories).toHaveLength(0);
+    expect(register.defaultCategoryId).toBeNull();
+    expect(register.categoryManagement.status).toBe("empty");
+    expect(register.categoryManagement.activeCount).toBe(0);
+    expect(register.categoryManagement.coverageByKind.expense.count).toBe(0);
+    expect(register.categoryManagement.coverageByKind.income.count).toBe(0);
+    expect(register.categoryManagement.missingTypes).toEqual(["expense", "income"]);
+    expect(register.categoryManagement.createAction.supportedTypes).toEqual([
+      "expense",
+      "income",
+    ]);
+  });
+
+  it("marks one-sided catalogs as partial and exposes the missing kind", async () => {
+    const { ui, context } = createUi();
+
+    await context.commands.addCategory({
+      name: "Comida",
+      type: "expense",
+    });
+
+    const register = await ui.loadRegisterTab({
+      accountId: "acc-main",
+    });
+
+    expect(register.categoryManagement.status).toBe("partial");
+    expect(register.categoryManagement.availableTypes).toEqual(["expense"]);
+    expect(register.categoryManagement.missingTypes).toEqual(["income"]);
+    expect(register.categoryManagement.canonicalSurface).toBe("account");
+    expect(register.categoryManagement.recoveryActions.register.supportedTypes).toEqual(["income"]);
+  });
+
+  it("keeps register partial until the missing type is created", async () => {
+    const { ui } = createUi();
+
+    const created = await ui.createCategory({
+      name: "Salario",
+      type: "income",
+    });
+    const register = await ui.loadRegisterTab({
+      accountId: "acc-main",
+    });
+
+    expect(created.categoryId).toBeTruthy();
+    expect(created.outboxOpId).toBeTruthy();
+    expect(register.categoryManagement.status).toBe("partial");
+    expect(register.categoryManagement.missingTypes).toEqual(["expense"]);
+    expect(register.categoryManagement.coverageByKind.income.count).toBe(1);
+    expect(register.categories.map((category) => category.name)).toContain("Salario");
+  });
+
+  it("recovers account coverage after creating the missing type from a partial state", async () => {
+    const { ui } = createUi();
+
+    await ui.createCategory({
+      name: "Comida",
+      type: "expense",
+    });
+    const partialAccount = await ui.loadAccountTab();
+
+    await ui.createCategory({
+      name: "Salario",
+      type: "income",
+    });
+    const recoveredAccount = await ui.loadAccountTab();
+
+    expect(partialAccount.categoryManagement.status).toBe("partial");
+    expect(partialAccount.categoryManagement.missingTypes).toEqual(["income"]);
+    expect(recoveredAccount.categoryManagement.status).toBe("ready");
+    expect(recoveredAccount.categoryManagement.missingTypes).toEqual([]);
+  });
+
+  it("exposes movements category guard metadata for empty expense catalogs", async () => {
+    const { ui, context } = createUi();
+
+    const incomeCategory = await context.commands.addCategory({
+      name: "Salario",
+      type: "income",
+    });
+    await context.commands.addTransaction({
+      accountId: "acc-main",
+      amountMinor: 150000,
+      currency: "COP",
+      categoryId: incomeCategory.category.id,
+      date: new Date("2026-03-03T10:00:00.000Z"),
+    });
+
+    const movements = await ui.loadMovementsTab({
+      accountId: "acc-main",
+      includeDeleted: true,
+    });
+
+    expect(movements.categoryManagement.status).toBe("partial");
+    expect(movements.categoryManagement.coverageByKind.expense.count).toBe(0);
+    expect(movements.categoryManagement.coverageByKind.income.count).toBe(1);
+    expect(movements.categoryManagement.guardMessageByKind.expense).toContain("gasto");
   });
 
   it("quick-add normalizes expense sign and returns sync status", async () => {

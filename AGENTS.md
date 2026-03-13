@@ -12,6 +12,12 @@ Reduce unnecessary exploration and provide enough context to complete common tas
 - If a task changes repository documentation, keep the affected document fully in English instead of mixing languages.
 - If a task adds a new feature or changes an existing one, update or create the relevant documentation.
 
+## UI Language
+
+- Only use neutral language in UI strings, don't use colloquial expressions or regionalisms.
+- The texts must be user-friendly and clear, but not necessarily concise. It's better to be slightly verbose than to risk confusion.
+- Never include technical terms or internal concepts in the UI. If a technical term is necessary, consider adding a user-friendly explanation or tooltip.
+
 ## Project Snapshot
 
 - TypeScript monorepo with `npm workspaces`.

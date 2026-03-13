@@ -1,4 +1,5 @@
 import type {
+  CreateCategoryActionInput,
   LoadHomeTabInput,
   LoadMovementsTabInput,
   LoadRegisterTabInput,
@@ -36,3 +37,6 @@ export const loadWebRegisterScreenHtml = (
   loadRegisterScreenHtml((nextInput) => webUi.loadRegisterTab(nextInput), input);
 export const loadWebAccountScreenHtml = (): Promise<string> =>
   loadAccountScreenHtml(() => webUi.loadAccountTab());
+export const createWebCategory = async (
+  input: CreateCategoryActionInput,
+): ReturnType<typeof webUi.createCategory> => await webUi.createCategory(input);

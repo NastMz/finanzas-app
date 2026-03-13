@@ -32,17 +32,27 @@ export interface MovementsScreenProps {
     tone: "success" | "error" | "offline";
     message: string;
   } | null;
+  createCategoryFeedback?: {
+    tone: "success" | "error" | "offline";
+    message: string;
+  } | null;
   offline?: boolean;
+  createCategoryNameInput?: string;
+  createCategoryType?: FinanzasTransactionKind;
+  isCreatingCategory?: boolean;
   onToggleIncludeDeleted?: () => void;
   onSelectTransaction?: (transactionId: string) => void;
   onDeleteTransaction?: (transactionId: string) => void;
   onEditKindChange?: (kind: FinanzasTransactionKind) => void;
   onEditAmountChange?: (value: string) => void;
   onEditCategoryChange?: (value: string) => void;
+  onCreateCategoryNameChange?: (value: string) => void;
+  onCreateCategoryTypeChange?: (value: FinanzasTransactionKind) => void;
   onEditDateChange?: (value: string) => void;
   onEditNoteChange?: (value: string) => void;
   onSaveEdit?: () => void | Promise<void>;
   onCancelEdit?: () => void;
+  onCreateCategory?: () => void | Promise<void>;
 }
 
 /**
@@ -57,17 +67,24 @@ export const MovementsScreen = ({
   isSavingEdit = false,
   busyTransactionId = null,
   feedback = null,
+  createCategoryFeedback = null,
   offline = false,
+  createCategoryNameInput,
+  createCategoryType,
+  isCreatingCategory,
   onToggleIncludeDeleted,
   onSelectTransaction,
   onDeleteTransaction,
   onEditKindChange,
   onEditAmountChange,
   onEditCategoryChange,
+  onCreateCategoryNameChange,
+  onCreateCategoryTypeChange,
   onEditDateChange,
   onEditNoteChange,
   onSaveEdit,
   onCancelEdit,
+  onCreateCategory,
 }: MovementsScreenProps): JSX.Element => {
   const deletedCount = viewModel.items.filter((item) => item.deleted).length;
   const selectedTransaction = viewModel.items.find((item) => item.id === selectedTransactionId) ?? null;
@@ -79,7 +96,7 @@ export const MovementsScreen = ({
     >
       <section data-view="movements" className={styles.content}>
         {offline
-          ? <p className={`${styles.notice} ${styles.noticeOffline}`}>Sin conexion: podes seguir corrigiendo movimientos y quedan listos para sincronizar despues.</p>
+          ? <p className={`${styles.notice} ${styles.noticeOffline}`}>Sin conexion: puedes seguir ajustando movimientos. Los cambios se sincronizaran despues.</p>
           : null}
 
         {isRefreshing
@@ -105,18 +122,26 @@ export const MovementsScreen = ({
                 itemCount={viewModel.items.length}
               />
               <MovementsEditorCard
+                categoryManagement={viewModel.categoryManagement}
                 categories={categories}
                 selectedTransaction={selectedTransaction}
                 draft={editDraft}
                 isSaving={isSavingEdit}
+                {...(createCategoryNameInput !== undefined ? { createCategoryNameInput } : {})}
+                {...(createCategoryType !== undefined ? { createCategoryType } : {})}
+                {...(isCreatingCategory !== undefined ? { isCreatingCategory } : {})}
                 feedback={feedback}
+                {...(createCategoryFeedback !== undefined ? { createCategoryFeedback } : {})}
                 {...(onEditKindChange !== undefined ? { onKindChange: onEditKindChange } : {})}
                 {...(onEditAmountChange !== undefined ? { onAmountInputChange: onEditAmountChange } : {})}
                 {...(onEditCategoryChange !== undefined ? { onCategoryChange: onEditCategoryChange } : {})}
+                {...(onCreateCategoryNameChange !== undefined ? { onCreateCategoryNameChange } : {})}
+                {...(onCreateCategoryTypeChange !== undefined ? { onCreateCategoryTypeChange } : {})}
                 {...(onEditDateChange !== undefined ? { onDateChange: onEditDateChange } : {})}
                 {...(onEditNoteChange !== undefined ? { onNoteChange: onEditNoteChange } : {})}
                 {...(onSaveEdit !== undefined ? { onSave: onSaveEdit } : {})}
                 {...(onCancelEdit !== undefined ? { onCancel: onCancelEdit } : {})}
+                {...(onCreateCategory !== undefined ? { onCreateCategory } : {})}
               />
             </div>
           </aside>
