@@ -2,6 +2,7 @@ import type { FinanzasRegisterTabViewModel } from "@finanzas/ui";
 
 import { classNames } from "../../../ui/lib/class-names.js";
 import { SurfaceCard } from "../../../ui/components/index.js";
+import type { RegisterCategorySelectionContract } from "../register-contracts.js";
 import styles from "./suggested-categories-card.module.css";
 
 /**
@@ -10,8 +11,7 @@ import styles from "./suggested-categories-card.module.css";
 export interface SuggestedCategoriesCardProps {
   categories: FinanzasRegisterTabViewModel["categories"];
   suggestedCategoryIds: string[];
-  selectedCategoryId?: string | null;
-  onSelectCategory?: (categoryId: string) => void;
+  categorySelection?: RegisterCategorySelectionContract;
 }
 
 const resolveSuggestedCategories = (
@@ -26,9 +26,9 @@ const resolveSuggestedCategories = (
 export const SuggestedCategoriesCard = ({
   categories,
   suggestedCategoryIds,
-  selectedCategoryId = null,
-  onSelectCategory,
+  categorySelection,
 }: SuggestedCategoriesCardProps): JSX.Element => {
+  const selectedCategoryId = categorySelection?.selectedCategoryId ?? null;
   const suggestedCategories = resolveSuggestedCategories(
     categories,
     suggestedCategoryIds,
@@ -49,15 +49,15 @@ export const SuggestedCategoriesCard = ({
               <li key={category.id} className={styles.chipItem}>
                 <button
                   type="button"
-                  className={classNames(
-                    styles.chip,
-                    category.type === "expense" ? styles.expense : styles.income,
-                    selectedCategoryId === category.id ? styles.chipSelected : undefined,
-                  )}
+                   className={classNames(
+                     styles.chip,
+                     category.type === "expense" ? styles.expense : styles.income,
+                     selectedCategoryId === category.id ? styles.chipSelected : undefined,
+                   )}
                   onClick={() => {
-                    onSelectCategory?.(category.id);
+                    categorySelection?.onSelectCategory(category.id);
                   }}
-                >
+                  >
                   {category.name}
                 </button>
               </li>

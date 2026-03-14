@@ -1,28 +1,19 @@
 import type {
   FinanzasCategoryManagementState,
-  FinanzasTransactionKind,
 } from "@finanzas/ui";
 
 import { SurfaceCard } from "../../../ui/components/index.js";
+import type { RegisterCategoryCreationContract } from "../register-contracts.js";
 import styles from "./register-category-onboarding-card.module.css";
 
 export interface RegisterCategoryOnboardingCardProps {
   categoryManagement: FinanzasCategoryManagementState;
   surfaceMode?: "empty" | "partial";
-  categoryNameInput?: string;
-  categoryType?: FinanzasTransactionKind;
-  isSaving?: boolean;
-  feedback?: {
-    tone: "success" | "error" | "offline";
-    message: string;
-  } | null;
-  onCategoryNameChange?: (value: string) => void;
-  onCategoryTypeChange?: (value: FinanzasTransactionKind) => void;
-  onSubmit?: () => void | Promise<void>;
+  categoryCreation?: RegisterCategoryCreationContract;
 }
 
 const resolveFeedbackToneClass = (
-  feedback: RegisterCategoryOnboardingCardProps["feedback"],
+  feedback: RegisterCategoryCreationContract["status"]["feedback"],
 ): string | undefined => {
   switch (feedback?.tone) {
     case "error":
@@ -39,14 +30,15 @@ const resolveFeedbackToneClass = (
 export const RegisterCategoryOnboardingCard = ({
   categoryManagement,
   surfaceMode = categoryManagement.status === "empty" ? "empty" : "partial",
-  categoryNameInput = "",
-  categoryType = categoryManagement.createAction.supportedTypes[0] ?? "expense",
-  isSaving = false,
-  feedback = null,
-  onCategoryNameChange,
-  onCategoryTypeChange,
-  onSubmit,
+  categoryCreation,
 }: RegisterCategoryOnboardingCardProps): JSX.Element => {
+  const draft = categoryCreation?.draft;
+  const status = categoryCreation?.status;
+  const actions = categoryCreation?.actions;
+  const categoryNameInput = draft?.nameInput ?? "";
+  const categoryType = draft?.type ?? (categoryManagement.createAction.supportedTypes[0] ?? "expense");
+  const isSaving = status?.isSaving ?? false;
+  const feedback = status?.feedback ?? null;
   const missingTypesLabel = categoryManagement.missingTypes
     .map((type) => type === "expense" ? "gasto" : "ingreso")
     .join(" y ");
@@ -88,7 +80,7 @@ export const RegisterCategoryOnboardingCard = ({
       className={styles.form}
       onSubmit={(event) => {
         event.preventDefault();
-        void onSubmit?.();
+        void actions?.onSubmit();
       }}
     >
       <label className={styles.field}>
@@ -96,12 +88,12 @@ export const RegisterCategoryOnboardingCard = ({
         <input
           className={styles.input}
           type="text"
-          placeholder="Ej. Supermercado o Sueldo"
-          value={categoryNameInput}
-          onChange={(event) => {
-            onCategoryNameChange?.(event.target.value);
-          }}
-        />
+            placeholder="Ej. Supermercado o Sueldo"
+            value={categoryNameInput}
+            onChange={(event) => {
+              actions?.onNameChange(event.target.value);
+            }}
+          />
       </label>
 
       <div className={styles.field}>
@@ -110,12 +102,12 @@ export const RegisterCategoryOnboardingCard = ({
           {categoryManagement.createAction.supportedTypes.map((supportedType) => (
             <button
               key={supportedType}
-              type="button"
-              className={`${styles.modeButton} ${categoryType === supportedType ? styles.modeButtonActive : ""}`}
-              onClick={() => {
-                onCategoryTypeChange?.(supportedType);
-              }}
-            >
+                type="button"
+                className={`${styles.modeButton} ${categoryType === supportedType ? styles.modeButtonActive : ""}`}
+                onClick={() => {
+                  actions?.onTypeChange(supportedType);
+                }}
+              >
               {supportedType === "expense" ? "Gasto" : "Ingreso"}
             </button>
           ))}

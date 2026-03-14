@@ -9,6 +9,7 @@ import {
 import { renderToStaticMarkup } from "react-dom/server";
 
 import { createWebBootstrap } from "../../app/bootstrap.js";
+import type { MovementsScreenProps } from "./movements-contracts.js";
 import {
   loadMovementsScreenHtml,
   MovementsScreen,
@@ -200,14 +201,16 @@ describe("movementsScreen", () => {
       MovementsScreen({
         viewModel,
         categories,
-        selectedTransactionId: "tx-income",
-        editDraft: {
-          amountInput: "25000",
-          categoryId: "",
-          dateInput: "2026-03-03T10:00",
-          noteInput: "almuerzo",
-          kind: "expense",
-        },
+        ...createMovementsContracts({
+          selectedTransactionId: "tx-income",
+          draft: {
+            amountInput: "25000",
+            categoryId: "",
+            dateInput: "2026-03-03T10:00",
+            noteInput: "almuerzo",
+            kind: "expense",
+          },
+        }),
       }),
     );
 
@@ -298,3 +301,53 @@ const createWebFeatureRuntime = (): {
     ui,
   };
 };
+
+const createMovementsContracts = (
+  overrides: {
+    selectedTransactionId?: string | null;
+    draft?: NonNullable<MovementsScreenProps["editor"]>["draft"];
+  } = {},
+): Pick<MovementsScreenProps, "selection" | "editor" | "categoryCreation" | "listActions"> => ({
+  selection: {
+    selectedTransactionId: overrides.selectedTransactionId ?? null,
+    busyTransactionId: null,
+  },
+  editor: {
+    draft: overrides.draft ?? null,
+    status: {
+      isRefreshing: false,
+      isSaving: false,
+      feedback: null,
+      offline: false,
+    },
+    actions: {
+      onKindChange: () => {},
+      onAmountChange: () => {},
+      onCategoryChange: () => {},
+      onDateChange: () => {},
+      onNoteChange: () => {},
+      onSave: () => {},
+      onCancel: () => {},
+    },
+  },
+  categoryCreation: {
+    draft: {
+      nameInput: "",
+      type: "expense",
+    },
+    status: {
+      isSaving: false,
+      feedback: null,
+    },
+    actions: {
+      onNameChange: () => {},
+      onTypeChange: () => {},
+      onSubmit: () => {},
+    },
+  },
+  listActions: {
+    onToggleIncludeDeleted: () => {},
+    onSelectTransaction: () => {},
+    onDeleteTransaction: () => {},
+  },
+});

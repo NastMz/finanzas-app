@@ -1,11 +1,11 @@
 import type {
-  FinanzasTransactionKind,
   FinanzasAccountTabViewModel,
   FinanzasUiServiceContract,
 } from "@finanzas/ui";
 import { renderToStaticMarkup } from "react-dom/server";
 
 import { DashboardPage } from "../../ui/components/index.js";
+import type { AccountScreenProps } from "./account-contracts.js";
 import {
   AccountHeader,
   CategoryCoverageCard,
@@ -15,34 +15,11 @@ import {
 import styles from "./account-screen.module.css";
 
 /**
- * Props for `AccountScreen`.
- */
-export interface AccountScreenProps {
-  viewModel: FinanzasAccountTabViewModel;
-  categoryFeedback?: {
-    tone: "success" | "error" | "offline";
-    message: string;
-  } | null;
-  categoryNameInput?: string;
-  categoryType?: FinanzasTransactionKind;
-  isCreatingCategory?: boolean;
-  onCategoryNameChange?: (value: string) => void;
-  onCategoryTypeChange?: (kind: FinanzasTransactionKind) => void;
-  onCreateCategory?: () => void | Promise<void>;
-}
-
-/**
  * React component for `Cuenta` tab.
  */
 export const AccountScreen = ({
   viewModel,
-  categoryFeedback,
-  categoryNameInput,
-  categoryType,
-  isCreatingCategory,
-  onCategoryNameChange,
-  onCategoryTypeChange,
-  onCreateCategory,
+  categoryCreation,
 }: AccountScreenProps): JSX.Element => (
   <DashboardPage
     className={styles.page ?? ""}
@@ -71,13 +48,7 @@ export const AccountScreen = ({
         />
         <CategoryCoverageCard
           categoryManagement={viewModel.categoryManagement}
-          {...(categoryFeedback !== undefined ? { feedback: categoryFeedback } : {})}
-          {...(categoryNameInput !== undefined ? { categoryNameInput } : {})}
-          {...(categoryType !== undefined ? { categoryType } : {})}
-          {...(isCreatingCategory !== undefined ? { isSaving: isCreatingCategory } : {})}
-          {...(onCategoryNameChange !== undefined ? { onCategoryNameChange } : {})}
-          {...(onCategoryTypeChange !== undefined ? { onCategoryTypeChange } : {})}
-          {...(onCreateCategory !== undefined ? { onSubmit: onCreateCategory } : {})}
+          {...(categoryCreation !== undefined ? { categoryCreation } : {})}
         />
       </section>
     </section>

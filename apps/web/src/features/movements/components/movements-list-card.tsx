@@ -2,6 +2,10 @@ import type { FinanzasMovementsTabViewModel } from "@finanzas/ui";
 
 import { SurfaceCard } from "../../../ui/components/index.js";
 import { TransactionList } from "../../shared/components/index.js";
+import type {
+  MovementsListActionsContract,
+  MovementsSelectionContract,
+} from "../movements-contracts.js";
 
 /**
  * Transactions list card for Movements tab.
@@ -9,19 +13,15 @@ import { TransactionList } from "../../shared/components/index.js";
 export interface MovementsListCardProps {
   items: FinanzasMovementsTabViewModel["items"];
   includeDeleted: boolean;
-  selectedTransactionId?: string | null;
-  busyTransactionId?: string | null;
-  onSelectTransaction?: (transactionId: string) => void;
-  onDeleteTransaction?: (transactionId: string) => void;
+  selection?: MovementsSelectionContract;
+  listActions?: MovementsListActionsContract;
 }
 
 export const MovementsListCard = ({
   items,
   includeDeleted,
-  selectedTransactionId = null,
-  busyTransactionId = null,
-  onSelectTransaction,
-  onDeleteTransaction,
+  selection,
+  listActions,
 }: MovementsListCardProps): JSX.Element => (
   <SurfaceCard
     title="Historial"
@@ -31,21 +31,21 @@ export const MovementsListCard = ({
       transactions={items}
       showDeletedState={includeDeleted}
       emptyLabel="No hay movimientos para los filtros actuales."
-      selectedTransactionId={selectedTransactionId}
+      selectedTransactionId={selection?.selectedTransactionId ?? null}
       transactionActions={(transaction) => [
         {
-          label: selectedTransactionId === transaction.id ? "Editando" : "Editar",
-          disabled: transaction.deleted || busyTransactionId === transaction.id,
+          label: selection?.selectedTransactionId === transaction.id ? "Editando" : "Editar",
+          disabled: transaction.deleted || selection?.busyTransactionId === transaction.id,
           onClick: () => {
-            onSelectTransaction?.(transaction.id);
+            listActions?.onSelectTransaction(transaction.id);
           },
         },
         {
-          label: busyTransactionId === transaction.id ? "Eliminando..." : "Eliminar",
-          disabled: transaction.deleted || busyTransactionId === transaction.id,
+          label: selection?.busyTransactionId === transaction.id ? "Eliminando..." : "Eliminar",
+          disabled: transaction.deleted || selection?.busyTransactionId === transaction.id,
           tone: "danger",
           onClick: () => {
-            onDeleteTransaction?.(transaction.id);
+            void listActions?.onDeleteTransaction(transaction.id);
           },
         },
       ]}

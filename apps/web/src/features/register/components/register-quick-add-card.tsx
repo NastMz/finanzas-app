@@ -5,6 +5,7 @@ import type {
 } from "@finanzas/ui";
 
 import { SurfaceCard } from "../../../ui/components/index.js";
+import type { RegisterQuickAddContract } from "../register-contracts.js";
 import styles from "./register-quick-add-card.module.css";
 
 /**
@@ -16,22 +17,7 @@ export interface RegisterQuickAddCardProps {
   defaultDate: Date;
   defaultCategoryId: string | null;
   categories: FinanzasRegisterTabViewModel["categories"];
-  amountInput?: string;
-  noteInput?: string;
-  dateInput?: string;
-  selectedCategoryId?: string | null;
-  kind?: FinanzasTransactionKind;
-  isSaving?: boolean;
-  feedback?: {
-    tone: "success" | "error" | "offline";
-    message: string;
-  } | null;
-  onKindChange?: (kind: FinanzasTransactionKind) => void;
-  onAmountInputChange?: (value: string) => void;
-  onCategoryChange?: (categoryId: string) => void;
-  onNoteChange?: (value: string) => void;
-  onDateChange?: (value: string) => void;
-  onSubmit?: () => void | Promise<void>;
+  quickAdd?: RegisterQuickAddContract;
 }
 
 const resolveDefaultCategoryName = (
@@ -53,7 +39,7 @@ const resolveSelectableCategories = (
   categories.filter((category) => !category.deleted && category.type === kind);
 
 const resolveFeedbackToneClass = (
-  feedback: RegisterQuickAddCardProps["feedback"],
+  feedback: RegisterQuickAddContract["status"]["feedback"],
 ): string | undefined => {
   switch (feedback?.tone) {
     case "error":
@@ -73,20 +59,18 @@ export const RegisterQuickAddCard = ({
   defaultDate,
   defaultCategoryId,
   categories,
-  amountInput = "",
-  noteInput = "",
-  dateInput = defaultDate.toISOString().slice(0, 16),
-  selectedCategoryId,
-  kind = "expense",
-  isSaving = false,
-  feedback = null,
-  onKindChange,
-  onAmountInputChange,
-  onCategoryChange,
-  onNoteChange,
-  onDateChange,
-  onSubmit,
+  quickAdd,
 }: RegisterQuickAddCardProps): JSX.Element => {
+  const form = quickAdd?.form;
+  const status = quickAdd?.status;
+  const actions = quickAdd?.actions;
+  const amountInput = form?.amountInput ?? "";
+  const noteInput = form?.noteInput ?? "";
+  const dateInput = form?.dateInput ?? defaultDate.toISOString().slice(0, 16);
+  const selectedCategoryId = form?.selectedCategoryId;
+  const kind = form?.kind ?? "expense";
+  const isSaving = status?.isSaving ?? false;
+  const feedback = status?.feedback ?? null;
   const activeCategoryId = selectedCategoryId ?? defaultCategoryId;
   const defaultCategoryName = resolveDefaultCategoryName(
     activeCategoryId,
@@ -111,7 +95,7 @@ export const RegisterQuickAddCard = ({
         className={styles.form}
         onSubmit={(event) => {
           event.preventDefault();
-          void onSubmit?.();
+          void actions?.onSubmit();
         }}
       >
         <section className={styles.amountField} aria-label="Monto de transaccion">
@@ -122,7 +106,7 @@ export const RegisterQuickAddCard = ({
               type="button"
               className={`${styles.modeButton} ${kind === "expense" ? styles.modeButtonActive : ""}`}
               onClick={() => {
-                onKindChange?.("expense");
+                actions?.onKindChange("expense");
               }}
             >
               Gasto
@@ -131,7 +115,7 @@ export const RegisterQuickAddCard = ({
               type="button"
               className={`${styles.modeButton} ${kind === "income" ? styles.modeButtonActive : ""}`}
               onClick={() => {
-                onKindChange?.("income");
+                actions?.onKindChange("income");
               }}
             >
               Ingreso
@@ -149,7 +133,7 @@ export const RegisterQuickAddCard = ({
               placeholder="120000"
               value={amountInput}
               onChange={(event) => {
-                onAmountInputChange?.(event.target.value);
+                actions?.onAmountInputChange(event.target.value);
               }}
             />
           </label>
@@ -170,7 +154,7 @@ export const RegisterQuickAddCard = ({
               className={styles.select}
               value={activeCategoryId ?? ""}
               onChange={(event) => {
-                onCategoryChange?.(event.target.value);
+                actions?.onCategoryChange(event.target.value);
               }}
             >
               {selectableCategories.length === 0
@@ -189,7 +173,7 @@ export const RegisterQuickAddCard = ({
               type="datetime-local"
               value={dateInput}
               onChange={(event) => {
-                onDateChange?.(event.target.value);
+                actions?.onDateChange(event.target.value);
               }}
             />
           </label>
@@ -201,7 +185,7 @@ export const RegisterQuickAddCard = ({
               placeholder="Mercado, taxi, reembolso..."
               value={noteInput}
               onChange={(event) => {
-                onNoteChange?.(event.target.value);
+                actions?.onNoteChange(event.target.value);
               }}
             />
           </label>

@@ -6,43 +6,18 @@ import type {
 } from "@finanzas/ui";
 
 import { SurfaceCard } from "../../../ui/components/index.js";
+import type {
+  MovementsCategoryCreationContract,
+  MovementsEditorContract,
+} from "../movements-contracts.js";
 import styles from "./movements-editor-card.module.css";
-
-export interface MovementsEditorDraft {
-  amountInput: string;
-  categoryId: string;
-  dateInput: string;
-  noteInput: string;
-  kind: FinanzasTransactionKind;
-}
 
 export interface MovementsEditorCardProps {
   categoryManagement: FinanzasCategoryManagementState;
   categories: FinanzasCategoryOption[];
   selectedTransaction: FinanzasTransactionItemViewModel | null;
-  draft: MovementsEditorDraft | null;
-  isSaving?: boolean;
-  createCategoryNameInput?: string;
-  createCategoryType?: FinanzasTransactionKind;
-  isCreatingCategory?: boolean;
-  feedback?: {
-    tone: "success" | "error" | "offline";
-    message: string;
-  } | null;
-  createCategoryFeedback?: {
-    tone: "success" | "error" | "offline";
-    message: string;
-  } | null;
-  onKindChange?: (kind: FinanzasTransactionKind) => void;
-  onAmountInputChange?: (value: string) => void;
-  onCategoryChange?: (value: string) => void;
-  onCreateCategoryNameChange?: (value: string) => void;
-  onCreateCategoryTypeChange?: (value: FinanzasTransactionKind) => void;
-  onDateChange?: (value: string) => void;
-  onNoteChange?: (value: string) => void;
-  onSave?: () => void | Promise<void>;
-  onCancel?: () => void;
-  onCreateCategory?: () => void | Promise<void>;
+  editor?: MovementsEditorContract;
+  categoryCreation?: MovementsCategoryCreationContract;
 }
 
 const resolveSelectableCategories = (
@@ -51,7 +26,7 @@ const resolveSelectableCategories = (
 ): FinanzasCategoryOption[] => categories.filter((category) => !category.deleted && category.type === kind);
 
 const resolveFeedbackToneClass = (
-  feedback: MovementsEditorCardProps["feedback"],
+  feedback: MovementsEditorContract["status"]["feedback"] | MovementsCategoryCreationContract["status"]["feedback"],
 ): string | undefined => {
   switch (feedback?.tone) {
     case "error":
@@ -69,24 +44,22 @@ export const MovementsEditorCard = ({
   categoryManagement,
   categories,
   selectedTransaction,
-  draft,
-  isSaving = false,
-  createCategoryNameInput = "",
-  createCategoryType = "expense",
-  isCreatingCategory = false,
-  feedback = null,
-  createCategoryFeedback = null,
-  onKindChange,
-  onAmountInputChange,
-  onCategoryChange,
-  onCreateCategoryNameChange,
-  onCreateCategoryTypeChange,
-  onDateChange,
-  onNoteChange,
-  onSave,
-  onCancel,
-  onCreateCategory,
+  editor,
+  categoryCreation,
 }: MovementsEditorCardProps): JSX.Element => {
+  const draft = editor?.draft ?? null;
+  const editorStatus = editor?.status;
+  const editorActions = editor?.actions;
+  const categoryDraft = categoryCreation?.draft;
+  const categoryStatus = categoryCreation?.status;
+  const categoryActions = categoryCreation?.actions;
+  const createCategoryNameInput = categoryDraft?.nameInput ?? "";
+  const createCategoryType = categoryDraft?.type ?? "expense";
+  const isCreatingCategory = categoryStatus?.isSaving ?? false;
+  const feedback = editorStatus?.feedback ?? null;
+  const createCategoryFeedback = categoryStatus?.feedback ?? null;
+  const isSaving = editorStatus?.isSaving ?? false;
+
   if (selectedTransaction === null || draft === null) {
     return (
       <SurfaceCard title="Editor" subtitle="Selecciona un movimiento para corregirlo">
@@ -112,7 +85,7 @@ export const MovementsEditorCard = ({
             className={styles.form}
             onSubmit={(event) => {
               event.preventDefault();
-              void onCreateCategory?.();
+              void categoryActions?.onSubmit();
             }}
           >
             <label className={styles.field}>
@@ -123,7 +96,7 @@ export const MovementsEditorCard = ({
                 placeholder="Ej. Supermercado o Sueldo"
                 value={createCategoryNameInput}
                 onChange={(event) => {
-                  onCreateCategoryNameChange?.(event.target.value);
+                  categoryActions?.onNameChange(event.target.value);
                 }}
               />
             </label>
@@ -137,7 +110,7 @@ export const MovementsEditorCard = ({
                     type="button"
                     className={`${styles.modeButton} ${createCategoryType === supportedType ? styles.modeButtonActive : ""}`}
                     onClick={() => {
-                      onCreateCategoryTypeChange?.(supportedType);
+                      categoryActions?.onTypeChange(supportedType);
                     }}
                   >
                     {supportedType === "expense" ? "Gasto" : "Ingreso"}
@@ -159,7 +132,7 @@ export const MovementsEditorCard = ({
                 className={styles.secondaryAction}
                 disabled={isCreatingCategory}
                 onClick={() => {
-                  onCancel?.();
+                  editorActions?.onCancel();
                 }}
               >
                 Cerrar
@@ -185,7 +158,7 @@ export const MovementsEditorCard = ({
         className={styles.form}
         onSubmit={(event) => {
           event.preventDefault();
-          void onSave?.();
+          void editorActions?.onSave();
         }}
       >
         <div className={styles.modeSwitch}>
@@ -193,7 +166,7 @@ export const MovementsEditorCard = ({
             type="button"
             className={`${styles.modeButton} ${draft.kind === "expense" ? styles.modeButtonActive : ""}`}
             onClick={() => {
-              onKindChange?.("expense");
+              editorActions?.onKindChange("expense");
             }}
           >
             Gasto
@@ -202,7 +175,7 @@ export const MovementsEditorCard = ({
             type="button"
             className={`${styles.modeButton} ${draft.kind === "income" ? styles.modeButtonActive : ""}`}
             onClick={() => {
-              onKindChange?.("income");
+              editorActions?.onKindChange("income");
             }}
           >
             Ingreso
@@ -217,7 +190,7 @@ export const MovementsEditorCard = ({
             pattern="[0-9]*"
             value={draft.amountInput}
             onChange={(event) => {
-              onAmountInputChange?.(event.target.value);
+              editorActions?.onAmountChange(event.target.value);
             }}
           />
         </label>
@@ -228,7 +201,7 @@ export const MovementsEditorCard = ({
             className={styles.input}
             value={draft.categoryId}
             onChange={(event) => {
-              onCategoryChange?.(event.target.value);
+              editorActions?.onCategoryChange(event.target.value);
             }}
           >
             {selectableCategories.map((category) => (
@@ -246,7 +219,7 @@ export const MovementsEditorCard = ({
             type="datetime-local"
             value={draft.dateInput}
             onChange={(event) => {
-              onDateChange?.(event.target.value);
+              editorActions?.onDateChange(event.target.value);
             }}
           />
         </label>
@@ -258,7 +231,7 @@ export const MovementsEditorCard = ({
             type="text"
             value={draft.noteInput}
             onChange={(event) => {
-              onNoteChange?.(event.target.value);
+              editorActions?.onNoteChange(event.target.value);
             }}
           />
         </label>
@@ -272,7 +245,7 @@ export const MovementsEditorCard = ({
             className={styles.secondaryAction}
             disabled={isSaving}
             onClick={() => {
-              onCancel?.();
+              editorActions?.onCancel();
             }}
           >
             Cerrar

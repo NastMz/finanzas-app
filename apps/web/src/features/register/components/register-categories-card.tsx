@@ -2,6 +2,7 @@ import type { FinanzasRegisterTabViewModel } from "@finanzas/ui";
 
 import { classNames } from "../../../ui/lib/class-names.js";
 import { SurfaceCard } from "../../../ui/components/index.js";
+import type { RegisterCategorySelectionContract } from "../register-contracts.js";
 import styles from "./register-categories-card.module.css";
 
 /**
@@ -9,8 +10,7 @@ import styles from "./register-categories-card.module.css";
  */
 export interface RegisterCategoriesCardProps {
   categories: FinanzasRegisterTabViewModel["categories"];
-  selectedCategoryId?: string | null;
-  onSelectCategory?: (categoryId: string) => void;
+  categorySelection?: RegisterCategorySelectionContract;
 }
 
 const splitCategories = (
@@ -25,9 +25,9 @@ const splitCategories = (
 
 export const RegisterCategoriesCard = ({
   categories,
-  selectedCategoryId = null,
-  onSelectCategory,
+  categorySelection,
 }: RegisterCategoriesCardProps): JSX.Element => {
+  const selectedCategoryId = categorySelection?.selectedCategoryId ?? null;
   const { expense, income } = splitCategories(categories);
 
   return (
@@ -57,7 +57,7 @@ export const RegisterCategoriesCard = ({
                   )}
                   disabled={category.deleted}
                   onClick={() => {
-                    onSelectCategory?.(category.id);
+                    categorySelection?.onSelectCategory(category.id);
                   }}
                 >
                   {category.name}
@@ -86,7 +86,7 @@ export const RegisterCategoriesCard = ({
                   )}
                   disabled={category.deleted}
                   onClick={() => {
-                    onSelectCategory?.(category.id);
+                    categorySelection?.onSelectCategory(category.id);
                   }}
                 >
                   {category.name}

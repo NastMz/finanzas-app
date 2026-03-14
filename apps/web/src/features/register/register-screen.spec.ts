@@ -3,11 +3,13 @@ import { describe, expect, it } from "vitest";
 import {
   createFinanzasUiService,
   selectFinanzasUiDependencies,
+  type FinanzasTransactionKind,
   type FinanzasRegisterTabViewModel,
 } from "@finanzas/ui";
 import { renderToStaticMarkup } from "react-dom/server";
 
 import { createWebBootstrap } from "../../app/bootstrap.js";
+import type { RegisterScreenProps } from "./register-contracts.js";
 import {
   loadRegisterScreenHtml,
   RegisterScreen,
@@ -79,7 +81,7 @@ describe("registerScreen", () => {
     const html = renderToStaticMarkup(
       RegisterScreen({
         viewModel,
-        kind: "income",
+        ...createRegisterScreenContracts(viewModel, "income"),
       }),
     );
 
@@ -178,13 +180,13 @@ describe("registerScreen", () => {
     const blockedHtml = renderToStaticMarkup(
       RegisterScreen({
         viewModel: blockedViewModel,
-        kind: "income",
+        ...createRegisterScreenContracts(blockedViewModel, "income"),
       }),
     );
     const recoveredHtml = renderToStaticMarkup(
       RegisterScreen({
         viewModel: recoveredViewModel,
-        kind: "income",
+        ...createRegisterScreenContracts(recoveredViewModel, "income"),
       }),
     );
 
@@ -236,3 +238,50 @@ const createWebFeatureRuntime = (): {
     ui,
   };
 };
+
+const createRegisterScreenContracts = (
+  viewModel: FinanzasRegisterTabViewModel,
+  kind: FinanzasTransactionKind = "expense",
+): Pick<RegisterScreenProps, "quickAdd" | "categoryCreation" | "categorySelection"> => ({
+  quickAdd: {
+    form: {
+      amountInput: "",
+      noteInput: "",
+      dateInput: viewModel.defaultDate.toISOString().slice(0, 16),
+      selectedCategoryId: viewModel.defaultCategoryId,
+      kind,
+    },
+    status: {
+      isSaving: false,
+      feedback: null,
+      offline: false,
+    },
+    actions: {
+      onKindChange: () => {},
+      onAmountInputChange: () => {},
+      onCategoryChange: () => {},
+      onNoteChange: () => {},
+      onDateChange: () => {},
+      onSubmit: () => {},
+    },
+  },
+  categoryCreation: {
+    draft: {
+      nameInput: "",
+      type: viewModel.categoryManagement.createAction.supportedTypes[0] ?? "expense",
+    },
+    status: {
+      isSaving: false,
+      feedback: null,
+    },
+    actions: {
+      onNameChange: () => {},
+      onTypeChange: () => {},
+      onSubmit: () => {},
+    },
+  },
+  categorySelection: {
+    selectedCategoryId: viewModel.defaultCategoryId,
+    onSelectCategory: () => {},
+  },
+});

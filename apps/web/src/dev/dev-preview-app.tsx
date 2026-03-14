@@ -1,49 +1,35 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import type {
   FinanzasAccountTabViewModel,
-  FinanzasCategoryOption,
   FinanzasHomeTabViewModel,
   FinanzasMovementsTabViewModel,
   FinanzasRegisterTabViewModel,
   FinanzasSyncStatusViewModel,
-  FinanzasTransactionItemViewModel,
-  FinanzasTransactionKind,
 } from "@finanzas/ui";
 
 import { webCommands, webUi } from "../app/main.js";
 import { AccountScreen } from "../features/account/account-screen.js";
+import { useAccountOrchestration } from "../features/account/hooks/use-account-orchestration.js";
 import { HomeScreen } from "../features/home/home-screen.js";
-import type { MovementsEditorDraft } from "../features/movements/components/index.js";
 import { MovementsScreen } from "../features/movements/movements-screen.js";
+import { useMovementsOrchestration } from "../features/movements/hooks/use-movements-orchestration.js";
 import { RegisterScreen } from "../features/register/register-screen.js";
+import { useRegisterOrchestration } from "../features/register/hooks/use-register-orchestration.js";
 import {
   formatMinorAmount,
   getSyncStatusLabel,
   getSyncTone,
 } from "../features/shared/lib/formatters.js";
+import {
+  applyHostRefreshOptions,
+  createHostRefreshSeamState,
+  type HostRefreshAdapter,
+} from "../features/shared/lib/host-orchestration.js";
 import { StatusPill } from "../ui/components/index.js";
 import { classNames } from "../ui/lib/class-names.js";
 import styles from "./dev-preview-app.module.css";
 
 type PreviewTab = "home" | "movements" | "register" | "account";
-
-interface InteractionNotice {
-  tone: "success" | "error" | "offline";
-  message: string;
-}
-
-interface RegisterFormState {
-  amountInput: string;
-  noteInput: string;
-  dateInput: string;
-  selectedCategoryId: string | null;
-  kind: FinanzasTransactionKind;
-}
-
-interface CategoryCreateState {
-  nameInput: string;
-  type: FinanzasTransactionKind;
-}
 
 const tabConfig: Array<{
   id: PreviewTab;
@@ -114,98 +100,6 @@ const resolveTabMeta = (
   }
 };
 
-const toDateTimeLocalValue = (value: Date): string => value.toISOString().slice(0, 16);
-
-const resolveCategoriesByKind = (
-  categories: FinanzasCategoryOption[],
-  kind: FinanzasTransactionKind,
-): FinanzasCategoryOption[] => categories.filter((category) => !category.deleted && category.type === kind);
-
-const resolveCategoryForKind = (
-  categories: FinanzasCategoryOption[],
-  kind: FinanzasTransactionKind,
-  preferredCategoryId?: string | null,
-): string | null => {
-  const matchingCategories = resolveCategoriesByKind(categories, kind);
-  const preferredCategory = matchingCategories.find((category) => category.id === preferredCategoryId);
-  return preferredCategory?.id ?? matchingCategories[0]?.id ?? null;
-};
-
-const createRegisterFormState = (
-  register: FinanzasRegisterTabViewModel,
-): RegisterFormState => {
-  const defaultKind: FinanzasTransactionKind = register.defaultCategoryId !== null
-    ? register.categories.find((category) => category.id === register.defaultCategoryId)?.type ?? "expense"
-    : register.categoryManagement.coverageByKind.expense.available
-      ? "expense"
-      : register.categoryManagement.coverageByKind.income.available
-        ? "income"
-        : "expense";
-  const defaultCategory = register.categories.find(
-    (category) => category.id === register.defaultCategoryId,
-  );
-  const kind = defaultCategory?.type ?? defaultKind;
-
-  return {
-    amountInput: "",
-    noteInput: "",
-    dateInput: toDateTimeLocalValue(register.defaultDate),
-    selectedCategoryId: resolveCategoryForKind(
-      register.categories,
-      kind,
-      register.defaultCategoryId,
-    ),
-    kind,
-  };
-};
-
-const createCategoryCreateState = (
-  type: FinanzasTransactionKind = "expense",
-): CategoryCreateState => ({
-  nameInput: "",
-  type,
-});
-
-const createMovementDraft = (
-  transaction: FinanzasTransactionItemViewModel | null,
-): MovementsEditorDraft | null => {
-  if (transaction === null || transaction.deleted) {
-    return null;
-  }
-
-  return {
-    amountInput: transaction.amountMinor.toString(),
-    categoryId: transaction.categoryId,
-    dateInput: toDateTimeLocalValue(transaction.date),
-    noteInput: transaction.note ?? "",
-    kind: transaction.kind,
-  };
-};
-
-const resolveNextSelectedTransactionId = (
-  items: FinanzasTransactionItemViewModel[],
-  preferredId: string | null,
-): string | null => {
-  const preferred = items.find((item) => item.id === preferredId && !item.deleted);
-
-  if (preferred !== undefined) {
-    return preferred.id;
-  }
-
-  return items.find((item) => !item.deleted)?.id ?? null;
-};
-
-const parseMinorAmount = (value: string): bigint | null => {
-  const normalized = value.trim();
-
-  if (!/^\d+$/.test(normalized)) {
-    return null;
-  }
-
-  const amount = BigInt(normalized);
-  return amount > 0n ? amount : null;
-};
-
 const getOfflineState = (): boolean => !(globalThis.navigator?.onLine ?? true);
 
 export const DevPreviewApp = ({
@@ -219,37 +113,7 @@ export const DevPreviewApp = ({
   const [movementsViewModel, setMovementsViewModel] = useState(movements);
   const [registerViewModel, setRegisterViewModel] = useState(register);
   const [accountViewModel, setAccountViewModel] = useState(account);
-  const [registerForm, setRegisterForm] = useState(() => createRegisterFormState(register));
-  const [selectedTransactionId, setSelectedTransactionId] = useState<string | null>(
-    resolveNextSelectedTransactionId(movements.items, null),
-  );
-  const [movementDraft, setMovementDraft] = useState<MovementsEditorDraft | null>(() => {
-    const initialTransaction = movements.items.find(
-      (item) => item.id === resolveNextSelectedTransactionId(movements.items, null),
-    ) ?? null;
-    return createMovementDraft(initialTransaction);
-  });
-  const [isRefreshingMovements, setIsRefreshingMovements] = useState(false);
-  const [isSavingRegister, setIsSavingRegister] = useState(false);
-  const [isSavingMovement, setIsSavingMovement] = useState(false);
-  const [busyTransactionId, setBusyTransactionId] = useState<string | null>(null);
-  const [registerFeedback, setRegisterFeedback] = useState<InteractionNotice | null>(null);
-  const [movementsFeedback, setMovementsFeedback] = useState<InteractionNotice | null>(null);
-  const [registerCategoryForm, setRegisterCategoryForm] = useState<CategoryCreateState>(() =>
-    createCategoryCreateState("expense"),
-  );
-  const [accountCategoryForm, setAccountCategoryForm] = useState<CategoryCreateState>(() =>
-    createCategoryCreateState("expense"),
-  );
-  const [movementCategoryForm, setMovementCategoryForm] = useState<CategoryCreateState>(() =>
-    createCategoryCreateState("expense"),
-  );
-  const [accountCategoryFeedback, setAccountCategoryFeedback] = useState<InteractionNotice | null>(null);
-  const [registerCategoryFeedback, setRegisterCategoryFeedback] = useState<InteractionNotice | null>(null);
-  const [movementCategoryFeedback, setMovementCategoryFeedback] = useState<InteractionNotice | null>(null);
-  const [isCreatingAccountCategory, setIsCreatingAccountCategory] = useState(false);
-  const [isCreatingRegisterCategory, setIsCreatingRegisterCategory] = useState(false);
-  const [isCreatingMovementCategory, setIsCreatingMovementCategory] = useState(false);
+  const [refreshSeam, setRefreshSeam] = useState(() => createHostRefreshSeamState(movements.includeDeleted));
   const [isOffline, setIsOffline] = useState(getOfflineState());
 
   useEffect(() => {
@@ -268,381 +132,75 @@ export const DevPreviewApp = ({
   }, []);
 
   const currentAccountId = homeViewModel.account.id;
-  const movementCategories = useMemo(
-    () => registerViewModel.categories,
-    [registerViewModel.categories],
-  );
+  const movementCategories = registerViewModel.categories;
 
-  const selectedTransaction = useMemo(
-    () => movementsViewModel.items.find((item) => item.id === selectedTransactionId) ?? null,
-    [movementsViewModel.items, selectedTransactionId],
-  );
+  const refreshHost: HostRefreshAdapter = {
+    refresh: async (options = {}) => {
+      const nextRefreshSeam = applyHostRefreshOptions(refreshSeam, options);
+      const [nextHome, nextMovements, nextRegister, nextAccount] = await Promise.all([
+        webUi.loadHomeTab({
+          accountId: currentAccountId,
+          period: homeViewModel.period,
+        }),
+        webUi.loadMovementsTab({
+          accountId: currentAccountId,
+          includeDeleted: nextRefreshSeam.includeDeleted,
+          limit: 12,
+        }),
+        webUi.loadRegisterTab({
+          accountId: currentAccountId,
+          suggestedCategoryLimit: 5,
+        }),
+        webUi.loadAccountTab(),
+      ]);
 
-  useEffect(() => {
-    setMovementDraft(createMovementDraft(selectedTransaction));
-  }, [selectedTransaction]);
-
-  useEffect(() => {
-    setMovementDraft((current) => {
-      if (current === null) {
-        return current;
-      }
-
-      const resolvedCategoryId = resolveCategoryForKind(
-        movementCategories,
-        current.kind,
-        current.categoryId,
-      );
-
-      if (resolvedCategoryId === null || resolvedCategoryId === current.categoryId) {
-        return current;
-      }
+      setHomeViewModel(nextHome);
+      setMovementsViewModel(nextMovements);
+      setRegisterViewModel(nextRegister);
+      setAccountViewModel(nextAccount);
+      setRefreshSeam(nextRefreshSeam);
 
       return {
-        ...current,
-        categoryId: resolvedCategoryId,
+        home: nextHome,
+        movements: nextMovements,
+        register: nextRegister,
+        account: nextAccount,
       };
-    });
-  }, [movementCategories]);
-
-  const reloadTabs = async (
-    options: {
-      includeDeleted?: boolean;
-      preferredTransactionId?: string | null;
-      resetRegisterForm?: boolean;
-    } = {},
-  ): Promise<void> => {
-    const nextIncludeDeleted = options.includeDeleted ?? movementsViewModel.includeDeleted;
-    const [nextHome, nextMovements, nextRegister, nextAccount] = await Promise.all([
-      webUi.loadHomeTab({
-        accountId: currentAccountId,
-        period: homeViewModel.period,
-      }),
-      webUi.loadMovementsTab({
-        accountId: currentAccountId,
-        includeDeleted: nextIncludeDeleted,
-        limit: 12,
-      }),
-      webUi.loadRegisterTab({
-        accountId: currentAccountId,
-        suggestedCategoryLimit: 5,
-      }),
-      webUi.loadAccountTab(),
-    ]);
-
-    setHomeViewModel(nextHome);
-    setMovementsViewModel(nextMovements);
-    setRegisterViewModel(nextRegister);
-    setAccountViewModel(nextAccount);
-
-    if (options.resetRegisterForm === true) {
-      setRegisterForm(createRegisterFormState(nextRegister));
-    }
-
-    setSelectedTransactionId(
-      resolveNextSelectedTransactionId(
-        nextMovements.items,
-        options.preferredTransactionId ?? selectedTransactionId,
-      ),
-    );
+    },
   };
 
-  const handleRegisterKindChange = (kind: FinanzasTransactionKind): void => {
-    setRegisterForm((current) => ({
-      ...current,
-      kind,
-      selectedCategoryId: resolveCategoryForKind(
-        registerViewModel.categories,
-        kind,
-        current.selectedCategoryId,
-      ),
-    }));
-  };
+  const registerOrchestration = useRegisterOrchestration({
+    viewModel: registerViewModel,
+    accountId: currentAccountId,
+    offline: isOffline,
+    resetVersion: refreshSeam.registerResetVersion,
+    refreshHost,
+    mutations: {
+      quickAddTransaction: (input) => webUi.quickAddTransaction(input),
+      createCategory: (input) => webUi.createCategory(input),
+    },
+  });
 
-  const handleRegisterCategoryChange = (categoryId: string): void => {
-    const selectedCategory = registerViewModel.categories.find(
-      (category) => category.id === categoryId,
-    );
+  const movementsOrchestration = useMovementsOrchestration({
+    viewModel: movementsViewModel,
+    categories: movementCategories,
+    offline: isOffline,
+    refreshHost,
+    mutations: {
+      updateTransaction: (input) => webCommands.updateTransaction(input),
+      deleteTransaction: (input) => webCommands.deleteTransaction(input),
+      createCategory: (input) => webUi.createCategory(input),
+    },
+  });
 
-    setRegisterForm((current) => ({
-      ...current,
-      selectedCategoryId: categoryId,
-      kind: selectedCategory?.type ?? current.kind,
-    }));
-  };
-
-  const handleRegisterSubmit = async (): Promise<void> => {
-    const amountMinor = parseMinorAmount(registerForm.amountInput);
-
-    if (amountMinor === null) {
-      setRegisterFeedback({
-        tone: "error",
-        message: "El monto tiene que ser un entero positivo en unidades menores.",
-      });
-      return;
-    }
-
-    if (registerForm.selectedCategoryId === null) {
-      setRegisterFeedback({
-        tone: "error",
-        message: "Elige una categoria activa antes de guardar.",
-      });
-      return;
-    }
-
-    const transactionDate = new Date(registerForm.dateInput);
-
-    if (Number.isNaN(transactionDate.valueOf())) {
-      setRegisterFeedback({
-        tone: "error",
-        message: "La fecha no es valida.",
-      });
-      return;
-    }
-
-    setIsSavingRegister(true);
-    setRegisterFeedback(null);
-
-    try {
-      const result = await webUi.quickAddTransaction({
-        accountId: currentAccountId,
-        amountMinor,
-        categoryId: registerForm.selectedCategoryId,
-        date: transactionDate,
-        kind: registerForm.kind,
-        note: registerForm.noteInput.trim(),
-      });
-
-      await reloadTabs({
-        preferredTransactionId: result.transactionId,
-        resetRegisterForm: true,
-      });
-      setRegisterFeedback({
-        tone: isOffline ? "offline" : "success",
-        message: isOffline
-          ? "Movimiento guardado en este dispositivo. Se actualiza cuando vuelva la conexion."
-          : "Movimiento registrado y reflejado en Movimientos.",
-      });
-    } catch (error) {
-      setRegisterFeedback({
-        tone: "error",
-        message: error instanceof Error ? error.message : "No se pudo registrar el movimiento.",
-      });
-    } finally {
-      setIsSavingRegister(false);
-    }
-  };
-
-  const handleCreateCategory = async (
-    draft: CategoryCreateState,
-    setSaving: (value: boolean) => void,
-    setFeedback: (value: InteractionNotice | null) => void,
-    resetDraft: (value: CategoryCreateState) => void,
-    options: {
-      resetRegisterForm?: boolean;
-    } = {},
-  ): Promise<void> => {
-    const name = draft.nameInput.trim();
-
-    if (name.length === 0) {
-      setFeedback({
-        tone: "error",
-        message: "Ingresa un nombre para la categoria.",
-      });
-      return;
-    }
-
-    setSaving(true);
-    setFeedback(null);
-
-    try {
-      await webUi.createCategory({
-        name,
-        type: draft.type,
-      });
-      await reloadTabs({
-        preferredTransactionId: selectedTransactionId,
-        resetRegisterForm: options.resetRegisterForm ?? false,
-      });
-      resetDraft(createCategoryCreateState(draft.type));
-      setFeedback({
-        tone: isOffline ? "offline" : "success",
-        message: isOffline
-          ? "Categoria creada en este dispositivo. Se actualiza cuando vuelva la conexion."
-          : "Categoria creada. Ya puedes continuar desde esta pantalla.",
-      });
-    } catch (error) {
-      setFeedback({
-        tone: "error",
-        message: error instanceof Error ? error.message : "No se pudo crear la categoria.",
-      });
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const handleRegisterCreateCategory = async (): Promise<void> => {
-    await handleCreateCategory(
-      registerCategoryForm,
-      setIsCreatingRegisterCategory,
-      setRegisterCategoryFeedback,
-      setRegisterCategoryForm,
-      {
-        resetRegisterForm: true,
-      },
-    );
-  };
-
-  const handleAccountCreateCategory = async (): Promise<void> => {
-    await handleCreateCategory(
-      accountCategoryForm,
-      setIsCreatingAccountCategory,
-      setAccountCategoryFeedback,
-      setAccountCategoryForm,
-      {
-        resetRegisterForm: true,
-      },
-    );
-  };
-
-  const handleMovementCreateCategory = async (): Promise<void> => {
-    await handleCreateCategory(
-      movementCategoryForm,
-      setIsCreatingMovementCategory,
-      setMovementCategoryFeedback,
-      setMovementCategoryForm,
-    );
-  };
-
-  const handleToggleIncludeDeleted = async (): Promise<void> => {
-    const nextIncludeDeleted = !movementsViewModel.includeDeleted;
-    setIsRefreshingMovements(true);
-    setMovementsFeedback(null);
-
-    try {
-      await reloadTabs({
-        includeDeleted: nextIncludeDeleted,
-      });
-    } catch (error) {
-      setMovementsFeedback({
-        tone: "error",
-        message: error instanceof Error ? error.message : "No se pudo actualizar la lista.",
-      });
-    } finally {
-      setIsRefreshingMovements(false);
-    }
-  };
-
-  const handleSelectTransaction = (transactionId: string): void => {
-    setSelectedTransactionId(transactionId);
-    setMovementsFeedback(null);
-  };
-
-  const handleMovementKindChange = (kind: FinanzasTransactionKind): void => {
-    setMovementDraft((current) => {
-      if (current === null) {
-        return current;
-      }
-
-      return {
-        ...current,
-        kind,
-        categoryId: resolveCategoryForKind(movementCategories, kind, current.categoryId) ?? "",
-      };
-    });
-  };
-
-  const handleMovementSave = async (): Promise<void> => {
-    if (selectedTransaction === null || movementDraft === null) {
-      setMovementsFeedback({
-        tone: "error",
-        message: "Selecciona un movimiento activo antes de guardar cambios.",
-      });
-      return;
-    }
-
-    const amountMinor = parseMinorAmount(movementDraft.amountInput);
-
-    if (amountMinor === null) {
-      setMovementsFeedback({
-        tone: "error",
-        message: "El monto tiene que ser un entero positivo en unidades menores.",
-      });
-      return;
-    }
-
-    const transactionDate = new Date(movementDraft.dateInput);
-
-    if (Number.isNaN(transactionDate.valueOf())) {
-      setMovementsFeedback({
-        tone: "error",
-        message: "La fecha no es valida.",
-      });
-      return;
-    }
-
-    setIsSavingMovement(true);
-    setBusyTransactionId(selectedTransaction.id);
-    setMovementsFeedback(null);
-
-    try {
-      await webCommands.updateTransaction({
-        transactionId: selectedTransaction.id,
-        amountMinor: movementDraft.kind === "expense" ? -amountMinor : amountMinor,
-        categoryId: movementDraft.categoryId,
-        date: transactionDate,
-        note: movementDraft.noteInput.trim(),
-      });
-      await reloadTabs({
-        preferredTransactionId: selectedTransaction.id,
-      });
-      setMovementsFeedback({
-        tone: isOffline ? "offline" : "success",
-        message: isOffline
-          ? "Cambio guardado en este dispositivo. Se actualiza cuando vuelva la conexion."
-          : "Movimiento actualizado y resumen recalculado.",
-      });
-    } catch (error) {
-      setMovementsFeedback({
-        tone: "error",
-        message: error instanceof Error ? error.message : "No se pudo actualizar el movimiento.",
-      });
-    } finally {
-      setIsSavingMovement(false);
-      setBusyTransactionId(null);
-    }
-  };
-
-  const handleDeleteTransaction = async (transactionId: string): Promise<void> => {
-    if (!globalThis.confirm?.("Eliminar este movimiento?")) {
-      return;
-    }
-
-    setBusyTransactionId(transactionId);
-    setMovementsFeedback(null);
-
-    try {
-      await webCommands.deleteTransaction({
-        transactionId,
-      });
-      await reloadTabs({
-        preferredTransactionId: null,
-      });
-      setMovementsFeedback({
-        tone: isOffline ? "offline" : "success",
-        message: isOffline
-          ? "Movimiento eliminado en este dispositivo. Se actualiza cuando vuelva la conexion."
-          : "Movimiento eliminado y lista actualizada.",
-      });
-    } catch (error) {
-      setMovementsFeedback({
-        tone: "error",
-        message: error instanceof Error ? error.message : "No se pudo eliminar el movimiento.",
-      });
-    } finally {
-      setBusyTransactionId(null);
-    }
-  };
+  const accountOrchestration = useAccountOrchestration({
+    viewModel: accountViewModel,
+    offline: isOffline,
+    refreshHost,
+    mutations: {
+      createCategory: (input) => webUi.createCategory(input),
+    },
+  });
 
   const activeTabConfig = tabConfig.find((tab) => tab.id === activeTab) ?? {
     id: "home",
@@ -677,113 +235,26 @@ export const DevPreviewApp = ({
           <MovementsScreen
             viewModel={movementsViewModel}
             categories={movementCategories}
-            selectedTransactionId={selectedTransactionId}
-            editDraft={movementDraft}
-            isRefreshing={isRefreshingMovements}
-            isSavingEdit={isSavingMovement}
-            busyTransactionId={busyTransactionId}
-            feedback={movementsFeedback}
-            createCategoryFeedback={movementCategoryFeedback}
-            offline={isOffline}
-            createCategoryNameInput={movementCategoryForm.nameInput}
-            createCategoryType={movementCategoryForm.type}
-            isCreatingCategory={isCreatingMovementCategory}
-            onToggleIncludeDeleted={() => {
-              void handleToggleIncludeDeleted();
-            }}
-            onSelectTransaction={handleSelectTransaction}
-            onDeleteTransaction={(transactionId) => {
-              void handleDeleteTransaction(transactionId);
-            }}
-            onEditKindChange={handleMovementKindChange}
-            onEditAmountChange={(value) => {
-              setMovementDraft((current) => current === null ? current : { ...current, amountInput: value });
-            }}
-            onEditCategoryChange={(value) => {
-              setMovementDraft((current) => current === null ? current : { ...current, categoryId: value });
-            }}
-            onCreateCategoryNameChange={(value) => {
-              setMovementCategoryForm((current) => ({ ...current, nameInput: value }));
-            }}
-            onCreateCategoryTypeChange={(value) => {
-              setMovementCategoryForm((current) => ({ ...current, type: value }));
-            }}
-            onEditDateChange={(value) => {
-              setMovementDraft((current) => current === null ? current : { ...current, dateInput: value });
-            }}
-            onEditNoteChange={(value) => {
-              setMovementDraft((current) => current === null ? current : { ...current, noteInput: value });
-            }}
-            onSaveEdit={() => {
-              void handleMovementSave();
-            }}
-            onCancelEdit={() => {
-              setSelectedTransactionId(null);
-              setMovementsFeedback(null);
-            }}
-            onCreateCategory={() => {
-              void handleMovementCreateCategory();
-            }}
+            selection={movementsOrchestration.selection}
+            editor={movementsOrchestration.editor}
+            categoryCreation={movementsOrchestration.categoryCreation}
+            listActions={movementsOrchestration.listActions}
           />
         );
       case "register":
         return (
           <RegisterScreen
             viewModel={registerViewModel}
-            amountInput={registerForm.amountInput}
-            noteInput={registerForm.noteInput}
-            dateInput={registerForm.dateInput}
-            selectedCategoryId={registerForm.selectedCategoryId}
-            kind={registerForm.kind}
-            isSaving={isSavingRegister}
-            feedback={registerFeedback}
-            categoryFeedback={registerCategoryFeedback}
-            offline={isOffline}
-            categoryNameInput={registerCategoryForm.nameInput}
-            categoryType={registerCategoryForm.type}
-            isCreatingCategory={isCreatingRegisterCategory}
-            onKindChange={handleRegisterKindChange}
-            onAmountInputChange={(value) => {
-              setRegisterForm((current) => ({ ...current, amountInput: value }));
-            }}
-            onCategoryChange={handleRegisterCategoryChange}
-            onCategoryNameChange={(value) => {
-              setRegisterCategoryForm((current) => ({ ...current, nameInput: value }));
-            }}
-            onCategoryTypeChange={(value) => {
-              setRegisterCategoryForm((current) => ({ ...current, type: value }));
-            }}
-            onNoteChange={(value) => {
-              setRegisterForm((current) => ({ ...current, noteInput: value }));
-            }}
-            onDateChange={(value) => {
-              setRegisterForm((current) => ({ ...current, dateInput: value }));
-            }}
-            onSubmit={() => {
-              void handleRegisterSubmit();
-            }}
-            onCreateCategory={() => {
-              void handleRegisterCreateCategory();
-            }}
+            quickAdd={registerOrchestration.quickAdd}
+            categoryCreation={registerOrchestration.categoryCreation}
+            categorySelection={registerOrchestration.categorySelection}
           />
         );
       case "account":
         return (
           <AccountScreen
             viewModel={accountViewModel}
-            categoryFeedback={accountCategoryFeedback}
-            categoryNameInput={accountCategoryForm.nameInput}
-            categoryType={accountCategoryForm.type}
-            isCreatingCategory={isCreatingAccountCategory}
-            onCategoryNameChange={(value) => {
-              setAccountCategoryForm((current) => ({ ...current, nameInput: value }));
-            }}
-            onCategoryTypeChange={(value) => {
-              setAccountCategoryForm((current) => ({ ...current, type: value }));
-            }}
-            onCreateCategory={() => {
-              void handleAccountCreateCategory();
-            }}
+            categoryCreation={accountOrchestration.categoryCreation}
           />
         );
       case "home":

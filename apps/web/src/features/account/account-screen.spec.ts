@@ -5,9 +5,11 @@ import {
   selectFinanzasUiDependencies,
   type FinanzasAccountTabViewModel,
 } from "@finanzas/ui";
+import { renderToStaticMarkup } from "react-dom/server";
 
 import { createWebBootstrap } from "../../app/bootstrap.js";
-import { loadAccountScreenHtml, renderAccountScreen } from "./account-screen.js";
+import type { AccountScreenProps } from "./account-contracts.js";
+import { AccountScreen, loadAccountScreenHtml } from "./account-screen.js";
 
 describe("accountScreen", () => {
   it("renders Account HTML with escaped error content", () => {
@@ -72,7 +74,12 @@ describe("accountScreen", () => {
       },
     };
 
-    const html = renderAccountScreen(viewModel);
+    const html = renderToStaticMarkup(
+      AccountScreen({
+        viewModel,
+        ...createAccountScreenContracts(),
+      }),
+    );
 
     expect(html).toContain(">Cuenta</h1>");
     expect(html).toContain("Sincronización");
@@ -124,3 +131,21 @@ const createWebFeatureRuntime = (): {
     ui,
   };
 };
+
+const createAccountScreenContracts = (): Pick<AccountScreenProps, "categoryCreation"> => ({
+  categoryCreation: {
+    draft: {
+      nameInput: "",
+      type: "expense",
+    },
+    status: {
+      isSaving: false,
+      feedback: null,
+    },
+    actions: {
+      onNameChange: () => {},
+      onTypeChange: () => {},
+      onSubmit: () => {},
+    },
+  },
+});

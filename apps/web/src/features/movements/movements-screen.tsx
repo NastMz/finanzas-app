@@ -1,7 +1,5 @@
 import type {
-  FinanzasCategoryOption,
   FinanzasMovementsTabViewModel,
-  FinanzasTransactionKind,
   FinanzasUiServiceContract,
   LoadMovementsTabInput,
 } from "@finanzas/ui";
@@ -9,51 +7,13 @@ import { renderToStaticMarkup } from "react-dom/server";
 
 import { DashboardPage } from "../../ui/components/index.js";
 import {
-  type MovementsEditorDraft,
   MovementsEditorCard,
   MovementsHeader,
   MovementsListCard,
   MovementsTotalsCard,
 } from "./components/index.js";
+import type { MovementsScreenProps } from "./movements-contracts.js";
 import styles from "./movements-screen.module.css";
-
-/**
- * Props for `MovementsScreen`.
- */
-export interface MovementsScreenProps {
-  viewModel: FinanzasMovementsTabViewModel;
-  categories?: FinanzasCategoryOption[];
-  selectedTransactionId?: string | null;
-  editDraft?: MovementsEditorDraft | null;
-  isRefreshing?: boolean;
-  isSavingEdit?: boolean;
-  busyTransactionId?: string | null;
-  feedback?: {
-    tone: "success" | "error" | "offline";
-    message: string;
-  } | null;
-  createCategoryFeedback?: {
-    tone: "success" | "error" | "offline";
-    message: string;
-  } | null;
-  offline?: boolean;
-  createCategoryNameInput?: string;
-  createCategoryType?: FinanzasTransactionKind;
-  isCreatingCategory?: boolean;
-  onToggleIncludeDeleted?: () => void;
-  onSelectTransaction?: (transactionId: string) => void;
-  onDeleteTransaction?: (transactionId: string) => void;
-  onEditKindChange?: (kind: FinanzasTransactionKind) => void;
-  onEditAmountChange?: (value: string) => void;
-  onEditCategoryChange?: (value: string) => void;
-  onCreateCategoryNameChange?: (value: string) => void;
-  onCreateCategoryTypeChange?: (value: FinanzasTransactionKind) => void;
-  onEditDateChange?: (value: string) => void;
-  onEditNoteChange?: (value: string) => void;
-  onSaveEdit?: () => void | Promise<void>;
-  onCancelEdit?: () => void;
-  onCreateCategory?: () => void | Promise<void>;
-}
 
 /**
  * React component for `Movimientos` tab.
@@ -61,33 +21,15 @@ export interface MovementsScreenProps {
 export const MovementsScreen = ({
   viewModel,
   categories = [],
-  selectedTransactionId = null,
-  editDraft = null,
-  isRefreshing = false,
-  isSavingEdit = false,
-  busyTransactionId = null,
-  feedback = null,
-  createCategoryFeedback = null,
-  offline = false,
-  createCategoryNameInput,
-  createCategoryType,
-  isCreatingCategory,
-  onToggleIncludeDeleted,
-  onSelectTransaction,
-  onDeleteTransaction,
-  onEditKindChange,
-  onEditAmountChange,
-  onEditCategoryChange,
-  onCreateCategoryNameChange,
-  onCreateCategoryTypeChange,
-  onEditDateChange,
-  onEditNoteChange,
-  onSaveEdit,
-  onCancelEdit,
-  onCreateCategory,
+  selection,
+  editor,
+  categoryCreation,
+  listActions,
 }: MovementsScreenProps): JSX.Element => {
-  const deletedCount = viewModel.items.filter((item) => item.deleted).length;
+  const selectedTransactionId = selection?.selectedTransactionId ?? null;
   const selectedTransaction = viewModel.items.find((item) => item.id === selectedTransactionId) ?? null;
+  const editorStatus = editor?.status;
+  const deletedCount = viewModel.items.filter((item) => item.deleted).length;
 
   return (
     <DashboardPage
@@ -95,11 +37,11 @@ export const MovementsScreen = ({
       containerClassName={styles.container ?? ""}
     >
       <section data-view="movements" className={styles.content}>
-        {offline
+        {editorStatus?.offline === true
           ? <p className={`${styles.notice} ${styles.noticeOffline}`}>Sin conexion: puedes seguir ajustando movimientos. Los cambios se sincronizaran despues.</p>
           : null}
 
-        {isRefreshing
+        {editorStatus?.isRefreshing === true
           ? <p className={`${styles.notice} ${styles.noticeInfo}`}>Actualizando movimientos y resumen...</p>
           : null}
 
@@ -109,8 +51,14 @@ export const MovementsScreen = ({
           sync={viewModel.sync}
           itemCount={viewModel.items.length}
           deletedCount={deletedCount}
-          isRefreshing={isRefreshing}
-          {...(onToggleIncludeDeleted !== undefined ? { onToggleIncludeDeleted } : {})}
+          isRefreshing={editorStatus?.isRefreshing ?? false}
+          {...(listActions !== undefined
+            ? {
+                onToggleIncludeDeleted: () => {
+                  void listActions.onToggleIncludeDeleted();
+                },
+              }
+            : {})}
         />
 
         <section className={styles.grid}>
@@ -125,23 +73,8 @@ export const MovementsScreen = ({
                 categoryManagement={viewModel.categoryManagement}
                 categories={categories}
                 selectedTransaction={selectedTransaction}
-                draft={editDraft}
-                isSaving={isSavingEdit}
-                {...(createCategoryNameInput !== undefined ? { createCategoryNameInput } : {})}
-                {...(createCategoryType !== undefined ? { createCategoryType } : {})}
-                {...(isCreatingCategory !== undefined ? { isCreatingCategory } : {})}
-                feedback={feedback}
-                {...(createCategoryFeedback !== undefined ? { createCategoryFeedback } : {})}
-                {...(onEditKindChange !== undefined ? { onKindChange: onEditKindChange } : {})}
-                {...(onEditAmountChange !== undefined ? { onAmountInputChange: onEditAmountChange } : {})}
-                {...(onEditCategoryChange !== undefined ? { onCategoryChange: onEditCategoryChange } : {})}
-                {...(onCreateCategoryNameChange !== undefined ? { onCreateCategoryNameChange } : {})}
-                {...(onCreateCategoryTypeChange !== undefined ? { onCreateCategoryTypeChange } : {})}
-                {...(onEditDateChange !== undefined ? { onDateChange: onEditDateChange } : {})}
-                {...(onEditNoteChange !== undefined ? { onNoteChange: onEditNoteChange } : {})}
-                {...(onSaveEdit !== undefined ? { onSave: onSaveEdit } : {})}
-                {...(onCancelEdit !== undefined ? { onCancel: onCancelEdit } : {})}
-                {...(onCreateCategory !== undefined ? { onCreateCategory } : {})}
+                {...(editor !== undefined ? { editor } : {})}
+                {...(categoryCreation !== undefined ? { categoryCreation } : {})}
               />
             </div>
           </aside>
@@ -150,10 +83,8 @@ export const MovementsScreen = ({
             <MovementsListCard
               items={viewModel.items}
               includeDeleted={viewModel.includeDeleted}
-              selectedTransactionId={selectedTransactionId}
-              busyTransactionId={busyTransactionId}
-              {...(onSelectTransaction !== undefined ? { onSelectTransaction } : {})}
-              {...(onDeleteTransaction !== undefined ? { onDeleteTransaction } : {})}
+              {...(selection !== undefined ? { selection } : {})}
+              {...(listActions !== undefined ? { listActions } : {})}
             />
           </div>
         </section>

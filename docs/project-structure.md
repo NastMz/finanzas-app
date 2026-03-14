@@ -96,6 +96,7 @@ Recommended structure:
 ```text
 features/<feature>/
   components/
+  hooks/
   lib/
   <feature>-screen.tsx
   <feature>-screen.module.css
@@ -106,6 +107,7 @@ Put here:
 
 - screen components and feature-level render/load helpers
 - feature-specific components
+- feature-scoped host orchestration hooks for local UI/runtime wiring
 - feature-local helpers
 - feature styles
 
