@@ -1,4 +1,9 @@
 import type {
+  MovementsContinuationToken,
+  MovementsReviewFilters,
+} from "@finanzas/application";
+
+import type {
   FinanzasCategoryOption,
   FinanzasMovementsTabViewModel,
   FinanzasTransactionKind,
@@ -56,8 +61,23 @@ export interface MovementsCategoryCreationContract {
 
 export interface MovementsListActionsContract {
   onToggleIncludeDeleted: () => void | Promise<void>;
+  onReviewFiltersChange?: (
+    filters: Partial<MovementsReviewFilters>,
+  ) => void | Promise<void>;
+  onLoadMore?: (
+    continuation: MovementsContinuationToken,
+  ) => void | Promise<void>;
   onSelectTransaction: (transactionId: string) => void;
   onDeleteTransaction: (transactionId: string) => void | Promise<void>;
+}
+
+export interface MovementsResultStateContract {
+  activeFilters: MovementsReviewFilters;
+  hasResults: boolean;
+  hasMore: boolean;
+  nextContinuation: MovementsContinuationToken | null;
+  emptyState: "none" | "filtered" | "initial";
+  refreshMode: "replace" | "append";
 }
 
 export interface MovementsScreenProps {
@@ -67,4 +87,5 @@ export interface MovementsScreenProps {
   editor?: MovementsEditorContract;
   categoryCreation?: MovementsCategoryCreationContract;
   listActions?: MovementsListActionsContract;
+  resultState?: MovementsResultStateContract;
 }

@@ -13,6 +13,7 @@ import type {
 export interface MovementsListCardProps {
   items: FinanzasMovementsTabViewModel["items"];
   includeDeleted: boolean;
+  emptyLabel?: string;
   selection?: MovementsSelectionContract;
   listActions?: MovementsListActionsContract;
 }
@@ -20,6 +21,7 @@ export interface MovementsListCardProps {
 export const MovementsListCard = ({
   items,
   includeDeleted,
+  emptyLabel,
   selection,
   listActions,
 }: MovementsListCardProps): JSX.Element => (
@@ -30,7 +32,7 @@ export const MovementsListCard = ({
     <TransactionList
       transactions={items}
       showDeletedState={includeDeleted}
-      emptyLabel="No hay movimientos para los filtros actuales."
+      emptyLabel={emptyLabel ?? "No hay movimientos para los filtros actuales."}
       selectedTransactionId={selection?.selectedTransactionId ?? null}
       transactionActions={(transaction) => [
         {

@@ -229,14 +229,119 @@ describe("createFinanzasUiService", () => {
     });
 
     const movements = await ui.loadMovementsTab({
-      accountId: "acc-main",
-      includeDeleted: true,
+      hostAccountId: "acc-main",
+      review: {
+        filters: {
+          includeDeleted: true,
+        },
+      },
     });
 
     expect(movements.categoryManagement.status).toBe("partial");
     expect(movements.categoryManagement.coverageByKind.expense.count).toBe(0);
     expect(movements.categoryManagement.coverageByKind.income.count).toBe(1);
     expect(movements.categoryManagement.guardMessageByKind.expense).toContain("gasto");
+    expect(movements.review?.filters.accountId).toBe("acc-main");
+    expect(movements.review?.page.hasMore).toBe(false);
+    expect(movements.accountOptions).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          id: "acc-main",
+        }),
+      ]),
+    );
+    expect(movements.totals.byCurrency).toEqual([
+      {
+        currency: "COP",
+        incomeMinor: 150000n,
+        expenseMinor: 0n,
+      },
+    ]);
+  });
+
+  it("loads movements without user filters using an explicit complete review state", async () => {
+    const { ui, context } = createUi();
+
+    const foodCategory = await context.commands.addCategory({
+      name: "Comida",
+      type: "expense",
+    });
+    await context.commands.addTransaction({
+      accountId: "acc-main",
+      amountMinor: -12000,
+      currency: "COP",
+      categoryId: foodCategory.category.id,
+      date: new Date("2026-03-03T10:00:00.000Z"),
+      note: "almuerzo",
+    });
+
+    const movements = await ui.loadMovementsTab({
+      hostAccountId: "acc-main",
+    });
+
+    expect(movements.review).toEqual({
+      filters: {
+        dateRange: {
+          from: null,
+          to: null,
+        },
+        accountId: "acc-main",
+        categoryId: null,
+        includeDeleted: false,
+      },
+      page: {
+        limit: 50,
+        hasMore: false,
+        nextContinuation: null,
+      },
+      mode: "replace",
+      scopeLabel: "Cuenta principal (COP)",
+    });
+    expect(movements.items.map((movement) => movement.id)).toHaveLength(1);
+  });
+
+  it("preserves categoryId end to end when loading filtered movements", async () => {
+    const { ui, context } = createUi();
+
+    const foodCategory = await context.commands.addCategory({
+      name: "Comida",
+      type: "expense",
+    });
+    const transportCategory = await context.commands.addCategory({
+      name: "Transporte",
+      type: "expense",
+    });
+
+    await context.commands.addTransaction({
+      accountId: "acc-main",
+      amountMinor: -12000,
+      currency: "COP",
+      categoryId: foodCategory.category.id,
+      date: new Date("2026-03-03T10:00:00.000Z"),
+      note: "almuerzo",
+    });
+    await context.commands.addTransaction({
+      accountId: "acc-main",
+      amountMinor: -8000,
+      currency: "COP",
+      categoryId: transportCategory.category.id,
+      date: new Date("2026-03-02T10:00:00.000Z"),
+      note: "taxi",
+    });
+
+    const movements = await ui.loadMovementsTab({
+      hostAccountId: "acc-main",
+      review: {
+        filters: {
+          categoryId: foodCategory.category.id,
+        },
+      },
+    });
+
+    expect(movements.review?.filters.categoryId).toBe(foodCategory.category.id);
+    expect(movements.items).toHaveLength(1);
+    expect(movements.items[0]?.categoryId).toBe(foodCategory.category.id);
+    expect(movements.items[0]?.note).toBe("almuerzo");
   });
 
   it("quick-add normalizes expense sign and returns sync status", async () => {

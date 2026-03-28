@@ -40,6 +40,14 @@ interface SqliteVersionRow {
   user_version: number;
 }
 
+interface SqliteTableInfoRow {
+  name: string;
+}
+
+interface SqliteIndexRow {
+  name: string;
+}
+
 interface LegacyOutboxRecord {
   opId: string;
   entityType: string;
@@ -108,6 +116,12 @@ describe("openFinanzasSqlite", () => {
       seededAccount.id,
     );
     const storedCursor = getCursorValue(database, "0");
+    const transactionColumns = database
+      .prepare(`PRAGMA table_info(${FINANZAS_SQLITE_TABLES.transactions})`)
+      .all() as unknown as SqliteTableInfoRow[];
+    const transactionIndexes = database
+      .prepare(`PRAGMA index_list(${FINANZAS_SQLITE_TABLES.transactions})`)
+      .all() as unknown as SqliteIndexRow[];
 
     expect(schemaVersion.user_version).toBe(FINANZAS_SQLITE_SCHEMA_VERSION);
     expect(metadataRows).toEqual([
@@ -130,6 +144,23 @@ describe("openFinanzasSqlite", () => {
     expect(migrationRows.every((row) => row.applied_at.length > 0)).toBe(true);
     expect(storedAccount).toEqual(seededAccount);
     expect(storedCursor).toBe("17");
+    expect(transactionColumns.map((column) => column.name)).toEqual(
+      expect.arrayContaining([
+        "account_id",
+        "transaction_date",
+        "created_at",
+        "category_id",
+        "deleted_at",
+      ]),
+    );
+    expect(transactionIndexes.map((index) => index.name)).toEqual(
+      expect.arrayContaining([
+        "transactions_by_account_id",
+        "transactions_by_date_created_at_id",
+        "transactions_by_account_date_created_at_id",
+        "transactions_by_category_date_created_at_id",
+      ]),
+    );
 
     database.close();
   });
@@ -195,6 +226,9 @@ describe("openFinanzasSqlite", () => {
       PERSISTENCE_COLLECTION_IDS.outbox,
     );
     const storedCursor = getCursorValue(database, "0");
+    const transactionColumns = database
+      .prepare(`PRAGMA table_info(${FINANZAS_SQLITE_TABLES.transactions})`)
+      .all() as unknown as SqliteTableInfoRow[];
 
     expect(schemaVersion.user_version).toBe(FINANZAS_SQLITE_SCHEMA_VERSION);
     expect(metadataRows).toEqual([
@@ -215,6 +249,14 @@ describe("openFinanzasSqlite", () => {
     expect(missingSeededAccount).toBeNull();
     expect(storedOutbox).toEqual([legacyOutbox]);
     expect(storedCursor).toBe("42");
+    expect(transactionColumns.map((column) => column.name)).toEqual(
+      expect.arrayContaining([
+        "transaction_date",
+        "created_at",
+        "category_id",
+        "deleted_at",
+      ]),
+    );
 
     database.close();
   });

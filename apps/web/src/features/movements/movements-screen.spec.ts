@@ -27,6 +27,41 @@ describe("movementsScreen", () => {
         deleted: false,
       },
       includeDeleted: true,
+      review: {
+        filters: {
+          dateRange: {
+            from: null,
+            to: null,
+          },
+          accountId: "acc-main",
+          categoryId: null,
+          includeDeleted: true,
+        },
+        page: {
+          limit: 10,
+          hasMore: false,
+          nextContinuation: null,
+        },
+        mode: "replace",
+        scopeLabel: "Cuenta <ledger> (COP)",
+      },
+      accountOptions: [
+        {
+          id: "acc-main",
+          name: "Cuenta <ledger>",
+          type: "bank",
+          currency: "COP",
+          deleted: false,
+        },
+      ],
+      categoryOptions: [
+        {
+          id: "cat-food",
+          name: "Food <Drink>",
+          type: "expense",
+          deleted: false,
+        },
+      ],
       items: [
         {
           id: "tx-1",
@@ -100,7 +135,8 @@ describe("movementsScreen", () => {
     const html = renderMovementsScreen(viewModel);
 
     expect(html).toContain(">Movimientos</h1>");
-    expect(html).toContain("Cuenta: Cuenta &lt;ledger&gt; (COP)");
+    expect(html).toContain("Cuenta &lt;ledger&gt; (COP)");
+    expect(html).toContain("Todas las cuentas");
     expect(html).toContain("Food &lt;Drink&gt;");
     expect(html).toContain("Eliminado");
     expect(html).not.toContain("<script>alert('xss')</script>");
@@ -110,6 +146,14 @@ describe("movementsScreen", () => {
   });
 
   it("renders an explicit guard instead of an empty category select", () => {
+    const categories: FinanzasCategoryOption[] = [
+      {
+        id: "cat-income",
+        name: "Salario",
+        type: "income",
+        deleted: false,
+      },
+    ];
     const viewModel: FinanzasMovementsTabViewModel = {
       account: {
         id: "acc-main",
@@ -119,6 +163,34 @@ describe("movementsScreen", () => {
         deleted: false,
       },
       includeDeleted: false,
+      review: {
+        filters: {
+          dateRange: {
+            from: null,
+            to: null,
+          },
+          accountId: "acc-main",
+          categoryId: null,
+          includeDeleted: false,
+        },
+        page: {
+          limit: 10,
+          hasMore: false,
+          nextContinuation: null,
+        },
+        mode: "replace",
+        scopeLabel: "Cuenta principal (COP)",
+      },
+      accountOptions: [
+        {
+          id: "acc-main",
+          name: "Cuenta principal",
+          type: "bank",
+          currency: "COP",
+          deleted: false,
+        },
+      ],
+      categoryOptions: categories,
       items: [
         {
           id: "tx-income",
@@ -188,15 +260,6 @@ describe("movementsScreen", () => {
         },
       },
     };
-    const categories: FinanzasCategoryOption[] = [
-      {
-        id: "cat-income",
-        name: "Salario",
-        type: "income",
-        deleted: false,
-      },
-    ];
-
     const html = renderToStaticMarkup(
       MovementsScreen({
         viewModel,
@@ -217,7 +280,119 @@ describe("movementsScreen", () => {
     expect(html).toContain("No hay categorias disponibles para gasto");
     expect(html).toContain("Crear categoria");
     expect(html).toContain("Crea una ahora o hazlo desde Cuenta");
-    expect(html).not.toContain("<select");
+  });
+
+  it("renders filtered empty state and manual load more controls", () => {
+    const viewModel: FinanzasMovementsTabViewModel = {
+      account: {
+        id: "acc-main",
+        name: "Cuenta principal",
+        type: "bank",
+        currency: "COP",
+        deleted: false,
+      },
+      includeDeleted: false,
+      review: {
+        filters: {
+          dateRange: {
+            from: new Date("2026-03-01T00:00:00.000Z"),
+            to: new Date("2026-03-31T23:59:59.999Z"),
+          },
+          accountId: null,
+          categoryId: null,
+          includeDeleted: false,
+        },
+        page: {
+          limit: 10,
+          hasMore: true,
+          nextContinuation: {
+            filterFingerprint: "fingerprint",
+            lastItem: {
+              id: "tx-10",
+              date: "2026-03-01T00:00:00.000Z",
+              createdAt: "2026-03-01T00:00:00.000Z",
+            },
+          },
+        },
+        mode: "append",
+        scopeLabel: "Todos los movimientos",
+      },
+      accountOptions: [
+        {
+          id: "acc-main",
+          name: "Cuenta principal",
+          type: "bank",
+          currency: "COP",
+          deleted: false,
+        },
+      ],
+      categoryOptions: [],
+      items: [],
+      totals: {
+        incomeMinor: 0n,
+        expenseMinor: 0n,
+        byCurrency: [],
+      },
+      sync: {
+        status: "synced",
+        pendingOps: 0,
+        sentOps: 0,
+        failedOps: 0,
+        ackedOps: 0,
+        lastError: null,
+        cursor: "2",
+      },
+      categoryManagement: {
+        status: "ready",
+        activeCount: 0,
+        coverageByKind: {
+          expense: {
+            available: true,
+            count: 1,
+          },
+          income: {
+            available: true,
+            count: 1,
+          },
+        },
+        availableTypes: ["expense", "income"],
+        missingTypes: [],
+        canonicalSurface: "account",
+        guardMessageByKind: {
+          expense: "",
+          income: "",
+        },
+        createAction: {
+          enabled: true,
+          supportedTypes: ["expense", "income"],
+        },
+        recoveryActions: {
+          register: {
+            enabled: true,
+            canonicalSurface: "account",
+            surface: "register",
+            supportedTypes: ["expense", "income"],
+          },
+          movements: {
+            enabled: true,
+            canonicalSurface: "account",
+            surface: "movements",
+            supportedTypes: ["expense", "income"],
+          },
+        },
+      },
+    };
+
+    const html = renderToStaticMarkup(
+      MovementsScreen({
+        viewModel,
+        ...createMovementsContracts(),
+      }),
+    );
+
+    expect(html).toContain("No hay movimientos con la revision actual");
+    expect(html).toContain("Cargar mas movimientos");
+    expect(html).toContain("Todos los movimientos");
   });
 
   it("loads movements metadata with empty-category guard coverage", async () => {
@@ -237,9 +412,15 @@ describe("movementsScreen", () => {
     });
 
     const movements = await ui.loadMovementsTab({
-      accountId: "acc-main",
-      includeDeleted: true,
-      limit: 10,
+      hostAccountId: "acc-main",
+      review: {
+        filters: {
+          includeDeleted: true,
+        },
+        page: {
+          limit: 10,
+        },
+      },
     });
 
     expect(movements.categoryManagement.status).toBe("partial");
@@ -271,13 +452,19 @@ describe("movementsScreen", () => {
     const html = await loadMovementsScreenHtml(
       (input) => ui.loadMovementsTab(input),
       {
-        accountId: "acc-main",
-        includeDeleted: true,
-        limit: 10,
+        hostAccountId: "acc-main",
+        review: {
+          filters: {
+            includeDeleted: true,
+          },
+          page: {
+            limit: 10,
+          },
+        },
       },
     );
 
-    expect(html).toContain("Vista: activos + eliminados");
+    expect(html).toContain("Revisa por cuenta, categoria o fecha");
     expect(html).toContain("Incluye eliminados");
     expect(html).toContain("Comida");
     expect(html).toContain("Eliminado");
@@ -347,6 +534,8 @@ const createMovementsContracts = (
   },
   listActions: {
     onToggleIncludeDeleted: () => {},
+    onReviewFiltersChange: () => {},
+    onLoadMore: () => {},
     onSelectTransaction: () => {},
     onDeleteTransaction: () => {},
   },

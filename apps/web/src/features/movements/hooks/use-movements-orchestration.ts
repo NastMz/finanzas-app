@@ -1,5 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
 import type {
+  MovementsContinuationToken,
+  MovementsReviewFilters,
+} from "@finanzas/application";
+import type {
   FinanzasCategoryOption,
   FinanzasMovementsTabViewModel,
   FinanzasTransactionItemViewModel,
@@ -19,6 +23,7 @@ import type {
   MovementsEditorContract,
   MovementsEditorDraft,
   MovementsListActionsContract,
+  MovementsScreenProps,
   MovementsSelectionContract,
 } from "../movements-contracts.js";
 
@@ -69,6 +74,76 @@ export const resolveNextSelectedTransactionId = (
   }
 
   return items.find((item) => !item.deleted)?.id ?? null;
+};
+
+export const createMovementsResultState = (
+  viewModel: FinanzasMovementsTabViewModel,
+): MovementsScreenProps["resultState"] => {
+  const review = resolveRequiredReviewState(viewModel);
+
+  return {
+    activeFilters: review.filters,
+    hasResults: viewModel.items.length > 0,
+    hasMore: review.page.hasMore,
+    nextContinuation: review.page.nextContinuation,
+    emptyState: viewModel.items.length === 0 ? "filtered" : "none",
+    refreshMode: review.mode,
+  };
+};
+
+export const createMovementsFilterRefreshOptions = (
+  viewModel: FinanzasMovementsTabViewModel,
+  filters: Partial<MovementsReviewFilters>,
+): Parameters<HostRefreshAdapter["refresh"]>[0] => {
+  const review = resolveRequiredReviewState(viewModel);
+
+  return {
+    movements: {
+      filters,
+      page: {
+        limit: review.page.limit,
+        continuation: null,
+      },
+      mode: "replace",
+    },
+  };
+};
+
+export const createMovementsCorrectionRefreshOptions = (
+  viewModel: FinanzasMovementsTabViewModel,
+  preferredTransactionId: string | null,
+): Parameters<HostRefreshAdapter["refresh"]>[0] => {
+  const review = resolveRequiredReviewState(viewModel);
+
+  return {
+    movements: {
+      filters: review.filters,
+      page: {
+        limit: review.page.limit,
+        continuation: null,
+      },
+      mode: "replace",
+    },
+    preferredTransactionId,
+  };
+};
+
+export const createMovementsLoadMoreRefreshOptions = (
+  viewModel: FinanzasMovementsTabViewModel,
+  continuation: MovementsContinuationToken,
+): Parameters<HostRefreshAdapter["refresh"]>[0] => {
+  const review = resolveRequiredReviewState(viewModel);
+
+  return {
+    movements: {
+      filters: review.filters,
+      page: {
+        limit: review.page.limit,
+        continuation,
+      },
+      mode: "append",
+    },
+  };
 };
 
 export const useMovementsOrchestration = ({
@@ -132,16 +207,17 @@ export const useMovementsOrchestration = ({
     });
   }, [categories]);
 
-  const handleToggleIncludeDeleted = async (): Promise<void> => {
-    const nextIncludeDeleted = !viewModel.includeDeleted;
+  const handleReviewFiltersChange = async (
+    filters: Partial<MovementsReviewFilters>,
+  ): Promise<void> => {
     const preferredId = selectedTransactionId;
     setIsRefreshing(true);
     setFeedback(null);
 
     try {
-      const refreshed = await refreshHost.refresh({
-        includeDeleted: nextIncludeDeleted,
-      });
+      const refreshed = await refreshHost.refresh(
+        createMovementsFilterRefreshOptions(viewModel, filters),
+      );
       setSelectedTransactionId(
         resolveNextSelectedTransactionId(refreshed.movements.items, preferredId),
       );
@@ -149,6 +225,30 @@ export const useMovementsOrchestration = ({
       setFeedback({
         tone: "error",
         message: error instanceof Error ? error.message : "No se pudo actualizar la lista.",
+      });
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
+
+  const handleLoadMore = async (
+    continuation: MovementsContinuationToken,
+  ): Promise<void> => {
+    const preferredId = selectedTransactionId;
+    setIsRefreshing(true);
+    setFeedback(null);
+
+    try {
+      const refreshed = await refreshHost.refresh(
+        createMovementsLoadMoreRefreshOptions(viewModel, continuation),
+      );
+      setSelectedTransactionId(
+        resolveNextSelectedTransactionId(refreshed.movements.items, preferredId),
+      );
+    } catch (error) {
+      setFeedback({
+        tone: "error",
+        message: error instanceof Error ? error.message : "No se pudo cargar mas movimientos.",
       });
     } finally {
       setIsRefreshing(false);
@@ -210,9 +310,9 @@ export const useMovementsOrchestration = ({
         date: transactionDate,
         note: draft.noteInput.trim(),
       });
-      const refreshed = await refreshHost.refresh({
-        preferredTransactionId: selectedTransaction.id,
-      });
+      const refreshed = await refreshHost.refresh(
+        createMovementsCorrectionRefreshOptions(viewModel, selectedTransaction.id),
+      );
       setSelectedTransactionId(
         resolveNextSelectedTransactionId(refreshed.movements.items, selectedTransaction.id),
       );
@@ -245,9 +345,9 @@ export const useMovementsOrchestration = ({
       await mutations.deleteTransaction({
         transactionId,
       });
-      const refreshed = await refreshHost.refresh({
-        preferredTransactionId: null,
-      });
+      const refreshed = await refreshHost.refresh(
+        createMovementsCorrectionRefreshOptions(viewModel, null),
+      );
       setSelectedTransactionId(resolveNextSelectedTransactionId(refreshed.movements.items, null));
       setFeedback({
         tone: offline ? "offline" : "success",
@@ -284,9 +384,9 @@ export const useMovementsOrchestration = ({
         name,
         type: categoryDraft.type,
       });
-      const refreshed = await refreshHost.refresh({
-        preferredTransactionId: selectedTransactionId,
-      });
+      const refreshed = await refreshHost.refresh(
+        createMovementsCorrectionRefreshOptions(viewModel, selectedTransactionId),
+      );
       setSelectedTransactionId(
         resolveNextSelectedTransactionId(refreshed.movements.items, selectedTransactionId),
       );
@@ -358,7 +458,12 @@ export const useMovementsOrchestration = ({
       },
     },
     listActions: {
-      onToggleIncludeDeleted: handleToggleIncludeDeleted,
+      onToggleIncludeDeleted: () =>
+        handleReviewFiltersChange({
+          includeDeleted: !resolveRequiredReviewState(viewModel).filters.includeDeleted,
+        }),
+      onReviewFiltersChange: handleReviewFiltersChange,
+      onLoadMore: handleLoadMore,
       onSelectTransaction: (transactionId) => {
         setSelectedTransactionId(transactionId);
         setFeedback(null);
@@ -366,4 +471,14 @@ export const useMovementsOrchestration = ({
       onDeleteTransaction: handleDeleteTransaction,
     },
   };
+};
+
+const resolveRequiredReviewState = (
+  viewModel: FinanzasMovementsTabViewModel,
+): NonNullable<FinanzasMovementsTabViewModel["review"]> => {
+  if (viewModel.review === undefined) {
+    throw new Error("Movements review metadata is required for orchestration.");
+  }
+
+  return viewModel.review;
 };

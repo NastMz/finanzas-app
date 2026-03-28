@@ -24,6 +24,9 @@ import {
   applyHostRefreshOptions,
   createHostRefreshSeamState,
   type HostRefreshAdapter,
+  mergeMovementsRefreshResult,
+  syncHostMovementsReviewState,
+  toMovementsLoadInput,
 } from "../features/shared/lib/host-orchestration.js";
 import { StatusPill } from "../ui/components/index.js";
 import { classNames } from "../ui/lib/class-names.js";
@@ -113,7 +116,20 @@ export const DevPreviewApp = ({
   const [movementsViewModel, setMovementsViewModel] = useState(movements);
   const [registerViewModel, setRegisterViewModel] = useState(register);
   const [accountViewModel, setAccountViewModel] = useState(account);
-  const [refreshSeam, setRefreshSeam] = useState(() => createHostRefreshSeamState(movements.includeDeleted));
+  const [refreshSeam, setRefreshSeam] = useState(() => {
+    if (movements.review === undefined) {
+      throw new Error("Movements review metadata is required for host orchestration.");
+    }
+
+    return createHostRefreshSeamState({
+      filters: movements.review.filters,
+      page: {
+        limit: movements.review.page.limit,
+        continuation: movements.review.page.nextContinuation,
+      },
+      mode: movements.review.mode,
+    });
+  });
   const [isOffline, setIsOffline] = useState(getOfflineState());
 
   useEffect(() => {
@@ -142,11 +158,7 @@ export const DevPreviewApp = ({
           accountId: currentAccountId,
           period: homeViewModel.period,
         }),
-        webUi.loadMovementsTab({
-          accountId: currentAccountId,
-          includeDeleted: nextRefreshSeam.includeDeleted,
-          limit: 12,
-        }),
+        webUi.loadMovementsTab(toMovementsLoadInput(currentAccountId, nextRefreshSeam)),
         webUi.loadRegisterTab({
           accountId: currentAccountId,
           suggestedCategoryLimit: 5,
@@ -155,14 +167,23 @@ export const DevPreviewApp = ({
       ]);
 
       setHomeViewModel(nextHome);
-      setMovementsViewModel(nextMovements);
+      const resolvedMovements = mergeMovementsRefreshResult(
+        movementsViewModel,
+        nextMovements,
+        nextRefreshSeam.movements.mode,
+      );
+      if (resolvedMovements.review === undefined) {
+        throw new Error("Movements review metadata is required for host orchestration.");
+      }
+
+      setMovementsViewModel(resolvedMovements);
       setRegisterViewModel(nextRegister);
       setAccountViewModel(nextAccount);
-      setRefreshSeam(nextRefreshSeam);
+      setRefreshSeam(syncHostMovementsReviewState(nextRefreshSeam, resolvedMovements.review));
 
       return {
         home: nextHome,
-        movements: nextMovements,
+        movements: resolvedMovements,
         register: nextRegister,
         account: nextAccount,
       };

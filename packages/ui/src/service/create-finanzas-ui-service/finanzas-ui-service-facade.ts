@@ -1,4 +1,9 @@
-import type { AddTransactionInput } from "@finanzas/application";
+import type {
+  AddTransactionInput,
+  MovementsPageRequest,
+  MovementsReviewFilters,
+} from "@finanzas/application";
+import { DEFAULT_MOVEMENTS_PAGE_LIMIT } from "@finanzas/application";
 import type { SyncNowResult } from "@finanzas/sync";
 
 import type {
@@ -98,19 +103,21 @@ export class FinanzasUiService implements FinanzasUiServiceContract {
   public readonly loadMovementsTab: FinanzasUiServiceContract["loadMovementsTab"] = async (
     input: LoadMovementsTabInput = {},
   ): Promise<FinanzasMovementsTabViewModel> => {
-    const account = await this.getActiveAccount(input.accountId);
-    const includeDeleted = input.includeDeleted ?? false;
+    const hostAccount = await this.getActiveAccount(input.hostAccountId);
+    const hostAccountOption = toAccountOption(hostAccount);
 
-    const [transactionsResult, categoriesResult, syncStatus] = await Promise.all([
+    const [transactionsResult, categoriesResult, syncStatus, accountsResult] = await Promise.all([
       this.dependencies.queries.listTransactions({
-        accountId: account.id,
-        includeDeleted,
-        ...(input.limit !== undefined ? { limit: input.limit } : {}),
+        filters: normalizeMovementsFiltersInput(input, hostAccount.id),
+        page: normalizeMovementsPageInput(input),
       }),
       this.dependencies.queries.listCategories({
         includeDeleted: true,
       }),
       this.dependencies.queries.getSyncStatus(),
+      this.dependencies.queries.listAccounts({
+        includeDeleted: true,
+      }),
     ]);
 
     const categoryNameById = buildCategoryNameById(categoriesResult.categories);
@@ -118,12 +125,29 @@ export class FinanzasUiService implements FinanzasUiServiceContract {
       toTransactionItemViewModel(transaction, categoryNameById),
     );
     const categories = categoriesResult.categories.map(toCategoryOption);
+    const accounts = accountsResult.accounts.map(toAccountOption);
+    const appliedAccount =
+      accounts.find((account) => account.id === transactionsResult.appliedFilters.accountId) ??
+      hostAccountOption;
+    const totals = getTotalsFromTransactionItems(items);
 
     return {
-      account: toAccountOption(account),
-      includeDeleted,
+      account: appliedAccount,
+      includeDeleted: transactionsResult.appliedFilters.includeDeleted,
+      review: {
+        filters: transactionsResult.appliedFilters,
+        page: {
+          limit: transactionsResult.page.limit,
+          hasMore: transactionsResult.page.hasMore,
+          nextContinuation: transactionsResult.page.nextContinuation,
+        },
+        mode: input.review?.mode ?? "replace",
+        scopeLabel: resolveMovementsScopeLabel(transactionsResult.appliedFilters, appliedAccount),
+      },
+      accountOptions: accounts,
+      categoryOptions: categories,
       items,
-      totals: getTotalsFromTransactionItems(items),
+      totals,
       sync: toSyncStatusViewModel(syncStatus),
       categoryManagement: resolveCategoryManagementState(categories),
     };
@@ -293,3 +317,45 @@ export class FinanzasUiService implements FinanzasUiServiceContract {
     ]).slice(0, suggestedCategoryLimit);
   };
 }
+
+const normalizeMovementsFiltersInput = (
+  input: LoadMovementsTabInput,
+  defaultAccountId: string,
+): MovementsReviewFilters => {
+  const reviewFilters = input.review?.filters;
+  const explicitAccountId =
+    reviewFilters !== undefined && "accountId" in reviewFilters
+      ? reviewFilters.accountId ?? null
+      : undefined;
+
+  return {
+    dateRange: {
+      from: reviewFilters?.dateRange?.from ?? null,
+      to: reviewFilters?.dateRange?.to ?? null,
+    },
+    accountId:
+      explicitAccountId !== undefined
+        ? explicitAccountId
+        : input.hostAccountId ?? defaultAccountId,
+    categoryId: reviewFilters?.categoryId ?? null,
+    includeDeleted: reviewFilters?.includeDeleted ?? false,
+  };
+};
+
+const normalizeMovementsPageInput = (
+  input: LoadMovementsTabInput,
+): MovementsPageRequest => ({
+  limit: input.review?.page?.limit ?? DEFAULT_MOVEMENTS_PAGE_LIMIT,
+  continuation: input.review?.page?.continuation ?? null,
+});
+
+const resolveMovementsScopeLabel = (
+  filters: MovementsReviewFilters,
+  account: FinanzasMovementsTabViewModel["account"],
+): string => {
+  if (filters.accountId === null) {
+    return "Todos los movimientos";
+  }
+
+  return `${account.name} (${account.currency})`;
+};

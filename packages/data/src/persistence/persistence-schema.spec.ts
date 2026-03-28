@@ -10,6 +10,7 @@ import {
   getIndexedDbIndexName,
   getIndexedDbStoreName,
   getSqliteIndexColumnName,
+  getSqliteIndexColumnNames,
   getSqliteIndexName,
   getSqliteTableName,
 } from "@finanzas/data";
@@ -54,5 +55,31 @@ describe("persistence schema manifest", () => {
         PERSISTENCE_INDEX_IDS.byAccountId,
       ),
     ).toBe("account_id");
+  });
+
+  it("defines deterministic window-query indexes for transactions", () => {
+    expect(
+      getIndexedDbIndexName(
+        PERSISTENCE_COLLECTION_IDS.transactions,
+        PERSISTENCE_INDEX_IDS.byDateCreatedAtId,
+      ),
+    ).toBe("by-date-created-at-id");
+    expect(
+      getSqliteIndexName(
+        PERSISTENCE_COLLECTION_IDS.transactions,
+        PERSISTENCE_INDEX_IDS.byAccountDateCreatedAtId,
+      ),
+    ).toBe("transactions_by_account_date_created_at_id");
+    expect(
+      getSqliteIndexColumnNames(
+        PERSISTENCE_COLLECTION_IDS.transactions,
+        PERSISTENCE_INDEX_IDS.byCategoryDateCreatedAtId,
+      ),
+    ).toEqual([
+      "category_id",
+      "transaction_date DESC",
+      "created_at DESC",
+      "id DESC",
+    ]);
   });
 });

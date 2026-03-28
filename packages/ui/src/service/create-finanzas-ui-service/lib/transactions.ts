@@ -32,22 +32,50 @@ export const toTransactionItemViewModel = (
 
 export const getTotalsFromTransactionItems = (
   items: FinanzasTransactionItemViewModel[],
-): { incomeMinor: bigint; expenseMinor: bigint } => {
+): {
+  incomeMinor: bigint;
+  expenseMinor: bigint;
+  byCurrency: Array<{
+    currency: string;
+    incomeMinor: bigint;
+    expenseMinor: bigint;
+  }>;
+} => {
   let incomeMinor = 0n;
   let expenseMinor = 0n;
+  const totalsByCurrency = new Map<
+  string,
+  {
+    currency: string;
+    incomeMinor: bigint;
+    expenseMinor: bigint;
+  }
+  >();
 
   for (const item of items) {
+    const totalsForCurrency =
+      totalsByCurrency.get(item.currency) ?? {
+        currency: item.currency,
+        incomeMinor: 0n,
+        expenseMinor: 0n,
+      };
+
     if (item.kind === "income") {
       incomeMinor += item.amountMinor;
+      totalsForCurrency.incomeMinor += item.amountMinor;
+      totalsByCurrency.set(item.currency, totalsForCurrency);
       continue;
     }
 
     expenseMinor += item.amountMinor;
+    totalsForCurrency.expenseMinor += item.amountMinor;
+    totalsByCurrency.set(item.currency, totalsForCurrency);
   }
 
   return {
     incomeMinor,
     expenseMinor,
+    byCurrency: [...totalsByCurrency.values()],
   };
 };
 

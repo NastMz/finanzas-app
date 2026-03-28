@@ -141,6 +141,7 @@ Take the web experience from preview mode to an operable end-to-end application,
 - `[ ]` Keep the web host as a transport/delivery layer without moving domain logic or use cases out of `packages/*`
 - `[~]` Real transaction capture and edit forms
 - `[ ]` Real filters in `Movements`
+- `[ ]` Scalable loading in `Movements` for very large transaction histories, using pagination and/or infinite scroll
 - `[ ]` Search, sorting, and segmentation by account/category/date
 - `[ ]` Sync actions from the UI
 - `[~]` Loading, saving, and error feedback for user actions

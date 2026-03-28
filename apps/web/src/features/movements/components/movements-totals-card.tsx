@@ -21,6 +21,40 @@ export const MovementsTotalsCard = ({
   totals,
   itemCount,
 }: MovementsTotalsCardProps): JSX.Element => {
+  if ((totals.byCurrency?.length ?? 0) > 1) {
+    return (
+      <SurfaceCard title="Totales" subtitle={`${itemCount} movimientos`}>
+        <div className={styles.rows}>
+          {(totals.byCurrency ?? []).map((entry) => {
+            const netMinor = entry.incomeMinor - entry.expenseMinor;
+
+            return (
+              <article key={entry.currency} className={styles.row}>
+                <div>
+                  <p className={styles.label}>{entry.currency}</p>
+                  <small className={styles.label}>Totales por moneda</small>
+                </div>
+                <div>
+                  <strong className={`${styles.value} ${styles.income}`}>
+                    {formatMinorAmount(entry.incomeMinor, entry.currency)}
+                  </strong>
+                  <br />
+                  <strong className={`${styles.value} ${styles.expense}`}>
+                    {formatMinorAmount(entry.expenseMinor, entry.currency)}
+                  </strong>
+                  <br />
+                  <strong className={`${styles.value} ${netMinor < 0n ? styles.expense : styles.income}`}>
+                    {formatMinorAmount(netMinor, entry.currency)}
+                  </strong>
+                </div>
+              </article>
+            );
+          })}
+        </div>
+      </SurfaceCard>
+    );
+  }
+
   const incomeMinor = getAbsoluteMinor(totals.incomeMinor);
   const expenseMinor = getAbsoluteMinor(totals.expenseMinor);
   const netMinor = incomeMinor - expenseMinor;

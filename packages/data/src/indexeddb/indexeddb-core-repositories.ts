@@ -13,13 +13,19 @@ import type {
   AccountRepository,
   BudgetRepository,
   CategoryRepository,
+  MovementsContinuationToken,
+  MovementsReviewFilters,
   RecurringRuleRepository,
   TransactionRepository,
+  TransactionWindowQuery,
+  TransactionWindowResult,
   TransactionTemplateRepository,
 } from "@finanzas/application";
 import {
   PERSISTENCE_COLLECTION_IDS,
   PERSISTENCE_INDEX_IDS,
+  getIndexedDbIndexName,
+  getIndexedDbStoreName,
 } from "../persistence/persistence-schema.js";
 
 import {
@@ -348,6 +354,10 @@ export class IndexedDbTransactionRepository implements TransactionRepository {
     return record ? fromStoredTransaction(record) : null;
   }
 
+  async queryWindow(query: TransactionWindowQuery): Promise<TransactionWindowResult> {
+    return await queryIndexedDbTransactionsWindow(this.database, query);
+  }
+
   async listByAccountId(accountId: string): Promise<Transaction[]> {
     const records = await getAllRecordsByIndex<StoredTransaction>(
       this.database,
@@ -574,3 +584,228 @@ const deserializeRecurringRuleSchedule = (
         interval: schedule.interval,
         dayOfMonth: schedule.dayOfMonth,
       };
+
+const queryIndexedDbTransactionsWindow = async (
+  connection: IndexedDbConnection,
+  query: TransactionWindowQuery,
+): Promise<TransactionWindowResult> => {
+  const database = await connection;
+  const storeName = getIndexedDbStoreName(PERSISTENCE_COLLECTION_IDS.transactions);
+  const { indexName, range } = resolveIndexedDbWindowSource(query.filters);
+
+  return await new Promise<TransactionWindowResult>((resolve, reject) => {
+    const transaction = database.transaction(storeName, "readonly");
+    const store = transaction.objectStore(storeName);
+    const source = indexName === null ? store : store.index(indexName);
+    const request = source.openCursor(range, "prev");
+    const matches: Transaction[] = [];
+    let settled = false;
+
+    const resolveOnce = (value: TransactionWindowResult): void => {
+      if (!settled) {
+        settled = true;
+        resolve(value);
+      }
+    };
+
+    const rejectOnce = (error: unknown): void => {
+      if (!settled) {
+        settled = true;
+        reject(error);
+      }
+    };
+
+    request.onerror = () => {
+      rejectOnce(request.error ?? new Error("IndexedDB cursor request failed."));
+    };
+
+    request.onsuccess = () => {
+      const cursor = request.result;
+
+      if (cursor === null || matches.length >= query.page.limit + 1) {
+        return;
+      }
+
+      const value = cursor.value as StoredTransaction;
+      const transactionRecord = fromStoredTransaction(value);
+
+      if (
+        matchesReviewFilters(transactionRecord, query.filters) &&
+        isAfterContinuation(transactionRecord, query.page.continuation)
+      ) {
+        matches.push(transactionRecord);
+
+        if (matches.length >= query.page.limit + 1) {
+          return;
+        }
+      }
+
+      cursor.continue();
+    };
+
+    transaction.oncomplete = () => {
+      const hasMore = matches.length > query.page.limit;
+      const transactions = matches.slice(0, query.page.limit).map(cloneTransactionForWindow);
+
+      resolveOnce({
+        transactions,
+        hasMore,
+        nextContinuation: hasMore
+          ? createContinuationToken(query.filters, transactions.at(-1) ?? null)
+          : null,
+      });
+    };
+
+    transaction.onerror = () => {
+      rejectOnce(transaction.error ?? new Error("IndexedDB transaction failed."));
+    };
+
+    transaction.onabort = () => {
+      rejectOnce(transaction.error ?? new Error("IndexedDB transaction aborted."));
+    };
+  });
+};
+
+const resolveIndexedDbWindowSource = (
+  filters: MovementsReviewFilters,
+): {
+  indexName: string | null;
+  range: IDBKeyRange | null;
+} => {
+  const lowerDate = filters.dateRange.from?.toISOString() ?? "";
+  const upperDate = filters.dateRange.to?.toISOString() ?? "\uffff";
+  const maxString = "\uffff";
+
+  if (filters.accountId !== null) {
+    return {
+      indexName: getIndexedDbIndexName(
+        PERSISTENCE_COLLECTION_IDS.transactions,
+        PERSISTENCE_INDEX_IDS.byAccountDateCreatedAtId,
+      ),
+      range: IDBKeyRange.bound(
+        [filters.accountId, lowerDate, "", ""],
+        [filters.accountId, upperDate, maxString, maxString],
+      ),
+    };
+  }
+
+  if (filters.categoryId !== null) {
+    return {
+      indexName: getIndexedDbIndexName(
+        PERSISTENCE_COLLECTION_IDS.transactions,
+        PERSISTENCE_INDEX_IDS.byCategoryDateCreatedAtId,
+      ),
+      range: IDBKeyRange.bound(
+        [filters.categoryId, lowerDate, "", ""],
+        [filters.categoryId, upperDate, maxString, maxString],
+      ),
+    };
+  }
+
+  return {
+    indexName: getIndexedDbIndexName(
+      PERSISTENCE_COLLECTION_IDS.transactions,
+      PERSISTENCE_INDEX_IDS.byDateCreatedAtId,
+    ),
+    range: IDBKeyRange.bound([lowerDate, "", ""], [upperDate, maxString, maxString]),
+  };
+};
+
+const matchesReviewFilters = (
+  transaction: Transaction,
+  filters: MovementsReviewFilters,
+): boolean => {
+  if (!filters.includeDeleted && transaction.deletedAt !== null) {
+    return false;
+  }
+
+  if (filters.accountId !== null && transaction.accountId !== filters.accountId) {
+    return false;
+  }
+
+  if (filters.categoryId !== null && transaction.categoryId !== filters.categoryId) {
+    return false;
+  }
+
+  if (
+    filters.dateRange.from !== null &&
+    transaction.date.getTime() < filters.dateRange.from.getTime()
+  ) {
+    return false;
+  }
+
+  if (filters.dateRange.to !== null && transaction.date.getTime() > filters.dateRange.to.getTime()) {
+    return false;
+  }
+
+  return true;
+};
+
+const isAfterContinuation = (
+  transaction: Transaction,
+  continuation: MovementsContinuationToken | null,
+): boolean => {
+  if (continuation === null) {
+    return true;
+  }
+
+  const transactionDate = transaction.date.toISOString();
+
+  if (transactionDate < continuation.lastItem.date) {
+    return true;
+  }
+
+  if (transactionDate > continuation.lastItem.date) {
+    return false;
+  }
+
+  const transactionCreatedAt = transaction.createdAt.toISOString();
+
+  if (transactionCreatedAt < continuation.lastItem.createdAt) {
+    return true;
+  }
+
+  if (transactionCreatedAt > continuation.lastItem.createdAt) {
+    return false;
+  }
+
+  return transaction.id < continuation.lastItem.id;
+};
+
+const cloneTransactionForWindow = (transaction: Transaction): Transaction => ({
+  ...transaction,
+  amount: {
+    ...transaction.amount,
+  },
+  date: new Date(transaction.date),
+  tags: [...transaction.tags],
+  createdAt: new Date(transaction.createdAt),
+  updatedAt: new Date(transaction.updatedAt),
+  deletedAt: transaction.deletedAt ? new Date(transaction.deletedAt) : null,
+});
+
+const createContinuationToken = (
+  filters: MovementsReviewFilters,
+  transaction: Transaction | null,
+): MovementsContinuationToken | null => {
+  if (transaction === null) {
+    return null;
+  }
+
+  return {
+    filterFingerprint: JSON.stringify({
+      dateRange: {
+        from: filters.dateRange.from?.toISOString() ?? null,
+        to: filters.dateRange.to?.toISOString() ?? null,
+      },
+      accountId: filters.accountId,
+      categoryId: filters.categoryId,
+      includeDeleted: filters.includeDeleted,
+    }),
+    lastItem: {
+      date: transaction.date.toISOString(),
+      createdAt: transaction.createdAt.toISOString(),
+      id: transaction.id,
+    },
+  };
+};

@@ -111,7 +111,7 @@ describe("openFinanzasIndexedDb", () => {
     expect(lastMigratedAt?.value).toMatch(
       /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/,
     );
-    expect(migrations).toHaveLength(2);
+    expect(migrations).toHaveLength(PERSISTENCE_MIGRATIONS.length);
     expect(
       migrations.map((migration) => ({
         version: migration.version,

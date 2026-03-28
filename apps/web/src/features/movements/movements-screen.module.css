@@ -39,6 +39,39 @@
 
 .listColumn {
   min-width: 0;
+  display: grid;
+  gap: var(--fz-space-3);
+}
+
+.loadMoreCard {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--fz-space-3);
+  padding: 1rem 1.1rem;
+  border-radius: var(--fz-radius-lg);
+  border: 1px solid color-mix(in srgb, var(--fz-color-border-subtle) 88%, white);
+  background: rgba(255, 255, 255, 0.78);
+}
+
+.loadMoreCopy {
+  color: var(--fz-color-text-secondary);
+  font-size: var(--fz-font-size-sm);
+}
+
+.loadMoreButton {
+  border: 0;
+  border-radius: var(--fz-radius-pill);
+  padding: 0.75rem 1rem;
+  background: var(--fz-color-brand-500);
+  color: white;
+  font: inherit;
+  font-weight: 800;
+}
+
+.loadMoreButton:disabled {
+  cursor: wait;
+  opacity: 0.6;
 }
 
 @media (max-width: 1080px) {
@@ -48,5 +81,10 @@
 
   .summaryColumn {
     position: static;
+  }
+
+  .loadMoreCard {
+    flex-direction: column;
+    align-items: stretch;
   }
 }

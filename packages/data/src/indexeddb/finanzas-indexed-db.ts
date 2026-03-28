@@ -349,7 +349,7 @@ const ensureStoreIndexes = (
   indexes:
   | ReadonlyArray<{
     indexedDbName: string;
-    propertyPath: string;
+    propertyPath: string | readonly string[];
   }>
   | undefined,
 ): void => {

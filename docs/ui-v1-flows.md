@@ -63,13 +63,15 @@ Non-negotiable UX:
 
 Steps:
 1. Open `Movements`.
-2. Search/filter by category, date, or account.
-3. Edit or delete.
-4. Reflect the changes in the summary.
+2. Narrow the review by account, category, date range, and deleted visibility.
+3. Load more matching results when the current window is not enough.
+4. Edit or delete.
+5. Reflect the changes in the summary without losing the active review context.
 
 Non-negotiable UX:
 
-- Virtualizable list ordered by descending date.
+- Bounded list ordered by descending date with an explicit first-slice `Load more` action.
+- Active review filters stay visible after edit, delete, or category recovery actions.
 - Short delete confirmation.
 
 ### F4. Trust the synchronization state
@@ -99,7 +101,8 @@ Non-negotiable UX:
 ### Movements
 
 - Transaction list.
-- Filters: date, account, category.
+- Filters: date range, account, category, deleted visibility.
+- Review scope summary plus a manual `Load more` action for long histories.
 - Per-item actions: edit, delete.
 
 ### Register

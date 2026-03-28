@@ -1,4 +1,4 @@
-export const PERSISTENCE_SCHEMA_VERSION = 2;
+export const PERSISTENCE_SCHEMA_VERSION = 3;
 
 export const PERSISTENCE_COLLECTION_IDS = {
   accounts: "accounts",
@@ -18,6 +18,9 @@ export type PersistenceCollectionId =
 
 export const PERSISTENCE_INDEX_IDS = {
   byAccountId: "byAccountId",
+  byDateCreatedAtId: "byDateCreatedAtId",
+  byAccountDateCreatedAtId: "byAccountDateCreatedAtId",
+  byCategoryDateCreatedAtId: "byCategoryDateCreatedAtId",
 } as const;
 
 export type PersistenceIndexId =
@@ -34,11 +37,11 @@ export const PERSISTENCE_METADATA_KEYS = {
 
 interface PersistenceIndexDefinition {
   id: PersistenceIndexId;
-  propertyPath: string;
+  propertyPath: string | readonly string[];
   indexedDbName: string;
   sqlite: {
     indexName: string;
-    columnName: string;
+    columnNames: readonly string[];
   };
 }
 
@@ -46,6 +49,7 @@ interface PersistenceSqliteExtraColumnDefinition {
   columnName: string;
   sourcePath: string;
   type: "INTEGER" | "TEXT";
+  nullable?: boolean;
 }
 
 interface BasePersistenceCollectionDefinition {
@@ -179,6 +183,27 @@ Record<PersistenceCollectionId, PersistenceCollectionDefinition>
         sourcePath: "accountId",
         type: "TEXT",
       },
+      {
+        columnName: "transaction_date",
+        sourcePath: "date",
+        type: "TEXT",
+      },
+      {
+        columnName: "created_at",
+        sourcePath: "createdAt",
+        type: "TEXT",
+      },
+      {
+        columnName: "category_id",
+        sourcePath: "categoryId",
+        type: "TEXT",
+      },
+      {
+        columnName: "deleted_at",
+        sourcePath: "deletedAt",
+        type: "TEXT",
+        nullable: true,
+      },
     ],
     indexes: [
       {
@@ -187,7 +212,44 @@ Record<PersistenceCollectionId, PersistenceCollectionDefinition>
         indexedDbName: "by-account-id",
         sqlite: {
           indexName: "transactions_by_account_id",
-          columnName: "account_id",
+          columnNames: ["account_id"],
+        },
+      },
+      {
+        id: PERSISTENCE_INDEX_IDS.byDateCreatedAtId,
+        propertyPath: ["date", "createdAt", "id"],
+        indexedDbName: "by-date-created-at-id",
+        sqlite: {
+          indexName: "transactions_by_date_created_at_id",
+          columnNames: ["transaction_date DESC", "created_at DESC", "id DESC"],
+        },
+      },
+      {
+        id: PERSISTENCE_INDEX_IDS.byAccountDateCreatedAtId,
+        propertyPath: ["accountId", "date", "createdAt", "id"],
+        indexedDbName: "by-account-date-created-at-id",
+        sqlite: {
+          indexName: "transactions_by_account_date_created_at_id",
+          columnNames: [
+            "account_id",
+            "transaction_date DESC",
+            "created_at DESC",
+            "id DESC",
+          ],
+        },
+      },
+      {
+        id: PERSISTENCE_INDEX_IDS.byCategoryDateCreatedAtId,
+        propertyPath: ["categoryId", "date", "createdAt", "id"],
+        indexedDbName: "by-category-date-created-at-id",
+        sqlite: {
+          indexName: "transactions_by_category_date_created_at_id",
+          columnNames: [
+            "category_id",
+            "transaction_date DESC",
+            "created_at DESC",
+            "id DESC",
+          ],
         },
       },
     ],
@@ -297,6 +359,11 @@ export const PERSISTENCE_MIGRATIONS: readonly PersistenceMigrationDefinition[] =
       PERSISTENCE_COLLECTION_IDS.schemaMigrations,
     ],
   },
+  {
+    version: 3,
+    name: "add-transaction-window-query-projections",
+    collectionIds: [PERSISTENCE_COLLECTION_IDS.transactions],
+  },
 ] as const;
 
 export const getPersistenceCollectionDefinition = (
@@ -370,7 +437,12 @@ export const getSqliteIndexName = (
 export const getSqliteIndexColumnName = (
   collectionId: PersistenceCollectionId,
   indexId: PersistenceIndexId,
-): string => getPersistenceIndexDefinition(collectionId, indexId).sqlite.columnName;
+): string => getPersistenceIndexDefinition(collectionId, indexId).sqlite.columnNames[0] ?? "";
+
+export const getSqliteIndexColumnNames = (
+  collectionId: PersistenceCollectionId,
+  indexId: PersistenceIndexId,
+): readonly string[] => getPersistenceIndexDefinition(collectionId, indexId).sqlite.columnNames;
 
 export const getSqliteValueColumn = (
   collectionId: PersistenceCollectionId,
@@ -423,13 +495,13 @@ export const getSqliteExtraColumnDefinitions = (
 export const getSqliteExtraColumnValues = (
   collectionId: PersistenceCollectionId,
   record: Record<string, unknown>,
-): Record<string, string | number> =>
+): Record<string, string | number | null> =>
   Object.fromEntries(
     getSqliteExtraColumnDefinitions(collectionId).map((definition) => [
       definition.columnName,
       readRecordPath(record, definition.sourcePath),
     ]),
-  ) as Record<string, string | number>;
+  ) as Record<string, string | number | null>;
 
 export const buildIndexedDbStoreNames = (): Record<
 PersistenceCollectionId,
@@ -456,7 +528,7 @@ string
 const readRecordPath = (
   record: Record<string, unknown>,
   sourcePath: string,
-): string | number => {
+): string | number | null => {
   const value = sourcePath
     .split(".")
     .reduce<unknown>((currentValue, key) => {
@@ -467,11 +539,15 @@ const readRecordPath = (
     return (currentValue as Record<string, unknown>)[key];
   }, record);
 
-  if (typeof value === "string" || typeof value === "number") {
+  if (value instanceof Date) {
+    return value.toISOString();
+  }
+
+  if (value === null || typeof value === "string" || typeof value === "number") {
     return value;
   }
 
   throw new Error(
-    `Expected a string or number at path ${sourcePath} for SQLite extra column.`,
+    `Expected a string, number, Date, or null at path ${sourcePath} for SQLite extra column.`,
   );
 };

@@ -18,9 +18,16 @@ const previewAccountId = homeInput.accountId ?? "acc-main";
 const [homeViewModel, movementsViewModel, registerViewModel, accountViewModel] = await Promise.all([
   webUi.loadHomeTab(homeInput),
   webUi.loadMovementsTab({
-    accountId: previewAccountId,
-    includeDeleted: true,
-    limit: 12,
+    hostAccountId: previewAccountId,
+    review: {
+      filters: {
+        includeDeleted: true,
+      },
+      page: {
+        limit: 12,
+      },
+      mode: "replace",
+    },
   }),
   webUi.loadRegisterTab({
     accountId: previewAccountId,

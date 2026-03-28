@@ -14,7 +14,7 @@ import {
   getPersistenceCollectionDefinition,
   getSqliteExtraColumnDefinitions,
   getSqliteExtraColumnValues,
-  getSqliteIndexColumnName,
+  getSqliteIndexColumnNames,
   getSqliteMigrationColumns,
   getSqlitePayloadColumn,
   getSqlitePrimaryKeyColumn,
@@ -168,7 +168,12 @@ export const listPayloadsByIndex = <T>(
 ): T[] => {
   const tableName = getSqliteTableName(collectionId);
   const payloadColumn = getSqlitePayloadColumn(collectionId);
-  const columnName = getSqliteIndexColumnName(collectionId, indexId);
+  const columnName = getSqliteIndexColumnNames(collectionId, indexId)[0];
+
+  if (columnName === undefined) {
+    throw new Error(`Index ${indexId} is not available for collection ${collectionId}.`);
+  }
+
   const rows = database
     .prepare(`SELECT ${payloadColumn} AS payload FROM ${tableName} WHERE ${columnName} = ?`)
     .all(value) as unknown as PayloadRow[];
@@ -311,6 +316,11 @@ const applySqliteMigrations = (
       continue;
     }
 
+    if (migration.version === 3) {
+      upgradeTransactionWindowQueryProjection(database);
+      continue;
+    }
+
     for (const collectionId of migration.collectionIds) {
       createSqliteCollectionTable(database, collectionId);
     }
@@ -367,7 +377,8 @@ const createSqliteCollectionTable = (
     const columns = [
       `${primaryKeyColumn} TEXT PRIMARY KEY NOT NULL`,
       ...collection.extraSqliteColumns?.map(
-        (column) => `${column.columnName} ${column.type} NOT NULL`,
+        (column) =>
+          `${column.columnName} ${column.type}${column.nullable === true ? "" : " NOT NULL"}`,
       ) ?? [],
       `${collection.payloadColumn} TEXT NOT NULL`,
     ];
@@ -381,7 +392,7 @@ const createSqliteCollectionTable = (
     for (const index of collection.indexes ?? []) {
       database.exec(`
         CREATE INDEX IF NOT EXISTS ${index.sqlite.indexName}
-          ON ${tableName}(${index.sqlite.columnName});
+          ON ${tableName}(${index.sqlite.columnNames.join(", ")});
       `);
     }
 
@@ -456,6 +467,68 @@ const insertKeyValueIfMissing = (
       `INSERT OR IGNORE INTO ${tableName}(${primaryKeyColumn}, ${valueColumn}) VALUES (?, ?)`,
     )
     .run(key, value);
+};
+
+const upgradeTransactionWindowQueryProjection = (
+  database: NodeSqliteDatabaseSync,
+): void => {
+  const collectionId = PERSISTENCE_COLLECTION_IDS.transactions;
+  const collection = getPersistenceCollectionDefinition(collectionId);
+
+  if (collection.kind !== "payload") {
+    throw new Error("Transactions collection must be payload storage.");
+  }
+
+  const tableName = getSqliteTableName(collectionId);
+  const existingColumns = new Set(
+    (database.prepare(`PRAGMA table_info(${tableName})`).all() as Array<{
+      name: string;
+    }>).map((column) => column.name),
+  );
+
+  for (const column of collection.extraSqliteColumns ?? []) {
+    if (existingColumns.has(column.columnName)) {
+      continue;
+    }
+
+    database.exec(
+      `ALTER TABLE ${tableName} ADD COLUMN ${column.columnName} ${column.type}${column.nullable === true ? "" : " NOT NULL DEFAULT ''"};`,
+    );
+  }
+
+  const rows = database
+    .prepare(`SELECT id, payload FROM ${tableName}`)
+    .all() as Array<{ id: string; payload: string }>;
+  const update = database.prepare(
+    `UPDATE ${tableName}
+      SET account_id = ?,
+          transaction_date = ?,
+          created_at = ?,
+          category_id = ?,
+          deleted_at = ?
+      WHERE id = ?`,
+  );
+
+  for (const row of rows) {
+    const payload = deserializePayload<Record<string, unknown>>(row.payload);
+    const extraColumns = getSqliteExtraColumnValues(collectionId, payload);
+
+    update.run(
+      extraColumns.account_id ?? "",
+      extraColumns.transaction_date ?? "",
+      extraColumns.created_at ?? "",
+      extraColumns.category_id ?? "",
+      extraColumns.deleted_at ?? null,
+      row.id,
+    );
+  }
+
+  for (const index of collection.indexes ?? []) {
+    database.exec(`
+      CREATE INDEX IF NOT EXISTS ${index.sqlite.indexName}
+        ON ${tableName}(${index.sqlite.columnNames.join(", ")});
+    `);
+  }
 };
 
 const toRecordPayload = (payload: unknown): Record<string, unknown> => {

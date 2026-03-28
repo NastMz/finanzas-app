@@ -10,8 +10,12 @@ import type {
   AccountRepository,
   BudgetRepository,
   CategoryRepository,
+  MovementsContinuationToken,
+  MovementsReviewFilters,
   RecurringRuleRepository,
   TransactionRepository,
+  TransactionWindowQuery,
+  TransactionWindowResult,
   TransactionTemplateRepository,
 } from "@finanzas/application";
 import type { DatabaseSync } from "node:sqlite";
@@ -21,6 +25,7 @@ import {
 } from "../persistence/persistence-schema.js";
 
 import {
+  FINANZAS_SQLITE_TABLES,
   clearTable,
   getPayloadByKey,
   listPayloads,
@@ -232,6 +237,76 @@ export class SqliteTransactionRepository implements TransactionRepository {
     );
   }
 
+  async queryWindow(query: TransactionWindowQuery): Promise<TransactionWindowResult> {
+    const tableName = FINANZAS_SQLITE_TABLES.transactions;
+    const payloadColumn = "payload";
+    const whereParts: string[] = [];
+    const parameters: Array<string | number | null> = [];
+
+    if (!query.filters.includeDeleted) {
+      whereParts.push("deleted_at IS NULL");
+    }
+
+    if (query.filters.accountId !== null) {
+      whereParts.push("account_id = ?");
+      parameters.push(query.filters.accountId);
+    }
+
+    if (query.filters.categoryId !== null) {
+      whereParts.push("category_id = ?");
+      parameters.push(query.filters.categoryId);
+    }
+
+    if (query.filters.dateRange.from !== null) {
+      whereParts.push("transaction_date >= ?");
+      parameters.push(query.filters.dateRange.from.toISOString());
+    }
+
+    if (query.filters.dateRange.to !== null) {
+      whereParts.push("transaction_date <= ?");
+      parameters.push(query.filters.dateRange.to.toISOString());
+    }
+
+    if (query.page.continuation !== null) {
+      whereParts.push(`(
+        transaction_date < ?
+        OR (transaction_date = ? AND created_at < ?)
+        OR (transaction_date = ? AND created_at = ? AND id < ?)
+      )`);
+      parameters.push(
+        query.page.continuation.lastItem.date,
+        query.page.continuation.lastItem.date,
+        query.page.continuation.lastItem.createdAt,
+        query.page.continuation.lastItem.date,
+        query.page.continuation.lastItem.createdAt,
+        query.page.continuation.lastItem.id,
+      );
+    }
+
+    const whereClause =
+      whereParts.length > 0 ? `WHERE ${whereParts.join(" AND ")}` : "";
+    const rows = this.database
+      .prepare(
+        `SELECT ${payloadColumn} AS payload
+         FROM ${tableName}
+         ${whereClause}
+         ORDER BY transaction_date DESC, created_at DESC, id DESC
+         LIMIT ?`,
+      )
+      .all(...parameters, query.page.limit + 1) as Array<{ payload: string }>;
+    const decoded = rows.map((row) => deserializeSqliteTransactionPayload(row.payload));
+    const hasMore = decoded.length > query.page.limit;
+    const transactions = decoded.slice(0, query.page.limit);
+
+    return {
+      transactions,
+      hasMore,
+      nextContinuation: hasMore
+        ? createContinuationToken(query.filters, transactions.at(-1) ?? null)
+        : null,
+    };
+  }
+
   async listByAccountId(accountId: string): Promise<Transaction[]> {
     return listPayloadsByIndex<Transaction>(
       this.database,
@@ -297,3 +372,62 @@ implements TransactionTemplateRepository {
     }
   }
 }
+
+const deserializeSqliteTransactionPayload = (payload: string): Transaction => {
+  const value = JSON.parse(payload) as null | boolean | number | string | unknown[] | Record<string, unknown>;
+  return decodeSqlitePayloadNode(value) as Transaction;
+};
+
+const decodeSqlitePayloadNode = (value: unknown): unknown => {
+  if (value === null || typeof value === "boolean" || typeof value === "number" || typeof value === "string") {
+    return value;
+  }
+
+  if (Array.isArray(value)) {
+    return value.map((item) => decodeSqlitePayloadNode(item));
+  }
+
+  if (typeof value === "object") {
+    const record = value as Record<string, unknown>;
+
+    if (record.__finanzasPersistType === "bigint" && typeof record.value === "string") {
+      return BigInt(record.value);
+    }
+
+    if (record.__finanzasPersistType === "date" && typeof record.value === "string") {
+      return new Date(record.value);
+    }
+
+    return Object.fromEntries(
+      Object.entries(record).map(([key, item]) => [key, decodeSqlitePayloadNode(item)]),
+    );
+  }
+
+  return value;
+};
+
+const createContinuationToken = (
+  filters: MovementsReviewFilters,
+  transaction: Transaction | null,
+): MovementsContinuationToken | null => {
+  if (transaction === null) {
+    return null;
+  }
+
+  return {
+    filterFingerprint: JSON.stringify({
+      dateRange: {
+        from: filters.dateRange.from?.toISOString() ?? null,
+        to: filters.dateRange.to?.toISOString() ?? null,
+      },
+      accountId: filters.accountId,
+      categoryId: filters.categoryId,
+      includeDeleted: filters.includeDeleted,
+    }),
+    lastItem: {
+      date: transaction.date.toISOString(),
+      createdAt: transaction.createdAt.toISOString(),
+      id: transaction.id,
+    },
+  };
+};
