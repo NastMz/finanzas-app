@@ -1,21 +1,22 @@
 import { describe, expect, it } from "vitest";
 
 import { createInMemoryBootstrap } from "./in-memory-bootstrap.js";
-import {
-  InMemoryBootstrapContext,
-  createInMemoryBootstrapContext,
-} from "./in-memory-bootstrap-context.js";
+import { createInMemoryBootstrapContext } from "./in-memory-bootstrap-context.js";
 
 describe("createInMemoryBootstrapContext", () => {
-  it("exposes command and query facades over the same bootstrap", async () => {
+  it("exposes command and query handlers over the explicit bootstrap contract", async () => {
     const bootstrap = createInMemoryBootstrap({
       defaultDeviceId: "platform-context-device",
     });
     const context = createInMemoryBootstrapContext(bootstrap);
 
-    expect(context).toBeInstanceOf(InMemoryBootstrapContext);
-    expect(context.commands).toBe(bootstrap);
-    expect(context.queries).toBe(bootstrap);
+    expect(context.bootstrap).toBe(bootstrap);
+    expect(context.commands).not.toBe(bootstrap);
+    expect(context.queries).not.toBe(bootstrap);
+    expect(context.commands.addAccount).toBe(bootstrap.addAccount);
+    expect(context.queries.listAccounts).toBe(bootstrap.listAccounts);
+    expect("listAccounts" in context.commands).toBe(false);
+    expect("addAccount" in context.queries).toBe(false);
 
     const accountResult = await context.commands.addAccount({
       name: "Cuenta contexto",

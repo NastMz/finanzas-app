@@ -39,9 +39,9 @@ Open these documents only when the task needs them:
 ## Quick Architecture Map
 
 - `packages/domain`: pure entities and invariants.
-- `packages/application`: use cases, ports, and `FinanzasApplicationService`.
+- `packages/application`: use cases, ports, canonical surface factories, and public application surface types.
 - `packages/data`: in-memory / IndexedDB / SQLite repositories, clocks, IDs, and the persistence schema manifest.
-- `packages/sync`: `FinanzasSyncService`, `SyncNow`, `GetSyncStatus`, ports, and change appliers.
+- `packages/sync`: canonical sync surface factories, `SyncNow`, `GetSyncStatus`, ports, and change appliers.
 - `packages/platform/platform-shared`: shared bootstrap and context utilities across hosts.
 - `packages/ui`: headless contracts / view models, `createFinanzasUiService`, and design tokens.
 - `apps/web`: current visual host; `src/app/bootstrap.ts` and `src/app/main.ts` are the real composition roots.
@@ -49,8 +49,9 @@ Open these documents only when the task needs them:
 
 ## Useful Entry Points
 
-- `packages/application/src/finanzas-application-service.ts`
-- `packages/sync/src/finanzas-sync-service.ts`
+- `packages/application/src/create-finanzas-application-surface.ts`
+- `packages/sync/src/create-finanzas-sync-surface.ts`
+- `packages/platform/platform-shared/src/in-memory-bootstrap/compose-in-memory-bootstrap.ts`
 - `packages/data/src/persistence/persistence-schema.ts`
 - `packages/ui/src/service/create-finanzas-ui-service.ts`
 - `apps/web/src/app/bootstrap.ts`
@@ -64,6 +65,7 @@ Open these documents only when the task needs them:
 - Keep tests next to the module with `.spec.ts` or `.spec.tsx`.
 - Treat local persistence as the source of truth. If a mutation affects synchronized entities, review outbox and sync implications.
 - If the persisted schema changes, keep `packages/data/src/persistence`, IndexedDB, and SQLite aligned.
+- Treat `packages/ui/src/service/create-finanzas-ui-service/finanzas-ui-service-facade.ts` as an intentional orchestrator, not a passive-wrapper cleanup candidate.
 - Ignore `node_modules/` and `output/` unless the task is specifically about tooling or build output.
 
 ## Current Web Layout

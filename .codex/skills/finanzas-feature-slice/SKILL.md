@@ -10,7 +10,7 @@ description: Implement or update a product slice in finanzas-app across the clea
 1. Map the request to the right layer before editing.
 
 - `packages/domain`: entities, value objects, invariants.
-- `packages/application`: use cases, ports, orchestration in `FinanzasApplicationService`.
+- `packages/application`: use cases, ports, canonical surface factories, and explicit application surface contracts.
 - `packages/data`: repositories, ids, clocks, IndexedDB, SQLite, schema manifest.
 - `packages/sync`: sync ports, `SyncNow`, `GetSyncStatus`, change appliers.
 - `packages/ui`: headless view models and `createFinanzasUiService`.
@@ -29,11 +29,13 @@ description: Implement or update a product slice in finanzas-app across the clea
 - Use `kebab-case` for files and colocated `.spec.ts` or `.spec.tsx` tests.
 - Keep the public entrypoints in sync when adding new exports.
 
-4. Use the shared facades instead of bypassing them.
+4. Use the canonical surfaces and preserve only real orchestrators.
 
-- Route business operations through `FinanzasApplicationService`.
-- Route sync status/actions through `FinanzasSyncService`.
+- Route business operations through `createFinanzasApplicationSurface` and the exported application surface types.
+- Route sync status/actions through `createFinanzasSyncSurface` and the exported sync surface types.
 - Route tab/view-model logic through `createFinanzasUiService`.
+- Compose platform bootstrap contracts from explicit surface contracts, not from removed legacy wrapper classes.
+- Keep `packages/ui/src/service/create-finanzas-ui-service/finanzas-ui-service-facade.ts` as a valid exception because it adds real orchestration.
 - Treat `apps/web/src/app/bootstrap.ts` and `apps/web/src/app/main.ts` as the current web composition root.
 
 5. Check project docs only where they add task-specific context.

@@ -1,9 +1,9 @@
-import type { FinanzasApplicationService } from "@finanzas/application";
-import type { FinanzasSyncService } from "@finanzas/sync";
+import type { FinanzasApplicationSurface } from "@finanzas/application";
+import type { FinanzasSyncSurface } from "@finanzas/sync";
 
 export interface InMemoryBootstrap
   extends Pick<
-  FinanzasApplicationService,
+  FinanzasApplicationSurface,
   | "addAccount"
   | "updateAccount"
   | "deleteAccount"
@@ -35,4 +35,6 @@ export interface InMemoryBootstrap
   | "exportData"
   | "runRecurringRules"
   >,
-  Pick<FinanzasSyncService, "getSyncStatus" | "syncNow"> {}
+  Pick<FinanzasSyncSurface, "getSyncStatus" | "syncNow"> {
+  importData: FinanzasApplicationSurface["importData"];
+}
